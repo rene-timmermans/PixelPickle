@@ -404,14 +404,18 @@ class LayersPalette(QWidget):
         self.refresh()
 
     def context_menu(self, pos):
-        acts = self.main.actions_by_id
+        """Rechtsklik op een laag: die laag wordt actief en het volledige Lagen menu verschijnt (zoals PSP)."""
+        it = self.list.itemAt(pos)
+        if it is not None:
+            self.list.setCurrentItem(it)
+        lagen = self.main.top_menus.get("Lagen")
         m = QMenu(self)
-        for cid in (0x8140, 0x80f7, 0x80f6, None, 0x80fe, None, 0x8101, 0x8104, 0x8102, 0x8103, None,
-                    0x81d4, 0x8120, 0x80f8, None, 0x815d, 0x8109):
-            if cid is None:
-                m.addSeparator()
-            elif cid in acts:
-                m.addAction(acts[cid])
+        if self.doc is not None and self.doc.layer().text is not None:
+            m.addAction("Omzetten in rasterlaag", self.main.convert_to_raster)
+            m.addSeparator()
+        if lagen is not None:
+            for a in lagen.actions():
+                m.addAction(a)
         m.exec(self.list.mapToGlobal(pos))
 
     def on_mode(self, i):

@@ -1,6 +1,6 @@
 # Pakketbeschrijving voor Pigment. Bouwen: in deze map  makepkg  (of via ../tools/build_package.sh)
 pkgname=pigment
-pkgver=0.1.0
+pkgver=0.1.1
 pkgrel=1
 pkgdesc="Fotobewerker voor Linux met de vertrouwde indeling van Paint Shop Pro XI"
 arch=('any')

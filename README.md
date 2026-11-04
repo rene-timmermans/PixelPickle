@@ -7,7 +7,7 @@ documenten met tabs.
 ## Installeren (Arch, SteamOS, Manjaro, EndeavourOS)
 
 ```
-sudo pacman -U pigment-0.1.0-1-any.pkg.tar.zst
+sudo pacman -U pigment-0.1.1-1-any.pkg.tar.zst
 ```
 
 pacman installeert automatisch de benodigde pakketten: `python`, `pyside6`, `python-numpy` en

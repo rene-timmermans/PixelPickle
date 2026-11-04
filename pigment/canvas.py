@@ -220,21 +220,39 @@ class Canvas(QWidget):
             self._pan = (e.position(), self.ox, self.oy)
             self.setCursor(Qt.CursorShape.ClosedHandCursor)
             return
+        if e.button() == Qt.MouseButton.RightButton and self.main.tool.wants_context_menu(self):
+            # rechtsklik: eerst afwachten of er gesleept wordt (dan gewoon doorgeven aan het gereedschap)
+            self._rc = (e.position(), e.modifiers())
+            self._rc_drag = False
+            return
         if e.button() in (Qt.MouseButton.LeftButton, Qt.MouseButton.RightButton):
-            if self.doc.layer().text is not None and getattr(self.main.tool, "edits_pixels", True):
-                if not self.main.ensure_raster():
-                    return
-            if self.doc.layer().kind == "group" and getattr(self.main.tool, "edits_pixels", True):
-                self.main.statusBar().showMessage("Dit is een lagengroep. Kies een laag in de groep om op te werken.", 4000)
+            self._forward_press(e)
+
+    def _forward_press(self, e):
+        if self.doc.layer().text is not None and getattr(self.main.tool, "edits_pixels", True):
+            if not self.main.ensure_raster():
                 return
-            try:
-                self.main.tool.press(self, self.to_doc(e.position()), e)
-            except Exception as ex:  # nooit het programma laten crashen
-                self.main.report_error(ex)
+        if self.doc.layer().kind == "group" and getattr(self.main.tool, "edits_pixels", True):
+            self.main.statusBar().showMessage("Dit is een lagengroep. Kies een laag in de groep om op te werken.", 4000)
+            return
+        try:
+            self.main.tool.press(self, self.to_doc(e.position()), e)
+        except Exception as ex:  # nooit het programma laten crashen
+            self.main.report_error(ex)
 
     def mouseMoveEvent(self, e):
         pt = self.to_doc(e.position())
         self.mouse_doc = pt
+        rc = getattr(self, "_rc", None)
+        if rc is not None and not self._rc_drag:
+            start, mods = rc
+            if (e.position() - start).manhattanLength() < 5:
+                return
+            self._rc_drag = True  # het is slepen: alsnog de rechtsklik doorgeven aan het gereedschap
+            from PySide6.QtGui import QMouseEvent
+            from PySide6.QtCore import QEvent
+            self._forward_press(QMouseEvent(QEvent.Type.MouseButtonPress, start, self.mapToGlobal(start),
+                                            Qt.MouseButton.RightButton, Qt.MouseButton.RightButton, mods))
         if self._pan is not None:
             start, ox, oy = self._pan
             self._auto = False
@@ -254,6 +272,12 @@ class Canvas(QWidget):
             self.update()
 
     def mouseReleaseEvent(self, e):
+        rc = getattr(self, "_rc", None)
+        if rc is not None and e.button() == Qt.MouseButton.RightButton:
+            self._rc = None
+            if not self._rc_drag:
+                self.main.show_canvas_menu(self, e.position())
+                return
         if self._pan is not None:
             self._pan = None
             self.unsetCursor()
@@ -282,6 +306,14 @@ class Canvas(QWidget):
             self.update()
         elif dy:
             self.zoom_step(dy > 0, e.position())
+
+    def contextMenuEvent(self, e):
+        # Menu-toets of Shift+F10: altijd het menu, ook bij gereedschappen die rechts zelf gebruiken
+        if e.reason() == e.Reason.Keyboard:
+            pos = self.mapFromGlobal(self.cursor().pos())
+            if not self.rect().contains(pos):
+                pos = self.rect().center()
+            self.main.show_canvas_menu(self, QPointF(pos))
 
     def keyPressEvent(self, e):
         if e.key() == Qt.Key.Key_Space and not e.isAutoRepeat():

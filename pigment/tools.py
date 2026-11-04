@@ -124,6 +124,16 @@ class Tool:
     def deactivate(self): pass
     def hover_cursor(self, cv, pt): return None
 
+    # Rechtsklik zonder slepen opent het snelmenu bij gereedschappen die de rechterknop niet zelf gebruiken
+    context_menu = False
+
+    def wants_context_menu(self, cv):
+        return self.context_menu
+
+    def context_actions(self, cv):
+        """Extra opdrachten bovenaan het snelmenu: [(tekst, functie)]."""
+        return []
+
 
 class PlaceholderTool(Tool):
     available = False
@@ -139,6 +149,7 @@ class PlaceholderTool(Tool):
 
 # ================================================================ navigatie
 class PanTool(Tool):
+    context_menu = True
     edits_pixels = False
     cid, glyph = 0xd001, "✋"
     tip = "Sleep om het beeld te verschuiven (ook: spatie of middelste muisknop)"
@@ -281,6 +292,7 @@ class LayerMover:
 
 
 class MoveTool(Tool):
+    context_menu = True
     edits_pixels = False
     cid, glyph = 0xd012, "✥"
     tip = "Sleep om de laag te verplaatsen. Rechts slepen: alleen het selectiekader verplaatsen"
@@ -326,6 +338,7 @@ def rotate_cursor():
 
 
 class PickTool(Tool):
+    context_menu = True
     edits_pixels = False
     cid, glyph = 0xd011, "➚"
     tip = "Selecteren: sleep de grepen om te schalen, de draaigreep om te roteren, binnen het kader om te verplaatsen. Shift: verhouding behouden"
@@ -537,6 +550,7 @@ def commit_shape(d, path, mode, feather, antialias, label="Selectie"):
 
 
 class SelectionBase(Tool):
+    context_menu = True
     edits_pixels = False
     """Gemeenschappelijk: binnen een bestaande selectie slepen verplaatst de pixels,
     rechts slepen verplaatst alleen het kader (zoals in PSP)."""
@@ -711,6 +725,9 @@ class LassoTool(SelectionBase):
 
     def _rng(self):
         return self.o["lasso_range"] * (2 if self.o["lasso_type"] == 3 else 1)
+
+    def wants_context_menu(self, cv):
+        return not self.pts
 
     def _anchor(self, pt):
         if self.o["lasso_type"] >= 2 and self.G is not None:
@@ -1500,6 +1517,7 @@ class RedEyeTool(Tool):
 
 
 class StraightenTool(Tool):
+    context_menu = True
     edits_pixels = False
     cid, glyph = 0xd051, "📐"
     tip = "Sleep een lijn langs een rand die recht moet staan. Dubbelklik, Enter of Toepassen om recht te zetten"
@@ -1548,6 +1566,9 @@ class StraightenTool(Tool):
             target = math.copysign(90, ang)
         return target - ang
 
+    def context_actions(self, cv):
+        return [("Rechttrekken toepassen", lambda: self.apply(cv))] if self.a is not None else []
+
     def hover_cursor(self, cv, pt):
         for q in (self.a, self.b):
             if q is not None and math.hypot(q.x() - pt.x(), q.y() - pt.y()) < 8 / cv.zoom:
@@ -1588,6 +1609,7 @@ class StraightenTool(Tool):
 
 
 class CropTool(Tool):
+    context_menu = True
     edits_pixels = False
     cid, glyph = 0xd040, "⛶"
     tip = "Sleep een rechthoek; dubbelklik, Enter of Toepassen om bij te snijden. Esc annuleert"
@@ -1599,6 +1621,11 @@ class CropTool(Tool):
 
     def options(self):
         return button("Toepassen", lambda: self.apply(self.main.canvas())) + button("Wissen", self.clear)
+
+    def context_actions(self, cv):
+        if self.r is None:
+            return []
+        return [("Bijsnijden toepassen", lambda: self.apply(cv)), ("Bijsnijrechthoek wissen", self.clear)]
 
     def clear(self):
         self.r = None
@@ -1873,6 +1900,7 @@ class PenTool(ShapeBase):
 
 # ================================================================ tekst
 class TextTool(Tool):
+    context_menu = True
     cid, glyph = 0xd0f0, "A"
     tip = ("Klik om tekst te maken, of klik op bestaande tekst om die te bewerken. "
            "Vulling: achtergrondkleur, rand: voorgrondkleur (zoals PSP)")

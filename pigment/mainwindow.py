@@ -308,6 +308,7 @@ class MainWindow(QMainWindow):
     CHECKABLE = {0x821f: None, 0x8185: "dock_mat", 0x81ae: "dock_layers", 0x8002: "dock_hist", 0x82ce: None, 0x8021: None, 0x811a: None}
 
     def _build_menus(self):
+        self.top_menus = {}
         H = self.all_handlers()
         mb = self.menuBar()
 
@@ -345,6 +346,7 @@ class MainWindow(QMainWindow):
         for top in self.menu_tree:
             m = mb.addMenu(top["text"])
             build(m, top["items"])
+            self.top_menus[top["text"].replace("&", "")] = m
             if top["text"].replace("&", "") == "Venster":
                 self.window_menu = m
                 m.aboutToShow.connect(self._fill_window_menu)
@@ -624,6 +626,7 @@ class MainWindow(QMainWindow):
         area = self.mdi.viewport().size()
         sw.resize(QSize(min(area.width() - 40, max(400, doc.w + 40)), min(area.height() - 40, max(300, doc.h + 60))))
         sw.show()
+        self._hook_tabbar()
         cv.apply_cursor()
         cv.setFocus()
         self.on_active(sw)
@@ -1012,6 +1015,68 @@ class MainWindow(QMainWindow):
         layer.adjust = (eff_cid, params)
         d.add_layer(layer, label="Nieuwe aanpassingslaag")
 
+    # ================================================================ snelmenu's (rechtsklik)
+    CANVAS_MENU = [0xe12b, 0xe12c, None, 0xe123, 0xe122, 0x8105, 0x810d, 0x801e, 0x801f, 0xe120, None,
+                   0x80dc, 0x80e2, 0x80dd, 0x8109, 0x80e4, 0x80e5, None,
+                   "Selecties", "Lagen", "Afbeelding", "Aanpassen", "Effecten", None,
+                   0x8132, 0x8136, 0x8007, 0x81d0]
+
+    def _fill_menu(self, m, items):
+        for it in items:
+            if it is None:
+                if m.actions() and not m.actions()[-1].isSeparator():
+                    m.addSeparator()
+            elif isinstance(it, str):
+                if it in self.top_menus:
+                    m.addMenu(self.top_menus[it])
+            elif it in self.actions_by_id:
+                m.addAction(self.actions_by_id[it])
+
+    def show_canvas_menu(self, cv, pos):
+        """Snelmenu op de afbeelding, met dezelfde opdrachten als de menubalk."""
+        self.mdi.setActiveSubWindow(self._subwindow_of(cv))
+        m = QMenu(self)
+        extra = list(self.tool.context_actions(cv))
+        d = cv.doc
+        if d.layer().text is not None:
+            extra.append(("Tekst bewerken", lambda: self.edit_text_layer(cv)))
+            extra.append(("Omzetten in rasterlaag", self.convert_to_raster))
+        for label, fn in extra:
+            m.addAction(label, lambda f=fn: self._run(f))
+        if extra:
+            m.addSeparator()
+        self._fill_menu(m, self.CANVAS_MENU)
+        m.exec(cv.mapToGlobal(pos.toPoint()))
+
+    def _subwindow_of(self, cv):
+        w = cv.parentWidget()
+        while w is not None and not isinstance(w, DocWindow):
+            w = w.parentWidget()
+        return w
+
+    def edit_text_layer(self, cv):
+        """Tekst bewerken via het snelmenu: tekstgereedschap kiezen en de actieve tekstlaag openen."""
+        from .textlayer import bounds
+        from PySide6.QtGui import QMouseEvent
+        from PySide6.QtCore import QEvent
+        t = self.tools[0xd0f0]
+        self.select_tool(t)
+        c = bounds(cv.doc.layer().text, cv.doc.px_per_pt).center()
+        w = cv.to_widget(c)
+        t.press(cv, c, QMouseEvent(QEvent.Type.MouseButtonPress, w, cv.mapToGlobal(w.toPoint()),
+                                   Qt.MouseButton.LeftButton, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier))
+
+    def show_tab_menu(self, pos):
+        bar = self.sender()
+        i = bar.tabAt(pos)
+        subs = self.mdi.subWindowList()
+        if i < 0 or i >= len(subs):
+            return
+        self.mdi.setActiveSubWindow(subs[i])
+        m = QMenu(self)
+        self._fill_menu(m, [0xe103, 0xe104, 0xe10b, None, 0xe102, 0x80d3, None, 0x80d4, 0xe130, None, 0x80ed])
+        m.exec(bar.mapToGlobal(pos))
+
     def ensure_raster(self):
         """Tekstlaag eerst omzetten naar een rasterlaag (met bevestiging, zoals PSP)."""
         d = self.doc()
@@ -1101,10 +1166,19 @@ class MainWindow(QMainWindow):
         self.mdi.setTabsClosable(True)
         self.mdi.setTabsMovable(True)
         self.mdi.setDocumentMode(True)
+        self._hook_tabbar()
         self.settings.setValue("tabs", "true" if on else "false")
         a = getattr(self, "actions_by_id", {}).get(0x82ce)
         if a:
             a.setChecked(on)
+
+    def _hook_tabbar(self):
+        """Snelmenu op de tabbladen (de tabbalk maakt Qt pas aan als er documenten zijn)."""
+        from PySide6.QtWidgets import QTabBar
+        for bar in self.mdi.findChildren(QTabBar):
+            if bar.contextMenuPolicy() != Qt.ContextMenuPolicy.CustomContextMenu:
+                bar.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+                bar.customContextMenuRequested.connect(self.show_tab_menu)
 
     def _fill_window_menu(self):
         """Zoals PSP: genummerde lijst van open afbeeldingen onderaan, en vensterschikking grijs bij tabbladen."""
