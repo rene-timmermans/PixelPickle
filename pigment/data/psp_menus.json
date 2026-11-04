@@ -1,0 +1,3490 @@
+{
+ "menus": [
+  {
+   "text": "&Bestand",
+   "id": 0,
+   "keys": [],
+   "items": [
+    {
+     "text": "&Nieuw...",
+     "id": 57600,
+     "keys": [
+      "Ctrl+N"
+     ],
+     "items": []
+    },
+    {
+     "text": "&Openen...",
+     "id": 57601,
+     "keys": [
+      "Ctrl+O"
+     ],
+     "items": []
+    },
+    {
+     "text": "Sluiten",
+     "id": 57602,
+     "keys": [
+      "Ctrl+F4"
+     ],
+     "items": []
+    },
+    {
+     "text": "Naar vorig&e versie...",
+     "id": 32793,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "Recente bes&tanden",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "Recente bestanden",
+       "id": 57616,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    null,
+    {
+     "text": "O&pslaan",
+     "id": 57603,
+     "keys": [
+      "Ctrl+S"
+     ],
+     "items": []
+    },
+    {
+     "text": "Ops&laan als...",
+     "id": 57604,
+     "keys": [
+      "F12"
+     ],
+     "items": []
+    },
+    {
+     "text": "&Kopie opslaan als...",
+     "id": 57611,
+     "keys": [
+      "Ctrl+F12"
+     ],
+     "items": []
+    },
+    {
+     "text": "&Verwijderen",
+     "id": 32982,
+     "keys": [
+      "Ctrl+Del"
+     ],
+     "items": []
+    },
+    {
+     "text": "&E-mail",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&Actieve afbeelding...",
+       "id": 33536,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Alle ge&opende afbeeldingen...",
+       "id": 33533,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Alle &geselecteerde items...",
+       "id": 33532,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    null,
+    {
+     "text": "Af&drukken...",
+     "id": 33516,
+     "keys": [
+      "Ctrl+P"
+     ],
+     "items": []
+    },
+    {
+     "text": "A&fdrukweergave...",
+     "id": 33070,
+     "keys": [],
+     "items": []
+    },
+    null,
+    {
+     "text": "&Importeren",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&Schermopname",
+       "id": 0,
+       "keys": [],
+       "items": [
+        {
+         "text": "I&nstellingen...",
+         "id": 32992,
+         "keys": [],
+         "items": []
+        },
+        {
+         "text": "&Starten",
+         "id": 32993,
+         "keys": [
+          "Shift+C"
+         ],
+         "items": []
+        }
+       ]
+      },
+      {
+       "text": "Aangepast &penseel",
+       "id": 33283,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Van scanner of camera...",
+       "id": 33257,
+       "keys": [],
+       "items": []
+      },
+      null,
+      {
+       "text": "&Ophalen van TWAIN...",
+       "id": 32983,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "TWAIN-&bron...",
+       "id": 32984,
+       "keys": [],
+       "items": []
+      },
+      null,
+      {
+       "text": "&Insteekfilters",
+       "id": 33241,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "E&xporteren",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&FotoUitwisseling",
+       "id": 25032,
+       "keys": [],
+       "items": []
+      },
+      null,
+      {
+       "text": "&JPEG-optimalisatie...",
+       "id": 33099,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&GIF-optimalisatie...",
+       "id": 33069,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "P&NG-optimalisatie...",
+       "id": 33115,
+       "keys": [],
+       "items": []
+      },
+      null,
+      {
+       "text": "Afbeelding &met hyperlinks...",
+       "id": 33140,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Segmentering...",
+       "id": 33139,
+       "keys": [],
+       "items": []
+      },
+      null,
+      {
+       "text": "&Aangepast penseel...",
+       "id": 33281,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Plaatjespenseel...",
+       "id": 33060,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Foto&lijst...",
+       "id": 33324,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Vorm...",
+       "id": 33116,
+       "keys": [],
+       "items": []
+      },
+      null,
+      {
+       "text": "&Insteekfilters",
+       "id": 33242,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    null,
+    {
+     "text": "&Script",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "Uit&voeren...",
+       "id": 32783,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Be&werken...",
+       "id": 32785,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Stoppen...",
+       "id": 33280,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Uitvoervenster wissen",
+       "id": 33342,
+       "keys": [],
+       "items": []
+      },
+      null,
+      {
+       "text": "Opname s&tarten",
+       "id": 32806,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Opname &pauzeren",
+       "id": 32805,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Opname &annuleren",
+       "id": 32796,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Opname opslaan...",
+       "id": 32804,
+       "keys": [],
+       "items": []
+      },
+      null,
+      {
+       "text": "Ee&n stap",
+       "id": 33468,
+       "keys": [],
+       "items": []
+      },
+      null,
+      {
+       "text": "Recent script",
+       "id": 33303,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    null,
+    {
+     "text": "&Corel Snapfire starten",
+     "id": 33278,
+     "keys": [],
+     "items": []
+    },
+    null,
+    {
+     "text": "&Batchverwerking...",
+     "id": 32795,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "Na&men in batch wijzigen...",
+     "id": 33197,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "Lexar actief geheugensysteem...",
+     "id": 33530,
+     "keys": [],
+     "items": []
+    },
+    null,
+    {
+     "text": "Voorkeu&ren",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&Algemene programmavoorkeuren...",
+       "id": 32786,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Voorkeuren bestandsindelingen...",
+       "id": 32788,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Koppelingen met &bestandsindelingen...",
+       "id": 33019,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "B&estandslocaties...",
+       "id": 33106,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Instellingen voor automatisch opslaan...",
+       "id": 33105,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Voorkeuren &herstellen...",
+       "id": 33284,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "&Werkvlak",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&Laden...",
+       "id": 33102,
+       "keys": [
+        "Alt+Shift+L"
+       ],
+       "items": []
+      },
+      {
+       "text": "&Opslaan...",
+       "id": 33103,
+       "keys": [
+        "Alt+Shift+S"
+       ],
+       "items": []
+      },
+      {
+       "text": "&Verwijderen...",
+       "id": 33104,
+       "keys": [
+        "Alt+Shift+D"
+       ],
+       "items": []
+      },
+      null,
+      {
+       "text": "Recent werkvlak",
+       "id": 33274,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "Kleurbe&heer",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&Kleurbeheer...",
+       "id": 33063,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Kleuren&werkvlak...",
+       "id": 33506,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Monitorkalibratie...",
+       "id": 33524,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    null,
+    {
+     "text": "&Afsluiten",
+     "id": 57665,
+     "keys": [],
+     "items": []
+    }
+   ]
+  },
+  {
+   "text": "Be&werken",
+   "id": 0,
+   "keys": [],
+   "items": [
+    {
+     "text": "&Ongedaan maken",
+     "id": 57643,
+     "keys": [
+      "Alt+Backspace",
+      "Ctrl+Z"
+     ],
+     "items": []
+    },
+    {
+     "text": "Opni&euw",
+     "id": 57644,
+     "keys": [
+      "Alt+Shift+Backspace",
+      "Ctrl+Alt+Z"
+     ],
+     "items": []
+    },
+    {
+     "text": "&Herhalen",
+     "id": 57640,
+     "keys": [
+      "Ctrl+Y"
+     ],
+     "items": []
+    },
+    null,
+    {
+     "text": "&Knippen",
+     "id": 57635,
+     "keys": [
+      "Shift+Del",
+      "Ctrl+X"
+     ],
+     "items": []
+    },
+    {
+     "text": "Kopiëre&n",
+     "id": 57634,
+     "keys": [
+      "Ctrl+C",
+      "Ctrl+Ins"
+     ],
+     "items": []
+    },
+    {
+     "text": "&Samengevoegd kopiëren",
+     "id": 33029,
+     "keys": [
+      "Ctrl+Shift+C"
+     ],
+     "items": []
+    },
+    {
+     "text": "Pl&akken als nieuwe afbeelding",
+     "id": 32998,
+     "keys": [
+      "Ctrl+V",
+      "Shift+Ins"
+     ],
+     "items": []
+    },
+    {
+     "text": "P&lakken als nieuwe laag",
+     "id": 33037,
+     "keys": [
+      "Ctrl+L"
+     ],
+     "items": []
+    },
+    null,
+    {
+     "text": "Plakken als nie&uwe selectie",
+     "id": 32798,
+     "keys": [
+      "Ctrl+E"
+     ],
+     "items": []
+    },
+    {
+     "text": "&Plakken als transparante selectie",
+     "id": 33008,
+     "keys": [
+      "Ctrl+Shift+E"
+     ],
+     "items": []
+    },
+    {
+     "text": "Plakken &in selectie",
+     "id": 32799,
+     "keys": [
+      "Ctrl+Shift+L"
+     ],
+     "items": []
+    },
+    {
+     "text": "Plakken als nieuwe &vectorselectie",
+     "id": 32803,
+     "keys": [
+      "Ctrl+G"
+     ],
+     "items": []
+    },
+    null,
+    {
+     "text": "&Wissen",
+     "id": 57632,
+     "keys": [
+      "Del"
+     ],
+     "items": []
+    },
+    null,
+    {
+     "text": "Kle&mbord leegmaken",
+     "id": 32800,
+     "keys": [],
+     "items": []
+    }
+   ]
+  },
+  {
+   "text": "B&eeld",
+   "id": 0,
+   "keys": [],
+   "items": [
+    {
+     "text": "&Zoomen naar 100%",
+     "id": 32775,
+     "keys": [
+      "Ctrl+Alt+N"
+     ],
+     "items": []
+    },
+    {
+     "text": "&Inzoomen",
+     "id": 33074,
+     "keys": [
+      "Num++"
+     ],
+     "items": []
+    },
+    {
+     "text": "Uitzoo&men",
+     "id": 33078,
+     "keys": [
+      "Num+-"
+     ],
+     "items": []
+    },
+    null,
+    {
+     "text": "&Bewerking op volledig scherm",
+     "id": 32797,
+     "keys": [
+      "Shift+A"
+     ],
+     "items": []
+    },
+    {
+     "text": "&Schermvullend voorbeeld",
+     "id": 33007,
+     "keys": [
+      "Ctrl+Shift+A"
+     ],
+     "items": []
+    },
+    {
+     "text": "V&oorbeeld in webbrowser...",
+     "id": 33111,
+     "keys": [],
+     "items": []
+    },
+    null,
+    {
+     "text": "&Linialen",
+     "id": 33034,
+     "keys": [
+      "Ctrl+Alt+R"
+     ],
+     "items": []
+    },
+    {
+     "text": "&Raster",
+     "id": 32801,
+     "keys": [
+      "Ctrl+Alt+G"
+     ],
+     "items": []
+    },
+    {
+     "text": "&Hulplijnen",
+     "id": 33148,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "Ui&tlijnen op raster",
+     "id": 33146,
+     "keys": [
+      "Ctrl+Shift+G"
+     ],
+     "items": []
+    },
+    {
+     "text": "&Uitlijnen op hulplijnen",
+     "id": 33147,
+     "keys": [
+      "Alt+Shift+G"
+     ],
+     "items": []
+    },
+    {
+     "text": "&Eigenschappen Raster, Hulplijn en Uitlijnen wijzigen...",
+     "id": 33109,
+     "keys": [],
+     "items": []
+    },
+    null,
+    {
+     "text": "&Werkbalken",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&Effecten",
+       "id": 33309,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Foto",
+       "id": 33308,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Script",
+       "id": 32807,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "S&tandaard",
+       "id": 59392,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "St&atus",
+       "id": 59393,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Gereedschappen",
+       "id": 33273,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Web",
+       "id": 33307,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "<Custom Toolbars>",
+       "id": 32774,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "&Paletten",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&Penseelvariantie",
+       "id": 33325,
+       "keys": [
+        "F11"
+       ],
+       "items": []
+      },
+      {
+       "text": "&Histogram",
+       "id": 32802,
+       "keys": [
+        "F7"
+       ],
+       "items": []
+      },
+      {
+       "text": "&Geschiedenis",
+       "id": 32770,
+       "keys": [
+        "F3"
+       ],
+       "items": []
+      },
+      {
+       "text": "&Lagen",
+       "id": 33198,
+       "keys": [
+        "F8"
+       ],
+       "items": []
+      },
+      {
+       "text": "&Studiecentrum",
+       "id": 32809,
+       "keys": [
+        "F10"
+       ],
+       "items": []
+      },
+      {
+       "text": "&Materialen",
+       "id": 33157,
+       "keys": [
+        "F6"
+       ],
+       "items": []
+      },
+      {
+       "text": "Me&nger",
+       "id": 33484,
+       "keys": [
+        "Shift+F6"
+       ],
+       "items": []
+      },
+      {
+       "text": "O&verzicht",
+       "id": 33113,
+       "keys": [
+        "F9"
+       ],
+       "items": []
+      },
+      {
+       "text": "O&rdenen",
+       "id": 15050,
+       "keys": [
+        "Ctrl+B"
+       ],
+       "items": []
+      },
+      {
+       "text": "&Fotolade",
+       "id": 15052,
+       "keys": [
+        "Ctrl+W"
+       ],
+       "items": []
+      },
+      {
+       "text": "S&criptuitvoer",
+       "id": 32778,
+       "keys": [
+        "Shift+F3"
+       ],
+       "items": []
+      },
+      {
+       "text": "&Opties voor gereedschap",
+       "id": 33210,
+       "keys": [
+        "F4"
+       ],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "Modus Ordenen",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&Documentmodus",
+       "id": 25211,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Paletmodus",
+       "id": 25212,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    null,
+    {
+     "text": "&Vergrootglas",
+     "id": 33302,
+     "keys": [
+      "Ctrl+Alt+M"
+     ],
+     "items": []
+    },
+    null,
+    {
+     "text": "&Dokopties...",
+     "id": 33296,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "&Aanpassen...",
+     "id": 32772,
+     "keys": [],
+     "items": []
+    }
+   ]
+  },
+  {
+   "text": "A&fbeelding",
+   "id": 0,
+   "keys": [],
+   "items": [
+    {
+     "text": "&Rechtsom roteren",
+     "id": 33346,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "&Linksom roteren",
+     "id": 33347,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "&Vrij roteren...",
+     "id": 32782,
+     "keys": [
+      "Ctrl+R"
+     ],
+     "items": []
+    },
+    null,
+    {
+     "text": "Formaat wij&zigen...",
+     "id": 32977,
+     "keys": [
+      "Shift+S"
+     ],
+     "items": []
+    },
+    {
+     "text": "D&oekgrootte...",
+     "id": 32978,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "R&anden toevoegen...",
+     "id": 32890,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "Bijsnijden &tot selectie",
+     "id": 32975,
+     "keys": [
+      "Shift+R"
+     ],
+     "items": []
+    },
+    {
+     "text": "Fotoli&jst...",
+     "id": 303,
+     "keys": [],
+     "items": []
+    },
+    null,
+    {
+     "text": "&Spiegelen",
+     "id": 32781,
+     "keys": [
+      "Ctrl+M"
+     ],
+     "items": []
+    },
+    {
+     "text": "O&mdraaien",
+     "id": 32780,
+     "keys": [
+      "Ctrl+I"
+     ],
+     "items": []
+    },
+    null,
+    {
+     "text": "Af&beeldingsgegevens...",
+     "id": 33005,
+     "keys": [
+      "Shift+I"
+     ],
+     "items": []
+    },
+    null,
+    {
+     "text": "&Palet",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&Palet bewerken...",
+       "id": 32846,
+       "keys": [
+        "Shift+P"
+       ],
+       "items": []
+      },
+      {
+       "text": "Palet &laden...",
+       "id": 32847,
+       "keys": [
+        "Shift+O"
+       ],
+       "items": []
+      },
+      {
+       "text": "Palet &opslaan...",
+       "id": 32848,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Transparantie &van palet instellen...",
+       "id": 33065,
+       "keys": [
+        "Ctrl+Shift+V"
+       ],
+       "items": []
+      },
+      {
+       "text": "&Transparantie van palet weergeven",
+       "id": 33066,
+       "keys": [
+        "Shift+V"
+       ],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "Kleur&diepte verminderen",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&2-kleurenpalet...",
+       "id": 32856,
+       "keys": [
+        "Ctrl+Shift+1"
+       ],
+       "items": []
+      },
+      {
+       "text": "&16-kleurenpalet...",
+       "id": 32857,
+       "keys": [
+        "Ctrl+Shift+2"
+       ],
+       "items": []
+      },
+      {
+       "text": "2&56-kleurenpalet...",
+       "id": 32858,
+       "keys": [
+        "Ctrl+Shift+3"
+       ],
+       "items": []
+      },
+      {
+       "text": "&32.000 kleuren (8 bits/kanaal)...",
+       "id": 32859,
+       "keys": [
+        "Ctrl+Shift+4"
+       ],
+       "items": []
+      },
+      {
+       "text": "&64.000 kleuren (8 bits/kanaal)...",
+       "id": 32860,
+       "keys": [
+        "Ctrl+Shift+5"
+       ],
+       "items": []
+      },
+      {
+       "text": "&RGB - 8 bits/kanaal",
+       "id": 37100,
+       "keys": [],
+       "items": []
+      },
+      null,
+      {
+       "text": "&X kleuren (4/8 bits)...",
+       "id": 32861,
+       "keys": [
+        "Ctrl+Shift+6"
+       ],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "Kleurdiepte uitbreide&n",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&16-kleurenpalet",
+       "id": 32862,
+       "keys": [
+        "Ctrl+Shift+8"
+       ],
+       "items": []
+      },
+      {
+       "text": "2&56-kleurenpalet",
+       "id": 32887,
+       "keys": [
+        "Ctrl+Shift+9"
+       ],
+       "items": []
+      },
+      {
+       "text": "RGB - &8 bits/kanaal",
+       "id": 32888,
+       "keys": [
+        "Ctrl+Shift+0"
+       ],
+       "items": []
+      },
+      {
+       "text": "RGB - 1&6 bits/kanaal",
+       "id": 37099,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "&Grijswaarden",
+     "id": 32889,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "Negatie&f",
+     "id": 32843,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "Kle&uren in afbeelding tellen",
+     "id": 33343,
+     "keys": [],
+     "items": []
+    },
+    null,
+    {
+     "text": "Splits&en in kanalen",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "Splitsen in &RGB",
+       "id": 33011,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Splitsen in &HSL",
+       "id": 33046,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Splitsen in CMY&K",
+       "id": 33048,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "Kanalen &combineren",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "Combineren vanuit &RGB...",
+       "id": 33012,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Combineren vanuit &HSL...",
+       "id": 33047,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Combineren vanuit CM&YK...",
+       "id": 33059,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "Alfakanaal verw&ijderen...",
+     "id": 33252,
+     "keys": [],
+     "items": []
+    },
+    null,
+    {
+     "text": "Bere&keningen...",
+     "id": 33010,
+     "keys": [],
+     "items": []
+    },
+    null,
+    {
+     "text": "&Watermerken",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&Watermerk insluiten...",
+       "id": 33086,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Watermerk &lezen...",
+       "id": 33087,
+       "keys": [],
+       "items": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "text": "&Aanpassen",
+   "id": 0,
+   "keys": [],
+   "items": [
+    {
+     "text": "Eénstaps-fotocorrect&ie",
+     "id": 33344,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "Sli&mme fotocorrectie...",
+     "id": 33496,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "Eé&nstaps-grofkorreligheid verwijderen",
+     "id": 33521,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "Gr&ofkorreligheid van digitale camera verwijderen...",
+     "id": 33473,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "K&leurbalans...",
+     "id": 33500,
+     "keys": [],
+     "items": []
+    },
+    null,
+    {
+     "text": "&Kleur",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "K&anaalmenger...",
+       "id": 32866,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Vervagings&correctie...",
+       "id": 32868,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Rood/groen/blauw...",
+       "id": 32852,
+       "keys": [
+        "Shift+U"
+       ],
+       "items": []
+      }
+     ]
+    },
+    null,
+    {
+     "text": "Hel&derheid en contrast",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "Helderheid/&contrast...",
+       "id": 32850,
+       "keys": [
+        "Shift+B"
+       ],
+       "items": []
+      },
+      {
+       "text": "Ve&rhelderen...",
+       "id": 32874,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Cur&ven...",
+       "id": 32885,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Lichtste delen/middentonen/schaduwen...",
+       "id": 32851,
+       "keys": [
+        "Shift+M"
+       ],
+       "items": []
+      },
+      {
+       "text": "Hi&stogram aanpassen...",
+       "id": 32880,
+       "keys": [
+        "Ctrl+Shift+H"
+       ],
+       "items": []
+      },
+      {
+       "text": "Histogram &egaliseren",
+       "id": 32854,
+       "keys": [
+        "Shift+E"
+       ],
+       "items": []
+      },
+      {
+       "text": "Histogram &uitbreiden",
+       "id": 32855,
+       "keys": [
+        "Shift+T"
+       ],
+       "items": []
+      },
+      {
+       "text": "N&iveaus...",
+       "id": 32864,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Drempel...",
+       "id": 32867,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    null,
+    {
+     "text": "Kl&eurtoon en verzadiging",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&Inkleuren...",
+       "id": 32842,
+       "keys": [
+        "Shift+L"
+       ],
+       "items": []
+      },
+      {
+       "text": "&Kleurtoon/verzadiging/helderheid...",
+       "id": 32886,
+       "keys": [
+        "Shift+H"
+       ],
+       "items": []
+      },
+      {
+       "text": "Kl&eurtoonverdeling...",
+       "id": 32863,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    null,
+    {
+     "text": "&Velddiepte...",
+     "id": 33531,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "&Grofkorreligheid toevoegen/verwijderen",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&Grofkorreligheid toevoegen...",
+       "id": 32905,
+       "keys": [],
+       "items": []
+      },
+      null,
+      {
+       "text": "&Automatisch krasjes verwijderen...",
+       "id": 32879,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&De-interliniëring...",
+       "id": 32877,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Verwijdering &JPEG-artefact...",
+       "id": 32875,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Verwijdering moiré-patroon...",
+       "id": 32876,
+       "keys": [],
+       "items": []
+      },
+      null,
+      {
+       "text": "Vle&kken verwijderen",
+       "id": 32906,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Vloeiend met &behoud van rand...",
+       "id": 32872,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Mediaa&nfilter...",
+       "id": 32870,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Peper-en-zoutfilter...",
+       "id": 32884,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Vloeiend met behoud van t&extuur...",
+       "id": 32871,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "Verv&agen",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "Gemi&ddeld...",
+       "id": 32869,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "V&ervagen",
+       "id": 32899,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Meer vervagen",
+       "id": 32900,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Gaussiaanse vervaging...",
+       "id": 32949,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Bewegingsvervaging...",
+       "id": 32911,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Radiaal vervagen...",
+       "id": 33416,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "&Scherpte",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&High-pass verscherpen...",
+       "id": 33499,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Verscher&pen",
+       "id": 32901,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Nog scherper",
+       "id": 32902,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Onscherp masker...",
+       "id": 32923,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "&Zachtheid",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&Zachte focus...",
+       "id": 33170,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Verzachten",
+       "id": 32903,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Nog zachter",
+       "id": 32904,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    null,
+    {
+     "text": "&Huid effenen...",
+     "id": 33543,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "Ac&htergrondlicht...",
+     "id": 33459,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "In&vulflits...",
+     "id": 33457,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "&Rode ogen verwijderen...",
+     "id": 32878,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "Eénsta&ps-paarse uitvloeiingscorrectie",
+     "id": 33497,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "Kleura&fwijking verwijderen...",
+     "id": 33476,
+     "keys": [],
+     "items": []
+    },
+    null,
+    {
+     "text": "&Tonvormige vertekening corrigeren...",
+     "id": 33165,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "&Bolvormige vertekening corrigeren...",
+     "id": 33166,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "Speldenk&ussenvervorming corrigeren...",
+     "id": 33164,
+     "keys": [],
+     "items": []
+    },
+    null
+   ]
+  },
+  {
+   "text": "Effecte&n",
+   "id": 0,
+   "keys": [],
+   "items": [
+    {
+     "text": "Effecten &zoeken...",
+     "id": 32891,
+     "keys": [],
+     "items": []
+    },
+    null,
+    {
+     "text": "&3D-effecten",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "Als &knop...",
+       "id": 32928,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Ciseleren...",
+       "id": 32930,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Gestanst...",
+       "id": 32927,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Slagschadu&w...",
+       "id": 32926,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Afschuining binnen...",
+       "id": 32946,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Afschuining &buiten...",
+       "id": 32947,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "&Kunstzinnige effecten",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&Zwart potlood...",
+       "id": 32932,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Penseelstreken...",
+       "id": 32956,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Houtskool...",
+       "id": 32938,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Kleu&rkrijt...",
+       "id": 32934,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "K&leurpotlood...",
+       "id": 32937,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "P&otlood...",
+       "id": 32968,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "&Artistieke effecten",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "Oude &krant...",
+       "id": 32964,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Ballen en bellen...",
+       "id": 33265,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Chroo&m...",
+       "id": 32939,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Gekleurde randen...",
+       "id": 32967,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Gekleurde &folie...",
+       "id": 32972,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Conto&uren...",
+       "id": 32969,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Emai&l...",
+       "id": 32959,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Opl&ichtende randen...",
+       "id": 32935,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Half&toon...",
+       "id": 33163,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Glan&zende waslaag",
+       "id": 32929,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Vergrootglas...",
+       "id": 33253,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Neonkleuren...",
+       "id": 32936,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Aantal niveaus beperken...",
+       "id": 32844,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Sola&riseren...",
+       "id": 32845,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Topografi&e...",
+       "id": 32957,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "&Vervormingseffecten",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "Kr&ullen...",
+       "id": 32942,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Verplaatsingstoewijzing...",
+       "id": 33415,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "L&ensvervorming...",
+       "id": 33167,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "K&nijpen...",
+       "id": 32916,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Pi&xelvorming...",
+       "id": 32910,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Poolcoördin&aten...",
+       "id": 33162,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Pla&tslaan...",
+       "id": 32917,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Ri&mpeling...",
+       "id": 32914,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Stralen&krans...",
+       "id": 32952,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Spiraa&l...",
+       "id": 32913,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Bolvorm...",
+       "id": 32950,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Golf...",
+       "id": 32915,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Wind...",
+       "id": 32912,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "&Randeffecten",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "Rembrandtiek &licht",
+       "id": 32907,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "A&ccentueren",
+       "id": 32893,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Sterker accentueren",
+       "id": 32894,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Rembrandtiek &donker",
+       "id": 32909,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Alle zoeken",
+       "id": 32895,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Horizontale zoeken",
+       "id": 32896,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Verticale zoeken",
+       "id": 32897,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "High-&pass...",
+       "id": 33498,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "C&ontour overtrekken",
+       "id": 32898,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "Geo&metrische effecten",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&Cirkel...",
+       "id": 32920,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Cilin&der - horizontaal...",
+       "id": 32918,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "C&ilinder - verticaal...",
+       "id": 32919,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Vi&jfhoek...",
+       "id": 32921,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Perspectief - &horizontaal...",
+       "id": 32924,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Perspectief - v&erticaal...",
+       "id": 32925,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Scheeftrekking...",
+       "id": 32922,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "S&ferisch...",
+       "id": 33161,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "&Belichtingseffecten",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&Lampen...",
+       "id": 32966,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Zon...",
+       "id": 32965,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "Afbeel&dingseffecten",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&Verschuiving...",
+       "id": 32955,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Paginakrul...",
+       "id": 32962,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Naadloze herhaling...",
+       "id": 33160,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "&Foto-effecten",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "Tijd&machine...",
+       "id": 33534,
+       "keys": [],
+       "items": []
+      },
+      null,
+      {
+       "text": "&Film en filters...",
+       "id": 33561,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Zwartwitfilm...",
+       "id": 33510,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Infrarode film...",
+       "id": 33511,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Sepiakleuring...",
+       "id": 32963,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "Refle&ctie-effecten",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "W&eerspiegeling...",
+       "id": 32940,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Caleidoscoop...",
+       "id": 32941,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Patroo&n...",
+       "id": 32943,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "R&oterende spiegel...",
+       "id": 32951,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "&Textuureffecten",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&Lamellen...",
+       "id": 32933,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Bosseleren",
+       "id": 32908,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Fijn leer...",
+       "id": 32974,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Bo&nt...",
+       "id": 32970,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Mo&zaïek - antiek...",
+       "id": 32953,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Mozaïek - gla&s...",
+       "id": 32954,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Gepolijste steen...",
+       "id": 32961,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Ruw leer...",
+       "id": 32973,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Zan&dsteen...",
+       "id": 32958,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Sculp&tuur...",
+       "id": 32944,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Zacht &plastic...",
+       "id": 32960,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Str&o...",
+       "id": 32971,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Te&xtuur...",
+       "id": 32945,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Mozaïekstukjes...",
+       "id": 32948,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Weefpatroon...",
+       "id": 32931,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    null,
+    {
+     "text": "&Eigen filter...",
+     "id": 32892,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "&Insteekfilters",
+     "id": 33240,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "&Laatst gebruikt insteekfilter",
+     "id": 33272,
+     "keys": [],
+     "items": []
+    }
+   ]
+  },
+  {
+   "text": "&Lagen",
+   "id": 0,
+   "keys": [],
+   "items": [
+    {
+     "text": "Nieuwe &rasterlaag...",
+     "id": 33088,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "Nieuwe &vectorlaag...",
+     "id": 33089,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "Nieuwe &tekenmateriaallaag...",
+     "id": 33417,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "Nie&uwe lagengroep...",
+     "id": 33169,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "&Nieuwe maskerlaag",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "Alles &verbergen",
+       "id": 33031,
+       "keys": [
+        "Shift+Y"
+       ],
+       "items": []
+      },
+      {
+       "text": "Alles &weergeven",
+       "id": 33032,
+       "keys": [],
+       "items": []
+      },
+      null,
+      {
+       "text": "&Selectie verbergen",
+       "id": 33030,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Sele&ctie weergeven",
+       "id": 33001,
+       "keys": [],
+       "items": []
+      },
+      null,
+      {
+       "text": "Uit af&beelding...",
+       "id": 33000,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "Nieuwe &aanpassingslaag",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&Helderheid/contrast...",
+       "id": 33092,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Kanaalmenger...",
+       "id": 33095,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Kleur&balans...",
+       "id": 33093,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Curven...",
+       "id": 33091,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Kle&urtoon/verzadiging/helderheid...",
+       "id": 33094,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Omkeren...",
+       "id": 33096,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "N&iveaus...",
+       "id": 33090,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Aantal niveaus beperken...",
+       "id": 33098,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Drempel...",
+       "id": 33097,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    null,
+    {
+     "text": "&Dupliceren",
+     "id": 33015,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "Ver&wijderen",
+     "id": 33014,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "&Groepering van lagen opheffen",
+     "id": 33285,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "E&igenschappen...",
+     "id": 33022,
+     "keys": [],
+     "items": []
+    },
+    null,
+    {
+     "text": "S&chikken",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&Vooraan",
+       "id": 33025,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Omhoog verplaatsen",
+       "id": 33028,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "O&mlaag verplaatsen",
+       "id": 33026,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Achteraan",
+       "id": 33027,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "In &groep zetten",
+       "id": 33238,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Uit groep verwijderen",
+       "id": 33239,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "&Beeld",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "Alleen &huidige laag",
+       "id": 33023,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Alle lagen",
+       "id": 33024,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Geen",
+       "id": 33143,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Omkeren",
+       "id": 33142,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Koppelingset &weergeven",
+       "id": 33144,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Koppelingset &verbergen",
+       "id": 33145,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "Samenv&oegen",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&Omlaag samenvoegen",
+       "id": 33236,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Alle lagen samenvoegen",
+       "id": 33016,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Zichtbare &lagen samenvoegen",
+       "id": 33056,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Groep samenvoegen",
+       "id": 33237,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    null,
+    {
+     "text": "Masker/aan&passing omkeren",
+     "id": 33004,
+     "keys": [
+      "Shift+K"
+     ],
+     "items": []
+    },
+    {
+     "text": "Overla&y weergeven",
+     "id": 33311,
+     "keys": [
+      "Ctrl+Alt+V"
+     ],
+     "items": []
+    },
+    {
+     "text": "Ma&sker laden/opslaan",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "Mas&ker laden vanaf schijf...",
+       "id": 33002,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "M&asker laden uit alfakanaal...",
+       "id": 33040,
+       "keys": [],
+       "items": []
+      },
+      null,
+      {
+       "text": "&Masker opslaan op schijf...",
+       "id": 33003,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Ma&sker opslaan in alfakanaal...",
+       "id": 33041,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    null,
+    {
+     "text": "Om&zetten in rasterlaag",
+     "id": 33018,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "Laag ma&ken van achtergrondlaag",
+     "id": 33117,
+     "keys": [],
+     "items": []
+    },
+    null,
+    {
+     "text": "Laag m&et droog tekenmateriaal",
+     "id": 33489,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "Laag &met nat tekenmateriaal",
+     "id": 33492,
+     "keys": [],
+     "items": []
+    },
+    null,
+    {
+     "text": "&Laagkleuren tellen",
+     "id": 32849,
+     "keys": [],
+     "items": []
+    }
+   ]
+  },
+  {
+   "text": "&Objecten",
+   "id": 0,
+   "keys": [],
+   "items": [
+    {
+     "text": "&Uitlijnen",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&Boven",
+       "id": 33123,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Onder",
+       "id": 33118,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Links",
+       "id": 33120,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Rechts",
+       "id": 33119,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Verticaal centreren",
+       "id": 33121,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Horizontaal centreren",
+       "id": 33122,
+       "keys": [],
+       "items": []
+      },
+      null,
+      {
+       "text": "&Centreren op doek",
+       "id": 33138,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Horizontaal centreren op &doek",
+       "id": 33134,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Verticaal c&entreren op doek",
+       "id": 33136,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "&Verdelen",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "Verticaal &boven",
+       "id": 33132,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Verticaal gecentreerd",
+       "id": 33124,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Verticaal o&nder",
+       "id": 33126,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Horizontaal &links",
+       "id": 33125,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Horizontaal midden",
+       "id": 33128,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Horizontaal &rechts",
+       "id": 33127,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Horizontaal &gelijkmatig verdelen",
+       "id": 33135,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Verticaal gelijk&matig verdelen",
+       "id": 33137,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "Even groot &maken",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "Hori&zontaal",
+       "id": 33129,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "V&erticaal",
+       "id": 33130,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Beide",
+       "id": 33131,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "Schi&kken",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&Vooraan",
+       "id": 33081,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Omhoog verplaatsen",
+       "id": 33082,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "O&mlaag verplaatsen",
+       "id": 33083,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Achteraan",
+       "id": 33084,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    null,
+    {
+     "text": "G&roeperen",
+     "id": 33108,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "Groep op&heffen",
+     "id": 33110,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "&Eigenschappen...",
+     "id": 33254,
+     "keys": [],
+     "items": []
+    },
+    null,
+    {
+     "text": "Tekst inp&assen in pad",
+     "id": 33085,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "O&bject loskoppelen van pad",
+     "id": 6035,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "Tekst omzetten in &curven",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "Als één &vorm",
+       "id": 33100,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Als afzonderlijke &lettervormen",
+       "id": 33101,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "Om&zetten in pad",
+     "id": 33448,
+     "keys": [],
+     "items": []
+    },
+    null,
+    {
+     "text": "Be&werken",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&Knippen",
+       "id": 6000,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Ko&piëren",
+       "id": 6001,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Pl&akken",
+       "id": 6002,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Ver&wijderen",
+       "id": 6003,
+       "keys": [],
+       "items": []
+      },
+      null,
+      {
+       "text": "A&lles selecteren",
+       "id": 6004,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Niets selecteren",
+       "id": 6005,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Selectie omkeren",
+       "id": 6006,
+       "keys": [],
+       "items": []
+      },
+      null,
+      {
+       "text": "&Hoekpunt",
+       "id": 6007,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Sa&menvoegen",
+       "id": 6008,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Ver&breken",
+       "id": 6009,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Sluit&en",
+       "id": 6010,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Contou&r omkeren",
+       "id": 6011,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Pad &omkeren",
+       "id": 6012,
+       "keys": [],
+       "items": []
+      },
+      null,
+      {
+       "text": "Dupliceren en &verschuiven",
+       "id": 6013,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Dupliceren",
+       "id": 6014,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "&Tekenpunttype",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&Asymmetrisch",
+       "id": 6015,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Symmetrisch",
+       "id": 6016,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Vectorhoek",
+       "id": 6017,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Vloeiend/raa&klijn",
+       "id": 6018,
+       "keys": [],
+       "items": []
+      },
+      null,
+      {
+       "text": "O&mzetten in lijn",
+       "id": 6019,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Lijn vóór",
+       "id": 6020,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Lijn &na",
+       "id": 6021,
+       "keys": [],
+       "items": []
+      },
+      null,
+      {
+       "text": "C&urve vóór",
+       "id": 6022,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Cu&rve na",
+       "id": 6023,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "&Geselecteerde tekenpunten transformeren",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "O&mdraaien",
+       "id": 6024,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Spiegelen",
+       "id": 6025,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Roteren",
+       "id": 6026,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&X scheeftrekken",
+       "id": 6027,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Y scheeftrekken",
+       "id": 6028,
+       "keys": [],
+       "items": []
+      },
+      null,
+      {
+       "text": "&Inkrimpen",
+       "id": 6029,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Uitbreiden",
+       "id": 6030,
+       "keys": [],
+       "items": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "text": "&Selecties",
+   "id": 0,
+   "keys": [],
+   "items": [
+    {
+     "text": "A&lles selecteren",
+     "id": 32988,
+     "keys": [
+      "Ctrl+A"
+     ],
+     "items": []
+    },
+    {
+     "text": "&Niets selecteren",
+     "id": 32994,
+     "keys": [
+      "Ctrl+D"
+     ],
+     "items": []
+    },
+    {
+     "text": "Vanuit &masker",
+     "id": 33013,
+     "keys": [
+      "Ctrl+Shift+S"
+     ],
+     "items": []
+    },
+    {
+     "text": "Van&uit vectorobject",
+     "id": 32769,
+     "keys": [
+      "Ctrl+Shift+B"
+     ],
+     "items": []
+    },
+    null,
+    {
+     "text": "&Omkeren",
+     "id": 32989,
+     "keys": [
+      "Ctrl+Shift+I"
+     ],
+     "items": []
+    },
+    {
+     "text": "&Wijzigen",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "&Uitbreiden...",
+       "id": 33051,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Inkrimpen...",
+       "id": 33052,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Alles met dezelfde kleur selecteren...",
+       "id": 33044,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Kleurbereik selecteren...",
+       "id": 33259,
+       "keys": [],
+       "items": []
+      },
+      null,
+      {
+       "text": "Doe&zelen...",
+       "id": 32995,
+       "keys": [
+        "Ctrl+H"
+       ],
+       "items": []
+      },
+      {
+       "text": "&Binnen/buiten doezelen...",
+       "id": 33171,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Doezelen opheffen...",
+       "id": 33262,
+       "keys": [],
+       "items": []
+      },
+      null,
+      {
+       "text": "&Op vorm gebaseerde anti-alias...",
+       "id": 33256,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Anti-alias &herstellen...",
+       "id": 33255,
+       "keys": [],
+       "items": []
+      },
+      null,
+      {
+       "text": "&Stippen en gaten verwijderen...",
+       "id": 33270,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&Vloeiend...",
+       "id": 33269,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Selectie&randen selecteren...",
+       "id": 33260,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    {
+     "text": "Af&knippen tot doek",
+     "id": 33411,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "&Selectiekader verbergen",
+     "id": 33050,
+     "keys": [
+      "Ctrl+Shift+M"
+     ],
+     "items": []
+    },
+    null,
+    {
+     "text": "S&electie laden/opslaan",
+     "id": 0,
+     "keys": [],
+     "items": [
+      {
+       "text": "S&electie laden vanaf schijf...",
+       "id": 32990,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Selectie laden &uit alfakanaal...",
+       "id": 33038,
+       "keys": [],
+       "items": []
+      },
+      null,
+      {
+       "text": "&Selectie opslaan op schijf...",
+       "id": 32991,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Selectie &opslaan in alfakanaal...",
+       "id": 33039,
+       "keys": [],
+       "items": []
+      }
+     ]
+    },
+    null,
+    {
+     "text": "Selectie &bewerken",
+     "id": 33268,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "L&aag maken van selectie",
+     "id": 33033,
+     "keys": [
+      "Ctrl+Shift+P"
+     ],
+     "items": []
+    },
+    {
+     "text": "&Zwevend",
+     "id": 32996,
+     "keys": [
+      "Ctrl+F"
+     ],
+     "items": []
+    },
+    {
+     "text": "Niet-zweven&d",
+     "id": 32997,
+     "keys": [
+      "Ctrl+Shift+F"
+     ],
+     "items": []
+    }
+   ]
+  },
+  {
+   "text": "&Venster",
+   "id": 0,
+   "keys": [],
+   "items": [
+    {
+     "text": "Nieuw &venster",
+     "id": 57648,
+     "keys": [
+      "Shift+W"
+     ],
+     "items": []
+    },
+    null,
+    {
+     "text": "&Documenten met tabs",
+     "id": 33486,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "&Trapsgewijs",
+     "id": 57650,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "&Onder elkaar",
+     "id": 57651,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "&Naast elkaar",
+     "id": 57652,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "Alles &sluiten",
+     "id": 32979,
+     "keys": [],
+     "items": []
+    },
+    null,
+    {
+     "text": "D&upliceren",
+     "id": 32980,
+     "keys": [
+      "Shift+D"
+     ],
+     "items": []
+    },
+    {
+     "text": "Aanpassen aan af&beelding",
+     "id": 32981,
+     "keys": [
+      "Ctrl+W"
+     ],
+     "items": []
+    },
+    {
+     "text": "Aan&passen aan venster",
+     "id": 33232,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "S&chermvullend maken",
+     "id": 33282,
+     "keys": [],
+     "items": []
+    }
+   ]
+  },
+  {
+   "text": "&Help",
+   "id": 0,
+   "keys": [],
+   "items": [
+    {
+     "text": "&Help-onderwerpen...",
+     "id": 57666,
+     "keys": [],
+     "items": []
+    },
+    null,
+    {
+     "text": "&Studiecentrum",
+     "id": 32809,
+     "keys": [
+      "F10"
+     ],
+     "items": []
+    },
+    {
+     "text": "&Toetsenbordlayout...",
+     "id": 32808,
+     "keys": [],
+     "items": []
+    },
+    null,
+    {
+     "text": "Contactin&formatie...",
+     "id": 33477,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "&On line ondersteuning en bronnen...",
+     "id": 33058,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "&Gratis inhoud downloaden...",
+     "id": 33528,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "Berichtinstellingen...",
+     "id": 33567,
+     "keys": [],
+     "items": []
+    },
+    {
+     "text": "Op updates &controleren...",
+     "id": 33061,
+     "keys": [],
+     "items": []
+    },
+    null,
+    {
+     "text": "&Info...",
+     "id": 57664,
+     "keys": [],
+     "items": []
+    }
+   ]
+  }
+ ],
+ "tool_keys": {
+  "0xd081": [
+   "C"
+  ],
+  "0xd040": [
+   "R"
+  ],
+  "0xd0a2": [
+   "J"
+  ],
+  "0xd103": [
+   "Q"
+  ],
+  "0xd0b0": [
+   "X"
+  ],
+  "0xd030": [
+   "E"
+  ],
+  "0xd0d1": [
+   "F"
+  ],
+  "0xd0a1": [
+   "L"
+  ],
+  "0xd012": [
+   "M"
+  ],
+  "0xd091": [
+   "B"
+  ],
+  "0xd001": [
+   "A"
+  ],
+  "0xd110": [
+   "V"
+  ],
+  "0xd0e0": [
+   "I"
+  ],
+  "0xd101": [
+   "P"
+  ],
+  "0xd053": [
+   "D"
+  ],
+  "0xd102": [
+   "G"
+  ],
+  "0xd021": [
+   "S"
+  ],
+  "0xd104": [
+   "H"
+  ],
+  "0xd0f0": [
+   "T"
+  ],
+  "0xd054": [
+   "O"
+  ],
+  "0xd002": [
+   "Z"
+  ],
+  "0xd011": [
+   "K"
+  ]
+ }
+}

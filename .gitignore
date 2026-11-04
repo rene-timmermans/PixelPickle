@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+*.tmp
+/build/
+/pkg/
+/src/
+*.pkg.tar.zst
+dist/

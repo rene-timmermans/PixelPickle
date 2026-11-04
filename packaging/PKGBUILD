@@ -1,0 +1,26 @@
+# Pakketbeschrijving voor Pigment. Bouwen: in deze map  makepkg  (of via ../tools/build_package.sh)
+pkgname=pigment
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Fotobewerker voor Linux met de vertrouwde indeling van Paint Shop Pro XI"
+arch=('any')
+url="https://example.invalid/pigment"
+license=('custom')
+depends=('python' 'pyside6' 'python-numpy' 'python-pillow')
+optdepends=('noto-fonts: standaard lettertype voor tekst'
+            'ttf-dejavu: extra lettertypen')
+source=("pigment-${pkgver}.tar.gz")
+sha256sums=('SKIP')
+
+package() {
+    cd "${srcdir}/pigment-${pkgver}"
+    install -d "${pkgdir}/usr/share/pigment"
+    cp -r pigment "${pkgdir}/usr/share/pigment/"
+    find "${pkgdir}/usr/share/pigment" -name '__pycache__' -prune -exec rm -rf {} +
+    install -Dm755 packaging/pigment-launcher.sh "${pkgdir}/usr/bin/pigment"
+    install -Dm644 packaging/pigment.desktop "${pkgdir}/usr/share/applications/pigment.desktop"
+    for s in 16 32 48 64 128 256; do
+        install -Dm644 "icons/pigment-${s}.png" "${pkgdir}/usr/share/icons/hicolor/${s}x${s}/apps/pigment.png"
+    done
+    install -Dm644 README.md "${pkgdir}/usr/share/doc/pigment/README.md"
+}
