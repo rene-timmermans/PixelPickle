@@ -113,9 +113,9 @@ def save_ora(doc: Document, path: str):
             el.set("visibility", "visible" if l.visible else "hidden")
             el.set("composite-op", BLEND_MODES[l.mode][2])
             if l.lock_alpha:
-                el.set("pigment-lock-alpha", "1")
+                el.set("brushwork-lock-alpha", "1")
             if l.link_set:
-                el.set("pigment-link-set", str(l.link_set))
+                el.set("brushwork-link-set", str(l.link_set))
 
         def emit(parent, group):
             for l in reversed(doc.children(group)):  # OpenRaster: bovenste eerst
@@ -123,7 +123,7 @@ def save_ora(doc: Document, path: str):
                     st = ET.SubElement(parent, "stack")
                     common(st, l)
                     if l.collapsed:
-                        st.set("pigment-collapsed", "1")
+                        st.set("brushwork-collapsed", "1")
                     emit(st, l)
                     continue
                 src = f"data/layer{counter[0]}.png"
@@ -131,9 +131,9 @@ def save_ora(doc: Document, path: str):
                 el = ET.SubElement(parent, "layer", src=src, x="0", y="0")
                 common(el, l)
                 if l.kind == "mask":
-                    el.set("pigment-mask", "1")
+                    el.set("brushwork-mask", "1")
                 if l.adjust is not None:
-                    el.set("pigment-adjust", json.dumps([l.adjust[0], l.adjust[1]]))
+                    el.set("brushwork-adjust", json.dumps([l.adjust[0], l.adjust[1]]))
                 z.writestr(src, _png_bytes(l.image), compress_type=zipfile.ZIP_STORED)
         emit(ET.SubElement(root, "stack"), None)
         z.writestr("stack.xml", ET.tostring(root, encoding="utf-8", xml_declaration=True),
@@ -150,6 +150,13 @@ def load_ora(path: str) -> Document:
     ops_by_name = {m[2]: i for i, m in enumerate(BLEND_MODES)}
     with zipfile.ZipFile(path) as z:
         root = ET.fromstring(z.read("stack.xml"))
+        # Bestanden uit versie 0.1.x gebruikten de oude naam (Pigment) in eigen attributen en mengmodi
+        for el in root.iter():
+            for k in [k for k in el.attrib if k.startswith("pigment-")]:
+                el.attrib["brushwork-" + k[len("pigment-"):]] = el.attrib.pop(k)
+            op = el.get("composite-op", "")
+            if op.startswith("pigment:"):
+                el.set("composite-op", "brushwork:" + op[len("pigment:"):])
         w, h = int(root.get("w")), int(root.get("h"))
         doc = Document(w, h, None)
         layers = []  # van boven naar onder, zoals in het bestand
@@ -158,8 +165,8 @@ def load_ora(path: str) -> Document:
             lay.opacity = float(el.get("opacity", 1))
             lay.visible = el.get("visibility", "visible") != "hidden"
             lay.mode = ops_by_name.get(el.get("composite-op", "svg:src-over"), 0)
-            lay.lock_alpha = el.get("pigment-lock-alpha") == "1"
-            lay.link_set = int(el.get("pigment-link-set", 0))
+            lay.lock_alpha = el.get("brushwork-lock-alpha") == "1"
+            lay.link_set = int(el.get("brushwork-link-set", 0))
 
         def walk(stack, group, dx=0, dy=0):
             for el in stack:
@@ -167,7 +174,7 @@ def load_ora(path: str) -> Document:
                     g = Layer(el.get("name", "Groep"), new_image(w, h))
                     g.kind = "group"
                     g.group = group
-                    g.collapsed = el.get("pigment-collapsed") == "1"
+                    g.collapsed = el.get("brushwork-collapsed") == "1"
                     props(el, g)
                     layers.append(g)
                     walk(el, g, dx + int(float(el.get("x", 0))), dy + int(float(el.get("y", 0))))
@@ -181,10 +188,10 @@ def load_ora(path: str) -> Document:
                     lay = Layer(el.get("name", "Laag"), img)
                     props(el, lay)
                     lay.group = group
-                    if el.get("pigment-mask") == "1":
+                    if el.get("brushwork-mask") == "1":
                         lay.kind = "mask"
-                    if el.get("pigment-adjust"):
-                        cid, prm = json.loads(el.get("pigment-adjust"))
+                    if el.get("brushwork-adjust"):
+                        cid, prm = json.loads(el.get("brushwork-adjust"))
                         lay.adjust = (cid, {k: (tuple(v) if isinstance(v, list) and len(v) == 3 and not isinstance(v[0], list) else v)
                                             for k, v in prm.items()})
                     layers.append(lay)

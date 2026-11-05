@@ -1,4 +1,4 @@
-# Pigment
+# Brushwork
 
 Fotobewerker voor Linux met de vertrouwde indeling en sneltoetsen van Paint Shop Pro XI:
 dezelfde menu's, gereedschapsbalk met uitklapgroepen, optiebalk, paletten (Materialen, Lagen) en
@@ -7,13 +7,13 @@ documenten met tabs.
 ## Installeren (Arch, SteamOS, Manjaro, EndeavourOS)
 
 ```
-sudo pacman -U pigment-0.1.1-1-any.pkg.tar.zst
+sudo pacman -U brushwork-0.1.1-1-any.pkg.tar.zst
 ```
 
 pacman installeert automatisch de benodigde pakketten: `python`, `pyside6`, `python-numpy` en
-`python-pillow`. Daarna staat Pigment in het menu (Grafisch) of start je het met `pigment`.
+`python-pillow`. Daarna staat Brushwork in het menu (Grafisch) of start je het met `brushwork`.
 
-Verwijderen: `sudo pacman -R pigment`
+Verwijderen: `sudo pacman -R brushwork`
 
 ## Wat het kan
 
@@ -29,11 +29,11 @@ Verwijderen: `sudo pacman -R pigment`
 
 ```
 python3 -m venv .venv && .venv/bin/pip install PySide6 numpy Pillow
-./pigment.sh                                           # starten vanuit de broncode
+./brushwork.sh                                           # starten vanuit de broncode
 QT_QPA_PLATFORM=offscreen .venv/bin/python tests/smoke.py   # tests
 tools/build_package.sh                                 # pacman pakket in dist/
 ```
 
 ## Licentie
 
-Pigment is vrije software onder de [GNU General Public License v3.0 of later](LICENSE).
+Brushwork is vrije software onder de [GNU General Public License v3.0 of later](LICENSE).

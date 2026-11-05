@@ -53,7 +53,7 @@ def _font(style, px_per_pt):
 
 
 def _runs(t):
-    """Opmaakdelen: [(stijl, rand, vulling, tekst)]. Pigment tekst heeft één stijl; PSP tekst kan er meer hebben."""
+    """Opmaakdelen: [(stijl, rand, vulling, tekst)]. Brushwork tekst heeft één stijl; PSP tekst kan er meer hebben."""
     if t.get("runs"):
         return t["runs"]
     return [(t, t.get("stroke"), t.get("fill"), t["text"])]

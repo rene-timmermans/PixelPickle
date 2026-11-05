@@ -14,16 +14,16 @@ BLEND_MODES = [
     ("Donkerder", CM.CompositionMode_Darken, "svg:darken"),
     ("Lichter", CM.CompositionMode_Lighten, "svg:lighten"),
     ("Kleurtoon", None, "svg:hue"),
-    ("Kleurtoon (oud)", None, "pigment:hue-legacy"),
+    ("Kleurtoon (oud)", None, "brushwork:hue-legacy"),
     ("Verzadiging", None, "svg:saturation"),
-    ("Verzadiging (oud)", None, "pigment:saturation-legacy"),
+    ("Verzadiging (oud)", None, "brushwork:saturation-legacy"),
     ("Kleur", None, "svg:color"),
-    ("Kleur (oud)", None, "pigment:color-legacy"),
+    ("Kleur (oud)", None, "brushwork:color-legacy"),
     ("Luminantie", None, "svg:luminosity"),
-    ("Luminantie (oud)", None, "pigment:luminosity-legacy"),
+    ("Luminantie (oud)", None, "brushwork:luminosity-legacy"),
     ("Vermenigvuldigen", CM.CompositionMode_Multiply, "svg:multiply"),
     ("Scherm", CM.CompositionMode_Screen, "svg:screen"),
-    ("Oplossen", None, "pigment:dissolve"),
+    ("Oplossen", None, "brushwork:dissolve"),
     ("Bedekken", CM.CompositionMode_Overlay, "svg:overlay"),
     ("Hard licht", CM.CompositionMode_HardLight, "svg:hard-light"),
     ("Zacht licht", CM.CompositionMode_SoftLight, "svg:soft-light"),
@@ -116,7 +116,7 @@ def blend_onto(dst: QImage, src: QImage, mode: int, opacity=1.0, src_rect: QRect
     s = ops.qimage_to_rgba(src.copy(src_rect)).astype(np.float32) / 255
     ab, as_ = b[..., 3], s[..., 3] * opacity
     cb, cs = b[..., :3], s[..., :3]
-    if key == "pigment:dissolve":
+    if key == "brushwork:dissolve":
         noise = _dissolve_noise(as_.shape[0], as_.shape[1], origin.x(), origin.y())
         as_ = (noise < as_).astype(np.float32)
         B = cs

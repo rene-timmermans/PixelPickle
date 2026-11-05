@@ -137,7 +137,7 @@ class Tool:
 
 class PlaceholderTool(Tool):
     available = False
-    tip = "Dit gereedschap volgt in een volgende versie van Pigment."
+    tip = "Dit gereedschap volgt in een volgende versie van Brushwork."
 
     def __init__(self, main, cid, glyph):
         super().__init__(main)

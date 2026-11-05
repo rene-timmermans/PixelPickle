@@ -2,7 +2,7 @@ import sys, glob, collections, struct, os
 sys.path.insert(0, "/home/deck/Documenten/Claude/pspx")
 from PySide6.QtWidgets import QApplication
 app = QApplication(sys.argv)
-from pigment import psp
+from brushwork import psp
 base = "/home/deck/.var/app/com.usebottles.bottles/data/bottles/bottles/pspxi/drive_c/Program Files/Corel/Corel Paint Shop Pro Photo XI/"
 files = [f for f in glob.glob(glob.escape(base) + "**/*", recursive=True) if f.lower().endswith((".pspimage",".psptube",".pspframe",".pspmask",".tub",".msk",".psp"))]
 ok, fail, kinds = collections.Counter(), [], collections.Counter()

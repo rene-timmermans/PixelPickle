@@ -1,4 +1,4 @@
-"""PSP voorinstellingen (.PspScript) lezen zonder code uit te voeren, en koppelen aan Pigment.
+"""PSP voorinstellingen (.PspScript) lezen zonder code uit te voeren, en koppelen aan Brushwork.
 
 Een PSP voorinstelling heet  Preset_<Opdracht>_<Naam>.PspScript  en bevat een functie die een
 dictionary teruggeeft. Die lezen we met 'ast'; App.Constants.X.Y wordt de tekst "Y"."""
@@ -14,7 +14,7 @@ PSP_DIRS = [
                        "Documents/Mijn PSP-bestanden/Voorinstellingen"),
 ]
 
-# PSP opdrachtnaam -> Pigment ID (menu-opdracht of gereedschap)
+# PSP opdrachtnaam -> Brushwork ID (menu-opdracht of gereedschap)
 KIND_TO_CID = {
     "AddNoise": 0x8089, "AgedNewspaper": 0x80c4, "Airbrush": 0xd092, "AutoSmallScratchRemoval": 0x806f,
     "BackgroundEraser": 0xd0c0, "Backlighting": 0x82b3, "BallsAndBubbles": 0x81f1, "BarrelCorrection": 0x818d,
@@ -61,7 +61,7 @@ PSP_BLEND = ["Normal", "Darken", "Lighten", "Hue", "HueLegacy", "Saturation", "S
              "HardLight", "SoftLight", "Difference", "Dodge", "Burn", "Exclusion", "PaintBehind"]
 PSP_MATCH = ["None", "RGBValue", "Color", "Brightness", "Perceptual", "Traditional", "AllOpaque", "Opacity"]
 
-# PSP naam -> Pigment optie voor gereedschappen (penselen e.d.)
+# PSP naam -> Brushwork optie voor gereedschappen (penselen e.d.)
 TOOL_KEYS = {"size": "size", "hardness": "hardness", "step": "step", "density": "density",
              "thickness": "thickness", "rotation": "rotation", "opacity": "opacity", "tolerance": "tolerance",
              "feather": "feather", "antialias": "antialias", "samplemerged": "sample_merged",
@@ -119,7 +119,7 @@ def parse(path):
 
 
 def scan(dirs=None):
-    """{cid: [(naam, platte dict), ...]} voor alle PSP voorinstellingen die bij Pigment horen."""
+    """{cid: [(naam, platte dict), ...]} voor alle PSP voorinstellingen die bij Brushwork horen."""
     out = {}
     for d in dirs or PSP_DIRS:
         for path in sorted(glob.glob(os.path.join(glob.escape(d), "Preset_*.PspScript"))):

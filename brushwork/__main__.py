@@ -5,8 +5,8 @@ from PySide6.QtWidgets import QApplication
 
 def main():
     app = QApplication(sys.argv)
-    app.setApplicationName("Pigment")
-    app.setDesktopFileName("pigment")
+    app.setApplicationName("Brushwork")
+    app.setDesktopFileName("brushwork")
     app.setStyle("Fusion")
     from .mainwindow import MainWindow
     w = MainWindow()

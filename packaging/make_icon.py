@@ -1,4 +1,4 @@
-"""Tekent het Pigment icoon (penseel op een palet) als PNG in meerdere formaten."""
+"""Tekent het Brushwork icoon (penseel op een palet) als PNG in meerdere formaten."""
 import sys
 from PySide6.QtCore import QPointF, QRectF, Qt
 from PySide6.QtGui import QBrush, QColor, QGuiApplication, QImage, QLinearGradient, QPainter, QPainterPath, QPen
@@ -44,4 +44,4 @@ for size in (16, 32, 48, 64, 128, 256):
     p.drawPath(tip)
     p.restore()
     p.end()
-    img.save(f"{out}/pigment-{size}.png")
+    img.save(f"{out}/brushwork-{size}.png")

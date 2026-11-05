@@ -20,7 +20,7 @@ B_VECTOR_EXT, B_SHAPE, B_PAINTSTYLE, B_LINESTYLE = 13, 14, 15, 19
 
 
 
-# PSP mengmodus -> index in pigment.document.BLEND_MODES
+# PSP mengmodus -> index in brushwork.document.BLEND_MODES
 PSP_BLEND = {0: 0, 1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 11, 8: 12, 9: 13, 10: 14, 11: 15, 12: 16,
              13: 17, 14: 18, 15: 19, 16: 20, 17: 3, 18: 5, 19: 7, 20: 9}
 LT_RASTER, LT_FLOATING, LT_VECTOR, LT_ADJUST, LT_GROUP, LT_MASK, LT_ARTMEDIA = 1, 2, 3, 4, 5, 6, 7
@@ -536,7 +536,7 @@ _LAYER_TAIL = bytes.fromhex(
     "01000000000000000020030000e8030000000000000000000020030000e8030000ff00010000000000000000000000000000"
     "000000000000000000000000000000000000000000000000000000ffff0000ffff0000ffff0000ffff0000ffff0000ffff00"
     "00ffff0000ffff0000ffff0000ffff00ffff4000")
-PIGMENT_TO_PSP_BLEND = {v: k for k, v in PSP_BLEND.items()}
+BRUSHWORK_TO_PSP_BLEND = {v: k for k, v in PSP_BLEND.items()}
 
 
 def _block(bid, body: bytes) -> bytes:
@@ -627,7 +627,7 @@ def save(doc, path):
 
     def emit(group):
         for l in doc.children(group):
-            blend = PIGMENT_TO_PSP_BLEND.get(l.mode, 0)
+            blend = BRUSHWORK_TO_PSP_BLEND.get(l.mode, 0)
             common = (l.opacity, blend, l.visible, l.lock_alpha, l.link_set, l.highlight)
             if l.kind == "group":
                 n = len(doc.subtree(l)) - 1

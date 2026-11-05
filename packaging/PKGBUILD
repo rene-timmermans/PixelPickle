@@ -1,26 +1,26 @@
-# Pakketbeschrijving voor Pigment. Bouwen: in deze map  makepkg  (of via ../tools/build_package.sh)
-pkgname=pigment
+# Pakketbeschrijving voor Brushwork. Bouwen: in deze map  makepkg  (of via ../tools/build_package.sh)
+pkgname=brushwork
 pkgver=0.1.1
 pkgrel=1
 pkgdesc="Fotobewerker voor Linux met de vertrouwde indeling van Paint Shop Pro XI"
 arch=('any')
-url="https://example.invalid/pigment"
+url="https://github.com/rene-timmermans/brushwork"
 license=('GPL-3.0-or-later')
 depends=('python' 'pyside6' 'python-numpy' 'python-pillow')
 optdepends=('noto-fonts: standaard lettertype voor tekst'
             'ttf-dejavu: extra lettertypen')
-source=("pigment-${pkgver}.tar.gz")
+source=("brushwork-${pkgver}.tar.gz")
 sha256sums=('SKIP')
 
 package() {
-    cd "${srcdir}/pigment-${pkgver}"
-    install -d "${pkgdir}/usr/share/pigment"
-    cp -r pigment "${pkgdir}/usr/share/pigment/"
-    find "${pkgdir}/usr/share/pigment" -name '__pycache__' -prune -exec rm -rf {} +
-    install -Dm755 packaging/pigment-launcher.sh "${pkgdir}/usr/bin/pigment"
-    install -Dm644 packaging/pigment.desktop "${pkgdir}/usr/share/applications/pigment.desktop"
+    cd "${srcdir}/brushwork-${pkgver}"
+    install -d "${pkgdir}/usr/share/brushwork"
+    cp -r brushwork "${pkgdir}/usr/share/brushwork/"
+    find "${pkgdir}/usr/share/brushwork" -name '__pycache__' -prune -exec rm -rf {} +
+    install -Dm755 packaging/brushwork-launcher.sh "${pkgdir}/usr/bin/brushwork"
+    install -Dm644 packaging/brushwork.desktop "${pkgdir}/usr/share/applications/brushwork.desktop"
     for s in 16 32 48 64 128 256; do
-        install -Dm644 "icons/pigment-${s}.png" "${pkgdir}/usr/share/icons/hicolor/${s}x${s}/apps/pigment.png"
+        install -Dm644 "icons/brushwork-${s}.png" "${pkgdir}/usr/share/icons/hicolor/${s}x${s}/apps/brushwork.png"
     done
-    install -Dm644 README.md "${pkgdir}/usr/share/doc/pigment/README.md"
+    install -Dm644 README.md "${pkgdir}/usr/share/doc/brushwork/README.md"
 }
