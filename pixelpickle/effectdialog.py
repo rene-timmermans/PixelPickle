@@ -33,6 +33,34 @@ def checker_pixmap(img: QImage, size=PREVIEW):
     return pm
 
 
+class PreviewPane(QLabel):
+    """Voorbeeldvlak: slepen verschuift, muiswiel zoomt (beide vlakken bewegen samen)."""
+
+    def __init__(self, dlg):
+        super().__init__()
+        self.dlg = dlg
+        self.setFixedSize(PREVIEW)
+        self.setCursor(Qt.CursorShape.OpenHandCursor)
+        self._last = None
+
+    def mousePressEvent(self, e):
+        self._last = e.position()
+        self.setCursor(Qt.CursorShape.ClosedHandCursor)
+
+    def mouseMoveEvent(self, e):
+        if self._last is not None:
+            d = e.position() - self._last
+            self._last = e.position()
+            self.dlg.pan(d.x(), d.y())
+
+    def mouseReleaseEvent(self, e):
+        self._last = None
+        self.setCursor(Qt.CursorShape.OpenHandCursor)
+
+    def wheelEvent(self, e):
+        self.dlg.set_zoom(self.dlg.zoom * (1.25 if e.angleDelta().y() > 0 else 0.8))
+
+
 class CurveWidget(QWidget):
     changed = Signal()
 
@@ -153,11 +181,15 @@ class EffectDialog(QDialog):
             self.rect = doc.rect()
         else:
             src = self.orig
-        region = src.copy(self.rect)
-        small = region.scaled(PREVIEW, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-        self.prev_scale = small.width() / max(1, region.width())
-        self.small_rgba = ops.qimage_to_rgba(small)
-        self.small_img = small
+        # bron op ware grootte; het voorbeeld toont een zoombaar, verschuifbaar uitsnede (zoals PSP)
+        self.region = src.copy(self.rect)
+        self._scaled = {}
+        alpha = ops.qimage_to_rgba(self.region)[..., 3] > 0
+        bb = ops.mask_bbox(alpha)
+        if bb.isEmpty():
+            bb = QRect(0, 0, self.region.width(), self.region.height())
+        self.cx, self.cy = bb.center().x() + 0.5, bb.center().y() + 0.5  # begin bij de inhoud
+        self.zoom = 1.0
 
         v = QVBoxLayout(self)
         head = QHBoxLayout()
@@ -172,18 +204,43 @@ class EffectDialog(QDialog):
         head.addWidget(self.on_image)
         v.addLayout(head)
         self.pv = QWidget()
-        pv = QHBoxLayout(self.pv)
+        pvv = QVBoxLayout(self.pv)
+        pvv.setContentsMargins(0, 0, 0, 0)
+        pv = QHBoxLayout()
         for title, attr in (("Vóór:", "before"), ("Na:", "after")):
             col = QVBoxLayout()
             col.addWidget(QLabel(title))
-            lbl = QLabel()
-            lbl.setFixedSize(PREVIEW)
+            lbl = PreviewPane(self)
             setattr(self, attr, lbl)
             col.addWidget(lbl)
             pv.addLayout(col)
+        pvv.addLayout(pv)
+        zr = QHBoxLayout()
+        zr.addStretch()
+        zr.addWidget(QLabel("Zoom:"))
+        self.zoom_spin = QSpinBox()
+        self.zoom_spin.setRange(1, 1600)
+        self.zoom_spin.setSuffix(" %")
+        self.zoom_spin.setValue(100)
+        self.zoom_spin.setKeyboardTracking(False)
+        self.zoom_spin.valueChanged.connect(lambda v: self.set_zoom(v / 100, from_spin=True))
+        zr.addWidget(self.zoom_spin)
+        for text, tip, fn in (("🔍−", "Uitzoomen", lambda: self.set_zoom(self.zoom / 1.25)),
+                              ("🔍+", "Inzoomen", lambda: self.set_zoom(self.zoom * 1.25)),
+                              ("Passend", "Hele afbeelding in het voorbeeld", self.fit_preview)):
+            b = QToolButton(text=text)
+            b.setToolTip(tip)
+            b.clicked.connect(fn)
+            zr.addWidget(b)
+        zr.addStretch()
+        pvv.addLayout(zr)
+        hint = QLabel("Sleep in het voorbeeld om te verschuiven, muiswiel om te zoomen")
+        hint.setStyleSheet("font-size: 10px;")
+        hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        pvv.addWidget(hint)
         v.addWidget(self.pv)
         self.toggle.toggled.connect(lambda on: (self.pv.setVisible(on), self.toggle.setText(("▼" if on else "▶") + " Voorbeeld")))
-        self.before.setPixmap(checker_pixmap(small))
+        self.update_before()
 
         row = QHBoxLayout()
         row.addWidget(QLabel("Instellingen"))
@@ -351,14 +408,86 @@ class EffectDialog(QDialog):
             self._fill_presets()
 
     # ---------------------------------------------------------------- voorbeeld
+    # ---------------------------------------------------------------- zoomen en schuiven
+    def _view(self):
+        """Middelpunt (bronpixels) zo begrensd dat het voorbeeld binnen de afbeelding blijft."""
+        rw, rh = self.region.width(), self.region.height()
+        vw, vh = PREVIEW.width() / self.zoom, PREVIEW.height() / self.zoom
+        cx = min(max(self.cx, vw / 2), rw - vw / 2) if rw > vw else rw / 2
+        cy = min(max(self.cy, vh / 2), rh - vh / 2) if rh > vh else rh / 2
+        self.cx, self.cy = cx, cy
+        return cx, cy, vw, vh
+
+    def set_zoom(self, z, from_spin=False):
+        self.zoom = max(0.01, min(16.0, z))
+        if not from_spin:
+            self.zoom_spin.blockSignals(True)
+            self.zoom_spin.setValue(max(1, round(self.zoom * 100)))
+            self.zoom_spin.blockSignals(False)
+        self.update_before()
+        self.timer.start()
+
+    def fit_preview(self):
+        rw, rh = self.region.width(), self.region.height()
+        self.cx, self.cy = rw / 2, rh / 2
+        self.set_zoom(min(PREVIEW.width() / max(1, rw), PREVIEW.height() / max(1, rh)))
+
+    def pan(self, dx, dy):
+        self.cx -= dx / self.zoom
+        self.cy -= dy / self.zoom
+        self.update_before()
+        self.timer.start()
+
+    def _draw(self, img, ox, oy, scale):
+        """Teken img zo dat bronpunt (cx, cy) in het midden van het voorbeeld staat."""
+        out = QImage(PREVIEW, QImage.Format.Format_ARGB32_Premultiplied)
+        out.fill(Qt.GlobalColor.transparent)
+        p = QPainter(out)
+        p.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform, self.zoom < 1)
+        p.translate(PREVIEW.width() / 2, PREVIEW.height() / 2)
+        p.scale(scale, scale)
+        p.translate(-ox, -oy)
+        p.drawImage(0, 0, img)
+        p.end()
+        return out
+
+    def update_before(self):
+        cx, cy, _, _ = self._view()
+        self.before.setPixmap(checker_pixmap(self._draw(self.region, cx, cy, self.zoom)))
+
+    def _work(self):
+        """Bronbeeld op voorbeeldschaal. Klein genoeg: hele afbeelding (effecten blijven kloppen);
+        anders alleen het zichtbare deel met marge (sneller). Geeft (beeld, linksboven in bronpixels)."""
+        z = self.zoom
+        rw, rh = self.region.width(), self.region.height()
+        if rw * rh * z * z <= 1.5e6:
+            key = round(z, 4)
+            if key not in self._scaled:
+                self._scaled = {key: self.region if z == 1 else self.region.scaled(
+                    max(1, round(rw * z)), max(1, round(rh * z)), Qt.AspectRatioMode.IgnoreAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation)}
+            return self._scaled[key], 0.0, 0.0
+        cx, cy, vw, vh = self._view()
+        m = max(vw, vh) * 0.25
+        r = QRectF(cx - vw / 2 - m, cy - vh / 2 - m, vw + 2 * m, vh + 2 * m).toAlignedRect().intersected(
+            QRect(0, 0, rw, rh))
+        crop = self.region.copy(r)
+        if z != 1:
+            crop = crop.scaled(max(1, round(r.width() * z)), max(1, round(r.height() * z)),
+                               Qt.AspectRatioMode.IgnoreAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        return crop, float(r.x()), float(r.y())
+
     def update_preview(self):
-        ctx = Ctx(self.ctx.fg, self.ctx.bg, self.prev_scale, self.ctx.seed)
+        cx, cy, _, _ = self._view()
+        work, x0, y0 = self._work()
+        ctx = Ctx(self.ctx.fg, self.ctx.bg, self.zoom, self.ctx.seed)
         try:
-            out = run_effect(self.eff, self.small_rgba, ctx, self.params())
-            img = ops.rgba_to_qimage(out)
+            res = ops.rgba_to_qimage(run_effect(self.eff, ops.qimage_to_rgba(work), ctx, self.params()))
         except Exception as e:  # nooit het venster laten crashen
             print("effect fout:", e)
-            img = self.small_img
+            res = work
+        # res staat op schaal 'zoom' met linksboven op bronpunt (x0, y0)
+        img = self._draw(res, (cx - x0) * self.zoom, (cy - y0) * self.zoom, 1.0)
         self.after.setPixmap(checker_pixmap(img))
 
     def result_image(self):

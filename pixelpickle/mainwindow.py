@@ -3,7 +3,7 @@ import os
 import traceback
 
 import numpy as np
-from PySide6.QtCore import QPointF, QRect, QSettings, QSize, Qt
+from PySide6.QtCore import QPointF, QRect, QSettings, QSize, Qt, QTimer
 from PySide6.QtGui import QAction, QColor, QFont, QIcon, QImage, QKeySequence, QPainter, QPixmap
 from PySide6.QtWidgets import (QApplication, QDockWidget, QFileDialog, QInputDialog, QLabel,
                                QMainWindow, QMdiArea, QMdiSubWindow, QMenu, QMessageBox, QStyle,
@@ -192,15 +192,21 @@ class MainWindow(QMainWindow):
         tb.setIconSize(QSize(24, 24))
         self.addToolBar(Qt.ToolBarArea.LeftToolBarArea, tb)
         self.tools_toolbar = tb
+        # past de balk niet in het venster, dan valt de pijlknop op in de accentkleur van het thema
+        tb.setStyleSheet("QToolButton#qt_toolbar_ext_button { background-color: palette(highlight);"
+                         " border-radius: 4px; }")
         self.group_buttons = {}
         for group in TOOLBAR:
-            btn = ToolGroupButton(self, [self.tools[c] for c in group])
+            tools = [self.tools[c] for c in group if self.tools[c].available]
+            if not tools:  # nog niet gebouwde gereedschappen niet tonen
+                continue
+            btn = ToolGroupButton(self, tools)
             tb.addWidget(btn)
-            for c in group:
-                self.group_buttons[c] = btn
+            for t in tools:
+                self.group_buttons[t.cid] = btn
         # sneltoetsen van gereedschappen (uit de PSP instellingen van de gebruiker)
         for cid, keys in self.tool_keys.items():
-            if cid in self.tools:
+            if cid in self.tools and self.tools[cid].available:
                 a = QAction(self)
                 a.setShortcuts([QKeySequence(k) for k in keys])
                 a.triggered.connect(lambda _=False, t=self.tools[cid]: self.select_tool(t))
@@ -209,6 +215,25 @@ class MainWindow(QMainWindow):
         self.opt_bar = QToolBar("Opties voor gereedschap")
         self.opt_bar.setObjectName("options")
         self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.opt_bar)
+
+    def _fit_tools(self):
+        """Icoontjes van de gereedschapsbalk zo groot mogelijk, maar zo dat alles zichtbaar blijft."""
+        tb = self.tools_toolbar
+        if tb.orientation() != Qt.Orientation.Vertical:
+            return
+        buttons = list(dict.fromkeys(self.group_buttons.values()))
+        avail = tb.height() - 14
+        for size in (24, 22, 20, 18, 16):
+            for b in buttons:
+                b.setIconSize(QSize(size, size))
+            need = sum(b.sizeHint().height() for b in buttons) + len(buttons) * tb.layout().spacing()
+            if need <= avail:
+                break
+
+    def resizeEvent(self, e):
+        super().resizeEvent(e)
+        if hasattr(self, "tools_toolbar"):
+            QTimer.singleShot(0, self._fit_tools)
 
     def _dock(self, title, widget, name, area=Qt.DockWidgetArea.RightDockWidgetArea):
         d = QDockWidget(title, self)
@@ -348,8 +373,31 @@ class MainWindow(QMainWindow):
               0x801d, 0x82ce, 0xe132, 0xe133, 0xe134, 0x80d3, 0x8028, 0xe140, 0xe142}
     CHECKABLE = {0x821f: None, 0x8185: "dock_mat", 0x81ae: "dock_layers", 0x8002: "dock_hist", 0x82ce: None, 0x8021: None, 0x811a: None}
 
+    @staticmethod
+    def _tidy_menu(menu):
+        """Lege submenu's weghalen en scheidingslijnen opruimen (geen dubbele, niet aan begin of eind)."""
+        for a in list(menu.actions()):
+            sub = a.menu()
+            if sub is not None:
+                MainWindow._tidy_menu(sub)
+                if not sub.actions() and not sub.property("pp_dynamic"):
+                    menu.removeAction(a)
+        prev_sep = True
+        for a in list(menu.actions()):
+            if a.isSeparator():
+                if prev_sep:
+                    menu.removeAction(a)
+                    continue
+                prev_sep = True
+            else:
+                prev_sep = False
+        acts = menu.actions()
+        while acts and acts[-1].isSeparator():
+            menu.removeAction(acts.pop())
+
     def _build_menus(self):
         self.top_menus = {}
+        self.hidden_menu_items = 0
         H = self.all_handlers()
         mb = self.menuBar()
 
@@ -364,21 +412,20 @@ class MainWindow(QMainWindow):
                     continue
                 if it["items"]:  # Recente bestanden
                     self.recent_menu = menu.addMenu(it["text"])
+                    self.recent_menu.setProperty("pp_dynamic", True)
                     self.recent_menu.aboutToShow.connect(self._fill_recent)
+                    continue
+                cid = it["id"]
+                fn = H.get(cid)
+                if fn is None:  # nog niet gebouwd: niet tonen (komt vanzelf terug zodra het werkt)
+                    self.hidden_menu_items += 1
                     continue
                 a = QAction(it["text"], self)
                 if it["keys"]:
                     a.setShortcuts([QKeySequence(k) for k in it["keys"]])
-                cid = it["id"]
-                fn = H.get(cid)
-                if fn is None:
-                    a.setEnabled(False)
-                    a.setStatusTip("Nog niet beschikbaar in deze versie van PixelPickle")
-                    a.setProperty("unavailable", True)
-                else:
-                    a.triggered.connect(lambda _=False, f=fn, c=cid: self._run(f, c))
-                    if cid not in self.NO_DOC:
-                        self.doc_actions.append(a)
+                a.triggered.connect(lambda _=False, f=fn, c=cid: self._run(f, c))
+                if cid not in self.NO_DOC:
+                    self.doc_actions.append(a)
                 if cid in self.CHECKABLE:
                     a.setCheckable(True)
                 menu.addAction(a)
@@ -387,6 +434,10 @@ class MainWindow(QMainWindow):
         for top in self.menu_tree:
             m = mb.addMenu(top["text"])
             build(m, top["items"])
+            self._tidy_menu(m)
+            if not m.actions():  # bijvoorbeeld Objecten: nog niets beschikbaar
+                mb.removeAction(m.menuAction())
+                continue
             self.top_menus[top["text"].replace("&", "")] = m
             if top["text"].replace("&", "") == "Venster":
                 self.window_menu = m
@@ -530,7 +581,9 @@ class MainWindow(QMainWindow):
         self.tool = tool
         for btn in set(self.group_buttons.values()):
             btn.setChecked(False)
-        btn = self.group_buttons[tool.cid]
+        btn = self.group_buttons.get(tool.cid)
+        if btn is None:  # gereedschap staat (nog) niet op de balk
+            return
         btn.show_tool(tool)
         btn.setChecked(True)
         self.opt_bar.clear()

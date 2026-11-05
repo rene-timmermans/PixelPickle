@@ -15,7 +15,7 @@ def selftest(app):
     print(f"PixelPickle selftest: {n_menu} menu-items, {n_tools} gereedschappen, {n_fx} effecten")
     for s in w.mdi.subWindowList():
         s.canvas.doc.set_modified(False)
-    ok = n_menu > 400 and n_tools >= 50 and n_fx >= 140
+    ok = n_menu > 200 and n_tools >= 50 and n_fx >= 140
     print("OK" if ok else "FOUT")
     return 0 if ok else 1
 
@@ -46,7 +46,10 @@ def _qt_translations(app, lang):
 def main():
     app = QApplication(sys.argv)
     app.setApplicationName("PixelPickle")
-    app.setDesktopFileName("pixelpickle")
+    # alleen als het menu-item geïnstalleerd is; anders klaagt de desktop-portal bij afsluiten
+    from PySide6.QtCore import QStandardPaths
+    if QStandardPaths.locate(QStandardPaths.StandardLocation.ApplicationsLocation, "pixelpickle.desktop"):
+        app.setDesktopFileName("pixelpickle")
     app.setWindowIcon(app_icon())  # titelbalk en taakbalk, ook zonder geïnstalleerd menu-item
     app.setStyle("Fusion")
     from . import i18n

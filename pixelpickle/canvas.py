@@ -38,6 +38,12 @@ class Canvas(QWidget):
         self.ants = QTimer(self)
         self.ants.setInterval(160)
         self.ants.timeout.connect(self._tick)
+        # automatisch scrollen bij de rand tijdens selecteren, slepen, bijsnijden...
+        self.autoscroll = QTimer(self)
+        self.autoscroll.setInterval(30)
+        self.autoscroll.timeout.connect(self._autoscroll_tick)
+        self._as_buttons = Qt.MouseButton.NoButton
+        self._as_mods = Qt.KeyboardModifier.NoModifier
         doc.changed.connect(self._on_changed)
         doc.sizeChanged.connect(self._on_size)
         doc.selectionChanged.connect(self._on_selection)
@@ -260,6 +266,10 @@ class Canvas(QWidget):
             self.oy = oy + e.position().y() - start.y()
             self.update()
             return
+        self._as_buttons, self._as_mods = e.buttons(), e.modifiers()
+        if self._autoscroll_wanted() and self._edge_velocity(e.position()) != (0.0, 0.0):
+            if not self.autoscroll.isActive():
+                self.autoscroll.start()
         try:
             self.main.tool.move(self, pt, e)
             if not e.buttons() and not self.space:  # muisaanwijzer laat zien wat slepen zal doen
@@ -271,7 +281,72 @@ class Canvas(QWidget):
         if self.main.tool.wants_cursor_overlay:
             self.update()
 
+    # ---------------------------------------------------------------- automatisch scrollen
+    EDGE = 40          # randzone in pixels waarin het scrollen begint
+    MAX_OUTSIDE = 200  # tot zo ver buiten het werkvlak blijft het werken
+
+    def _autoscroll_wanted(self):
+        """Alleen tijdens een bewerking: slepen met een muisknop, of een punt-tot-punt selectie in uitvoering."""
+        tool = self.main.tool
+        if self._pan is not None or self.space or getattr(tool, "is_pan", False):
+            return False
+        if self._as_buttons & (Qt.MouseButton.LeftButton | Qt.MouseButton.RightButton):
+            return True
+        return bool(getattr(tool, "pts", None))  # Selectie uit vrije hand (punt tot punt, slimme rand)
+
+    def _edge_velocity(self, pos):
+        """Scrollsnelheid per tik: nul midden in het venster, groter naarmate de muis verder
+        in de randzone en daarbuiten komt."""
+        def axis(v, size):
+            if v < self.EDGE:
+                d = self.EDGE - v
+            elif v > size - self.EDGE:
+                d = -(v - (size - self.EDGE))
+            else:
+                return 0.0
+            if abs(d) > self.EDGE + self.MAX_OUTSIDE:
+                return 0.0
+            return (1 if d > 0 else -1) * min(60.0, 1.5 + (abs(d) / 6) ** 1.5)
+        return axis(pos.x(), self.width()), axis(pos.y(), self.height())
+
+    def _autoscroll_tick(self):
+        from PySide6.QtGui import QCursor, QMouseEvent
+        from PySide6.QtCore import QEvent
+        if not self._autoscroll_wanted() or not self.isVisible():
+            self.autoscroll.stop()
+            return
+        pos = QPointF(self.mapFromGlobal(QCursor.pos()))
+        vx, vy = self._edge_velocity(pos)
+        # niet verder scrollen dan nodig: de rand van de afbeelding mag tot iets voorbij het midden komen
+        w, h = self.doc.w * self.zoom, self.doc.h * self.zoom
+        if vx > 0 and self.ox >= self.width() / 2:
+            vx = 0
+        if vx < 0 and self.ox + w <= self.width() / 2:
+            vx = 0
+        if vy > 0 and self.oy >= self.height() / 2:
+            vy = 0
+        if vy < 0 and self.oy + h <= self.height() / 2:
+            vy = 0
+        if vx == 0 and vy == 0:
+            self.autoscroll.stop()
+            return
+        self._auto = False
+        self.ox += vx
+        self.oy += vy
+        # het gereedschap volgt de muis, zodat selectielijn of kader meeloopt
+        pt = self.to_doc(pos)
+        self.mouse_doc = pt
+        ev = QMouseEvent(QEvent.Type.MouseMove, pos, QCursor.pos().toPointF(), Qt.MouseButton.NoButton,
+                         self._as_buttons, self._as_mods)
+        try:
+            self.main.tool.move(self, pt, ev)
+        except Exception as ex:
+            self.autoscroll.stop()
+            self.main.report_error(ex)
+        self.update()
+
     def mouseReleaseEvent(self, e):
+        self._as_buttons = e.buttons()
         rc = getattr(self, "_rc", None)
         if rc is not None and e.button() == Qt.MouseButton.RightButton:
             self._rc = None

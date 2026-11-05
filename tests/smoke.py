@@ -131,7 +131,7 @@ w.select_tool(T[0xd091]); w._apply_tool_preset(T[0xd091], {"size": 77}); assert 
 errors = []
 line = [P(100, 100), P(140, 120), P(180, 160), P(220, 150)]
 T[0xd081].source = None
-for cid, tool in T.items():
+for cid, tool in [(c, t) for c, t in T.items() if t.available]:
     for btn in (Qt.MouseButton.RightButton, Qt.MouseButton.LeftButton):
         try:
             drag(tool, line, btn=btn)
@@ -158,9 +158,9 @@ for cid, fn in H.items():
         import traceback; traceback.print_exc()
         failed.append((hex(cid), repr(e)))
 print("menuopdrachten getest:", len(H) - len(skip), "fouten:", failed)
-n_menu = sum(1 for a in w.actions_by_id.values())
-n_off = sum(1 for a in w.actions_by_id.values() if a.property("unavailable"))
-print(f"menu-items: {n_menu}, werkend: {n_menu - n_off}, nog grijs: {n_off}")
+n_menu = len(w.actions_by_id)
+print(f"menu-items getoond: {n_menu}, nog verborgen (niet gebouwd): {w.hidden_menu_items}")
+assert not any(not a.isEnabled() and a.property("unavailable") for a in w.actions_by_id.values())
 
 cv = w.canvas(); doc = cv.doc
 d = tempfile.mkdtemp(dir="/tmp/claude-1000") if os.path.isdir("/tmp/claude-1000") else tempfile.mkdtemp()

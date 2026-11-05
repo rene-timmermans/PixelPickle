@@ -46,7 +46,7 @@ def walk_menu(m, path):
 for a in w.menuBar().actions():
     walk_menu(a.menu(), a.text())
 # elk gereedschap: optiebalk en statusbalk
-for t in w.tools.values():
+for t in [t for t in w.tools.values() if t.available]:
     w.select_tool(t); app.processEvents()
     for c in w.opt_bar.findChildren(QWidget):
         if isinstance(c, (QLabel, QAbstractButton)):
