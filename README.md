@@ -14,7 +14,7 @@ PixelPickle in het menu (Grafisch) of start je het met `pixelpickle`.
 | Distributie | Installeren | Verwijderen |
 |---|---|---|
 | Arch, SteamOS, Manjaro, EndeavourOS | `sudo pacman -U pixelpickle-<versie>-1-any.pkg.tar.zst` | `sudo pacman -R pixelpickle` |
-| Debian 13 of nieuwer, Ubuntu 25.04 of nieuwer | `sudo apt install ./pixelpickle_<versie>-1_all.deb` | `sudo apt remove pixelpickle` |
+| Debian 13 of nieuwer, recente Ubuntu (getest op de nieuwste LTS en de nieuwste versie) | `sudo apt install ./pixelpickle_<versie>-1_all.deb` | `sudo apt remove pixelpickle` |
 | Fedora | `sudo dnf install ./pixelpickle-<versie>-1.*.noarch.rpm` | `sudo dnf remove pixelpickle` |
 
 Elk pakket wordt bij een release automatisch gebouwd, in een echte omgeving van die distributie
