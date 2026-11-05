@@ -5,7 +5,7 @@ pkgrel=1
 pkgdesc="Fotobewerker voor Linux met de vertrouwde indeling van Paint Shop Pro XI"
 arch=('any')
 url="https://example.invalid/pixelpickle"
-license=('custom')
+license=('GPL-3.0-or-later')
 depends=('python' 'pyside6' 'python-numpy' 'python-pillow')
 optdepends=('noto-fonts: standaard lettertype voor tekst'
             'ttf-dejavu: extra lettertypen')
@@ -23,4 +23,5 @@ package() {
         install -Dm644 "icons/pixelpickle-${s}.png" "${pkgdir}/usr/share/icons/hicolor/${s}x${s}/apps/pixelpickle.png"
     done
     install -Dm644 README.md "${pkgdir}/usr/share/doc/pixelpickle/README.md"
+    install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/pixelpickle/LICENSE"
 }

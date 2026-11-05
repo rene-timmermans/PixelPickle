@@ -142,12 +142,15 @@ class MainWindow(QMainWindow):
         self.update_actions()
 
     def _migrate_settings(self):
-        """Eenmalig de instellingen van versie 0.1.x (toen nog 'Pigment') overnemen."""
+        """Eenmalig de instellingen van eerdere namen overnemen (Brushwork, daarvoor Pigment)."""
         if self.settings.allKeys():
             return
-        old = QSettings("Pigment", "Pigment")
-        for k in old.allKeys():
-            self.settings.setValue(k, old.value(k))
+        for name in ("Brushwork", "Pigment"):
+            old = QSettings(name, name)
+            if old.allKeys():
+                for k in old.allKeys():
+                    self.settings.setValue(k, old.value(k))
+                return
 
     # ================================================================ opbouw
     def tool_key(self, tool):

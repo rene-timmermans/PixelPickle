@@ -6,7 +6,7 @@ VER=$(sed -n 's/^pkgver=//p' "$ROOT/packaging/PKGBUILD")
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 mkdir -p "$WORK/pixelpickle-$VER/icons" "$ROOT/dist"
-cp -r "$ROOT/pixelpickle" "$ROOT/packaging" "$ROOT/README.md" "$WORK/pixelpickle-$VER/"
+cp -r "$ROOT/pixelpickle" "$ROOT/packaging" "$ROOT/README.md" "$ROOT/LICENSE" "$WORK/pixelpickle-$VER/"
 QT_QPA_PLATFORM=offscreen "$ROOT/.venv/bin/python" -I "$ROOT/packaging/make_icon.py" "$WORK/pixelpickle-$VER/icons"
 tar -C "$WORK" --exclude='__pycache__' -czf "$WORK/pixelpickle-$VER.tar.gz" "pixelpickle-$VER"
 cp "$ROOT/packaging/PKGBUILD" "$WORK/"

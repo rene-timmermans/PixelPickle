@@ -7,7 +7,7 @@ Elk effect is een functie  fn(a, ctx, **params) -> np.ndarray
   return : np.ndarray uint8 (H, W, 4) met dezelfde vorm.
 
 Registreren met de decorator @effect(cid, "Naam", [parameters]); cid is het originele PSP opdracht ID
-uit pixelpickle/data/psp_menus.json, zodat het menu-item automatisch werkt.
+uit pixelpickle/data/pp_menus.json, zodat het menu-item automatisch werkt.
 """
 from dataclasses import dataclass, field
 

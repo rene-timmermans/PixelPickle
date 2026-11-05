@@ -146,18 +146,20 @@ def save_ora(doc: Document, path: str):
 
 
 def _attr(el, name, default=None):
-    """Eigen OpenRaster attribuut; leest ook de sleutels van versie 0.1.x (toen 'pigment-')."""
-    v = el.get("pixelpickle-" + name)
-    if v is None:
-        v = el.get("pigment-" + name)
-    return default if v is None else v
+    """Eigen OpenRaster attribuut; leest ook de sleutels van eerdere namen (brushwork-, pigment-)."""
+    for prefix in ("pixelpickle-", "brushwork-", "pigment-"):
+        v = el.get(prefix + name)
+        if v is not None:
+            return v
+    return default
 
 
 def load_ora(path: str) -> Document:
     import json
     ops_by_name = {m[2]: i for i, m in enumerate(BLEND_MODES)}
-    ops_by_name.update({m[2].replace("pixelpickle:", "pigment:"): i for i, m in enumerate(BLEND_MODES)
-                        if m[2].startswith("pixelpickle:")})  # bestanden van versie 0.1.x
+    for old in ("pigment:", "brushwork:"):  # bestanden van eerdere namen
+        ops_by_name.update({m[2].replace("pixelpickle:", old): i for i, m in enumerate(BLEND_MODES)
+                            if m[2].startswith("pixelpickle:")})
     with zipfile.ZipFile(path) as z:
         root = ET.fromstring(z.read("stack.xml"))
         w, h = int(root.get("w")), int(root.get("h"))
