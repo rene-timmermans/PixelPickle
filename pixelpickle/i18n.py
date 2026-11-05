@@ -134,17 +134,36 @@ def translate_widget(w):
 
 
 def translate_tree(w):
-    translate_widget(w)
-    for c in w.findChildren(QWidget):
-        translate_widget(c)
+    for c in [w] + w.findChildren(QWidget):
+        try:
+            translate_widget(c)
+        except RuntimeError:  # onderdeel is intussen door Qt opgeruimd
+            continue
 
 
 class _Filter(QObject):
+    """Vertaalt wat verschijnt. Vertalen kan zelf weer iets laten verschijnen (bijvoorbeeld een
+    menu); daarom niet opnieuw beginnen terwijl er al vertaald wordt. Een fout bij het vertalen
+    mag het programma nooit laten stoppen."""
+    busy = False
+
     def eventFilter(self, obj, ev):
-        if ev.type() == QEvent.Type.Show and isinstance(obj, QWidget):
-            translate_tree(obj)
-        elif ev.type() == QEvent.Type.ToolTip and isinstance(obj, QWidget):
-            translate_widget(obj)
+        if _Filter.busy:
+            return False
+        t = ev.type()
+        if t not in (QEvent.Type.Show, QEvent.Type.ToolTip):
+            return False
+        _Filter.busy = True
+        try:
+            if isinstance(obj, QWidget):
+                if t == QEvent.Type.Show:
+                    translate_tree(obj)
+                else:
+                    translate_widget(obj)
+        except Exception:  # o.a. een onderdeel dat Qt al heeft opgeruimd
+            pass
+        finally:
+            _Filter.busy = False
         return False
 
 

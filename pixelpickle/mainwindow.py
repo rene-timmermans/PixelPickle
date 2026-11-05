@@ -770,13 +770,21 @@ class MainWindow(QMainWindow):
         self._add_recent(path)
         self.add_document(doc)
 
+    def _recent(self):
+        """Recente bestanden als lijst. Qt geeft één bewaard item soms terug als tekst; die niet per
+        letter opknippen. Losse letters uit oudere versies worden weggelaten."""
+        v = self.settings.value("recent") or []
+        if isinstance(v, str):
+            v = [v]
+        return [p for p in v if isinstance(p, str) and len(p) > 1 and os.path.isabs(p)]
+
     def _add_recent(self, path):
-        rec = [p for p in (self.settings.value("recent") or []) if p != path]
+        rec = [p for p in self._recent() if p != path]
         self.settings.setValue("recent", [path] + rec[:9])
 
     def _fill_recent(self):
         self.recent_menu.clear()
-        for i, p in enumerate(self.settings.value("recent") or []):
+        for i, p in enumerate(self._recent()):
             a = self.recent_menu.addAction(f"&{i + 1} {p}" if i < 9 else p)
             a.triggered.connect(lambda _=False, path=p: self.open_path(path))
         if self.recent_menu.isEmpty():

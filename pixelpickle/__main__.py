@@ -16,6 +16,21 @@ def selftest(app):
     for s in w.mdi.subWindowList():
         s.canvas.doc.set_modified(False)
     ok = n_menu > 200 and n_tools >= 50 and n_fx >= 140
+    # alle menu's openen en een effectvenster tonen (met het vertalen actief)
+    for a in w.menuBar().actions():
+        m = a.menu()
+        if m is not None:
+            m.popup(w.mapToGlobal(w.rect().center()))
+            app.processEvents()
+            m.hide()
+    from .effectdialog import EffectDialog
+    dlg = EffectDialog(w, w.doc(), w.effects[0x809e])
+    dlg.show()
+    app.processEvents()
+    dlg.reject()
+    english = w.menuBar().actions()[0].text() == "&File"
+    print("Engels:", "OK" if english else "FOUT")
+    ok = ok and english
     print("OK" if ok else "FOUT")
     return 0 if ok else 1
 
@@ -53,7 +68,8 @@ def main():
     app.setWindowIcon(app_icon())  # titelbalk en taakbalk, ook zonder geïnstalleerd menu-item
     app.setStyle("Fusion")
     from . import i18n
-    lang = i18n.load("nl" if "--selftest" in sys.argv[1:] else None)
+    # de selftest start zoals een eerste start: Engels, met automatisch vertalen al actief
+    lang = i18n.load("en" if "--selftest" in sys.argv[1:] else None)
     _qt_translations(app, lang)
     i18n.install(app)
     if "--selftest" in sys.argv[1:]:
