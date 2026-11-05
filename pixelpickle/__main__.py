@@ -20,6 +20,19 @@ def selftest(app):
     return 0 if ok else 1
 
 
+def app_icon():
+    """Het PixelPickle icoon (augurk van pixels), meegeleverd in alle formaten."""
+    import os
+    from PySide6.QtGui import QIcon
+    icon = QIcon()
+    folder = os.path.join(os.path.dirname(__file__), "data", "icons")
+    for size in (16, 32, 48, 64, 128, 256):
+        path = os.path.join(folder, f"pixelpickle-{size}.png")
+        if os.path.exists(path):
+            icon.addFile(path)
+    return icon
+
+
 def _qt_translations(app, lang):
     """Standaardvensters en -knoppen van Qt (Ja/Nee, kleur- en bestandskiezer) in dezelfde taal."""
     from PySide6.QtCore import QLibraryInfo, QTranslator
@@ -34,6 +47,7 @@ def main():
     app = QApplication(sys.argv)
     app.setApplicationName("PixelPickle")
     app.setDesktopFileName("pixelpickle")
+    app.setWindowIcon(app_icon())  # titelbalk en taakbalk, ook zonder geïnstalleerd menu-item
     app.setStyle("Fusion")
     from . import i18n
     lang = i18n.load("nl" if "--selftest" in sys.argv[1:] else None)
