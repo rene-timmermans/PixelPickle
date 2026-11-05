@@ -1,4 +1,4 @@
-# Pigment
+# PixelPickle
 
 Fotobewerker voor Linux met de vertrouwde indeling en sneltoetsen van Paint Shop Pro XI:
 dezelfde menu's, gereedschapsbalk met uitklapgroepen, optiebalk, paletten (Materialen, Lagen) en
@@ -7,13 +7,26 @@ documenten met tabs.
 ## Installeren (Arch, SteamOS, Manjaro, EndeavourOS)
 
 ```
-sudo pacman -U pigment-0.1.1-1-any.pkg.tar.zst
+sudo pacman -U pixelpickle-0.2.0-1-any.pkg.tar.zst
 ```
 
 pacman installeert automatisch de benodigde pakketten: `python`, `pyside6`, `python-numpy` en
-`python-pillow`. Daarna staat Pigment in het menu (Grafisch) of start je het met `pigment`.
+`python-pillow`. Daarna staat PixelPickle in het menu (Grafisch) of start je het met `pixelpickle`.
 
-Verwijderen: `sudo pacman -R pigment`
+Verwijderen: `sudo pacman -R pixelpickle`
+
+### Overstappen van de oude naam "Pigment" (versie 0.1.x)
+
+Er bestaat al een ander Arch pakket met de naam `pigment`; daarom heet dit programma nu PixelPickle.
+Verwijder eerst de oude versie, anders kan `pacman -Syu` hem vervangen door dat andere pakket:
+
+```
+sudo pacman -R pigment
+sudo pacman -U pixelpickle-0.2.0-1-any.pkg.tar.zst
+```
+
+Instellingen en voorinstellingen worden bij de eerste start automatisch overgenomen, en .ora bestanden
+van de oude versie openen gewoon.
 
 ## Wat het kan
 
@@ -29,7 +42,7 @@ Verwijderen: `sudo pacman -R pigment`
 
 ```
 python3 -m venv .venv && .venv/bin/pip install PySide6 numpy Pillow
-./pigment.sh                                           # starten vanuit de broncode
+./pixelpickle.sh                                           # starten vanuit de broncode
 QT_QPA_PLATFORM=offscreen .venv/bin/python tests/smoke.py   # tests
 tools/build_package.sh                                 # pacman pakket in dist/
 ```

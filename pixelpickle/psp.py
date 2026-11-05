@@ -20,7 +20,7 @@ B_VECTOR_EXT, B_SHAPE, B_PAINTSTYLE, B_LINESTYLE = 13, 14, 15, 19
 
 
 
-# PSP mengmodus -> index in pigment.document.BLEND_MODES
+# PSP mengmodus -> index in pixelpickle.document.BLEND_MODES
 PSP_BLEND = {0: 0, 1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 11, 8: 12, 9: 13, 10: 14, 11: 15, 12: 16,
              13: 17, 14: 18, 15: 19, 16: 20, 17: 3, 18: 5, 19: 7, 20: 9}
 LT_RASTER, LT_FLOATING, LT_VECTOR, LT_ADJUST, LT_GROUP, LT_MASK, LT_ARTMEDIA = 1, 2, 3, 4, 5, 6, 7

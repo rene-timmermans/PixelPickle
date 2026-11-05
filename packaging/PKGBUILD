@@ -1,26 +1,26 @@
-# Pakketbeschrijving voor Pigment. Bouwen: in deze map  makepkg  (of via ../tools/build_package.sh)
-pkgname=pigment
-pkgver=0.1.1
+# Pakketbeschrijving voor PixelPickle. Bouwen: in deze map  makepkg  (of via ../tools/build_package.sh)
+pkgname=pixelpickle
+pkgver=0.2.0
 pkgrel=1
 pkgdesc="Fotobewerker voor Linux met de vertrouwde indeling van Paint Shop Pro XI"
 arch=('any')
-url="https://example.invalid/pigment"
+url="https://example.invalid/pixelpickle"
 license=('custom')
 depends=('python' 'pyside6' 'python-numpy' 'python-pillow')
 optdepends=('noto-fonts: standaard lettertype voor tekst'
             'ttf-dejavu: extra lettertypen')
-source=("pigment-${pkgver}.tar.gz")
+source=("pixelpickle-${pkgver}.tar.gz")
 sha256sums=('SKIP')
 
 package() {
-    cd "${srcdir}/pigment-${pkgver}"
-    install -d "${pkgdir}/usr/share/pigment"
-    cp -r pigment "${pkgdir}/usr/share/pigment/"
-    find "${pkgdir}/usr/share/pigment" -name '__pycache__' -prune -exec rm -rf {} +
-    install -Dm755 packaging/pigment-launcher.sh "${pkgdir}/usr/bin/pigment"
-    install -Dm644 packaging/pigment.desktop "${pkgdir}/usr/share/applications/pigment.desktop"
+    cd "${srcdir}/pixelpickle-${pkgver}"
+    install -d "${pkgdir}/usr/share/pixelpickle"
+    cp -r pixelpickle "${pkgdir}/usr/share/pixelpickle/"
+    find "${pkgdir}/usr/share/pixelpickle" -name '__pycache__' -prune -exec rm -rf {} +
+    install -Dm755 packaging/pixelpickle-launcher.sh "${pkgdir}/usr/bin/pixelpickle"
+    install -Dm644 packaging/pixelpickle.desktop "${pkgdir}/usr/share/applications/pixelpickle.desktop"
     for s in 16 32 48 64 128 256; do
-        install -Dm644 "icons/pigment-${s}.png" "${pkgdir}/usr/share/icons/hicolor/${s}x${s}/apps/pigment.png"
+        install -Dm644 "icons/pixelpickle-${s}.png" "${pkgdir}/usr/share/icons/hicolor/${s}x${s}/apps/pixelpickle.png"
     done
-    install -Dm644 README.md "${pkgdir}/usr/share/doc/pigment/README.md"
+    install -Dm644 README.md "${pkgdir}/usr/share/doc/pixelpickle/README.md"
 }

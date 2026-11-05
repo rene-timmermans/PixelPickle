@@ -1,9 +1,9 @@
 """Leest de menu- en sneltoetsindeling uit het PSP XI register (Wine bottle) en schrijft
-pigment/data/psp_menus.json. Gebruik: python tools/import_psp_layout.py <pad naar user.reg>"""
+pixelpickle/data/psp_menus.json. Gebruik: python tools/import_psp_layout.py <pad naar user.reg>"""
 import json, os, re, struct, sys
 
 REG = sys.argv[1]
-OUT = os.path.join(os.path.dirname(__file__), '..', 'pigment', 'data', 'psp_menus.json')
+OUT = os.path.join(os.path.dirname(__file__), '..', 'pixelpickle', 'data', 'psp_menus.json')
 KEY = r'Software\\\\Corel\\\\Paint Shop Pro\\\\11\\\\UI Customization\\\\'
 
 txt = open(REG, encoding='utf-8', errors='replace').read()

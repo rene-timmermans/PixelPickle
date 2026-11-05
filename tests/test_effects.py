@@ -3,8 +3,8 @@ Test vorm/type, randgevallen van parameters, transparantie en snelheid (2 MP).""
 import os, sys, time, traceback
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np
-from pigment import effects
-from pigment.effects import Ctx, defaults
+from pixelpickle import effects
+from pixelpickle.effects import Ctx, defaults
 
 only = sys.argv[1:]
 reg = effects.load_all()

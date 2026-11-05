@@ -14,10 +14,10 @@ def fake_exec(self, *a, **k):
     return None
 class RecordingMenu(QMenu):
     exec = fake_exec
-import pigment.mainwindow as mw, pigment.palettes as pal
+import pixelpickle.mainwindow as mw, pixelpickle.palettes as pal
 mw.QMenu = RecordingMenu; pal.QMenu = RecordingMenu
-from pigment.mainwindow import MainWindow
-from pigment.document import Document
+from pixelpickle.mainwindow import MainWindow
+from pixelpickle.document import Document
 w = MainWindow(); w.show()
 doc = Document(300, 200); cv = w.add_document(doc).canvas; app.processEvents()
 T = w.tools
@@ -63,8 +63,8 @@ w.select_none(); w.opts["lasso_type"] = 0
 w.select_tool(T[0xd040]); drag(QPointF(10, 10), QPointF(100, 80), L); click(QPointF(50, 50), R)
 assert shown[-1][0] == "Bijsnijden toepassen"; print("6 bijsnijden: ", shown[-1][:2])
 # 7. tekstlaag: Tekst bewerken
-from pigment.document import Layer, new_image
-from pigment.textlayer import new_text
+from pixelpickle.document import Layer, new_image
+from pixelpickle.textlayer import new_text
 lay = Layer("Hoi", new_image(300, 200)); lay.text = new_text("Hoi", 20, 100, w.opts, w.fg, w.bg); doc.add_layer(lay); doc.render_text(lay)
 w.select_tool(T[0xd001]); click(QPointF(150, 100), R)
 assert "Tekst bewerken" in shown[-1]; w.edit_text_layer(cv)

@@ -4,14 +4,14 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QColor
 app = QApplication(sys.argv)
-from pigment.document import Document, Layer, new_image
-from pigment import fileio
+from pixelpickle.document import Document, Layer, new_image
+from pixelpickle import fileio
 
 RED, BLUE, WHITE = QColor(255, 0, 0), QColor(0, 0, 255), QColor(255, 255, 255)
 d = Document(20, 10)                                  # wit
 d.add_layer(Layer("rood", new_image(20, 10, RED)))
 d.select_all()
-from pigment import imageops as ops
+from pixelpickle import imageops as ops
 import numpy as np
 m = np.zeros((10, 20), np.uint8); m[:, :10] = 255      # linkerhelft geselecteerd
 d.set_selection(ops.mask_to_qimage(m))

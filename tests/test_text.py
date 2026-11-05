@@ -8,10 +8,10 @@ from PySide6.QtWidgets import QApplication, QMessageBox
 app = QApplication(sys.argv)
 QMessageBox.question = staticmethod(lambda *a, **k: QMessageBox.StandardButton.Yes)
 import numpy as np
-from pigment.mainwindow import MainWindow
-from pigment.document import Document
-from pigment import imageops as ops
-from pigment.textlayer import bounds
+from pixelpickle.mainwindow import MainWindow
+from pixelpickle.document import Document
+from pixelpickle import imageops as ops
+from pixelpickle.textlayer import bounds
 
 w = MainWindow(); w.show()
 doc = Document(400, 300); cv = w.add_document(doc).canvas; app.processEvents()

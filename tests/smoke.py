@@ -20,9 +20,9 @@ QFileDialog.getOpenFileName = staticmethod(lambda *a, **k: ("", ""))
 QFileDialog.getOpenFileNames = staticmethod(lambda *a, **k: ([], ""))
 QInputDialog.getMultiLineText = staticmethod(lambda *a, **k: ("Hallo\nwereld", True))
 
-from pigment.mainwindow import MainWindow
-from pigment.document import Document
-from pigment import fileio, imageops as ops
+from pixelpickle.mainwindow import MainWindow
+from pixelpickle.document import Document
+from pixelpickle import fileio, imageops as ops
 
 w = MainWindow(); w.show(); app.processEvents()
 doc = Document(400, 300); sw = w.add_document(doc); app.processEvents()
@@ -80,14 +80,14 @@ for mm in range(8):
     w.select_none()
 w.opts["match_mode"] = 1
 # alle mengmodi op een laag en op het penseel
-from pigment.document import BLEND_MODES, TOOL_BLEND_MODES
+from pixelpickle.document import BLEND_MODES, TOOL_BLEND_MODES
 doc.add_layer(); drag(T[0xd091], [P(20, 20), P(300, 200)])
 for i in range(len(BLEND_MODES)):
     doc.layer().mode = i; doc.changed.emit(QRect()); app.processEvents()
 for i in range(len(TOOL_BLEND_MODES)):
     w.opts["blend"] = i; drag(T[0xd091], [P(30, 30), P(200, 100)]); drag(T[0xd0d1], [P(390, 290)])
 w.opts["blend"] = 0; doc.layer().mode = 0
-from pigment.materials import MaterialDialog
+from pixelpickle.materials import MaterialDialog
 md = MaterialDialog(w, QColor(159, 254, 32)); md.html.setText("#123456"); md._from_html()
 assert md.color() == QColor(0x12, 0x34, 0x56) and md.sp["r"].value() == 0x12
 w.set_none(False, True); drag(T[0xd102], [P(10, 10), P(60, 60)]); w.set_none(False, False)
@@ -104,21 +104,21 @@ w.new_adjustment_layer(0x8052)
 lay = doc.layer(); assert lay.adjust is not None
 lay.adjust = (0x8052, {"brightness": 120, "contrast": 0}); doc.changed.emit(QRect()); app.processEvents()
 assert cv.cache.pixelColor(390, 290).lightness() > base_px.lightness(), "aanpassingslaag werkt niet"
-from pigment.document import new_image as _ni
+from pixelpickle.document import new_image as _ni
 lay.image = _ni(doc.w, doc.h, QColor(0, 0, 0)); doc.changed.emit(QRect()); app.processEvents()
 assert cv.cache.pixelColor(390, 290) == base_px, "zwart masker moet effect verbergen"
 fileio.save(doc, os.path.join(_TMP, "adj.ora")); assert fileio.load(os.path.join(_TMP, "adj.ora")).layers[-1].adjust[0] == 0x8052
 w.layer_properties(); doc.delete_layer()
 # koppelingsset
 doc.add_layer(); a1 = doc.layer(); a1.link_set = 1; doc.add_layer(); a2 = doc.layer(); a2.link_set = 1
-from pigment.document import new_image as ni
+from pixelpickle.document import new_image as ni
 a1.image = ni(doc.w, doc.h); a1.image.setPixelColor(5, 5, QColor(255, 0, 0))
 drag(T[0xd012], [P(100, 100), P(110, 100)])
 assert a1.image.pixelColor(15, 5) == QColor(255, 0, 0), "gekoppelde laag beweegt niet mee"
 w.new_raster_layer()
 
 # --- voorinstellingen
-from pigment.effectdialog import EffectDialog
+from pixelpickle.effectdialog import EffectDialog
 ed = EffectDialog(w, doc, w.effects[0x8091])
 psp_items = [ed.presets.itemText(i) for i in range(ed.presets.count()) if "(PSP)" in ed.presets.itemText(i)]
 print("PSP voorinstellingen Spiraal:", psp_items[:3])

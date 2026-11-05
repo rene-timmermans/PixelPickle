@@ -91,12 +91,58 @@ def sel_mode_from(ev, default):
     return ["replace", "add", "sub"][default]
 
 
+_CURSORS = {}
+
+
+def tool_cursor(glyph):
+    """Cursor zoals in PSP: draadkruis (het midden is het klikpunt) met het gereedschapsicoon rechtsonder."""
+    if glyph in _CURSORS:
+        return _CURSORS[glyph]
+    from PySide6.QtGui import QCursor, QPixmap
+    # 1. het icoon apart tekenen (werkt voor gewone symbolen en kleuren-emoji)
+    icon = QImage(20, 20, QImage.Format.Format_ARGB32_Premultiplied)
+    icon.fill(Qt.GlobalColor.transparent)
+    q = QPainter(icon)
+    f = QFont()
+    f.setPixelSize(15)
+    q.setFont(f)
+    q.setPen(QColor(0, 0, 0))
+    q.drawText(QRectF(0, 0, 20, 20), Qt.AlignmentFlag.AlignCenter, glyph)
+    q.end()
+    # 2. wit silhouet van het icoon, voor een rand die op elke ondergrond zichtbaar is
+    halo = QImage(icon)
+    q = QPainter(halo)
+    q.setCompositionMode(QPainter.CompositionMode.CompositionMode_SourceIn)
+    q.fillRect(halo.rect(), QColor(255, 255, 255))
+    q.end()
+    pm = QPixmap(34, 34)
+    pm.fill(Qt.GlobalColor.transparent)
+    p = QPainter(pm)
+    c = 8
+    for col, w in ((QColor(255, 255, 255), 3), (QColor(0, 0, 0), 1)):
+        p.setPen(QPen(col, w))
+        p.drawLine(c, 0, c, c - 3)
+        p.drawLine(c, c + 3, c, 2 * c)
+        p.drawLine(0, c, c - 3, c)
+        p.drawLine(c + 3, c, 2 * c, c)
+    for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, 1), (-1, 1), (1, -1)):
+        p.drawImage(13 + dx, 13 + dy, halo)
+    p.drawImage(13, 13, icon)
+    p.end()
+    _CURSORS[glyph] = QCursor(pm, c, c)
+    return _CURSORS[glyph]
+
+
 class Tool:
     edits_pixels = True  # False voor gereedschappen die geen pixels van de laag wijzigen
     cid = 0
     glyph = "?"
     tip = ""
-    cursor = Qt.CursorShape.CrossCursor
+
+    @property
+    def cursor(self):
+        # standaard: draadkruis + eigen icoon; gereedschappen met een vaste Qt-cursor overschrijven dit
+        return tool_cursor(self.glyph)
     is_pan = False
     wants_cursor_overlay = False
     available = True
@@ -137,7 +183,7 @@ class Tool:
 
 class PlaceholderTool(Tool):
     available = False
-    tip = "Dit gereedschap volgt in een volgende versie van Pigment."
+    tip = "Dit gereedschap volgt in een volgende versie van PixelPickle."
 
     def __init__(self, main, cid, glyph):
         super().__init__(main)
@@ -871,7 +917,6 @@ class WandTool(SelectionBase):
 class StrokeTool(Tool):
     """Basis voor alle penselen: stempels op gelijke afstand langs de muisbeweging."""
     wants_cursor_overlay = True
-    cursor = Qt.CursorShape.CrossCursor
 
     def __init__(self, main):
         super().__init__(main)

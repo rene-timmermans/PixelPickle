@@ -1,4 +1,4 @@
-"""Hoofdvenster van Pigment, met de menu-, werkbalk- en gereedschapsindeling van PSP XI."""
+"""Hoofdvenster van PixelPickle, met de menu-, werkbalk- en gereedschapsindeling van PSP XI."""
 import os
 import traceback
 
@@ -21,7 +21,7 @@ from . import presets as psp_presets
 from .effectdialog import EffectBrowser, EffectDialog
 from . import effects as effects_pkg
 
-APP = "Pigment"
+APP = "PixelPickle"
 
 
 def glyph_icon(glyph, enabled=True, size=24):
@@ -97,7 +97,8 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle(APP)
-        self.settings = QSettings("Pigment", "Pigment")
+        self.settings = QSettings("PixelPickle", "PixelPickle")
+        self._migrate_settings()
         self.fg = QColor(0, 0, 0)
         self.bg = QColor(255, 255, 255)
         self.fg_none = self.bg_none = False
@@ -139,6 +140,14 @@ class MainWindow(QMainWindow):
         if state is not None:
             self.restoreState(state)
         self.update_actions()
+
+    def _migrate_settings(self):
+        """Eenmalig de instellingen van versie 0.1.x (toen nog 'Pigment') overnemen."""
+        if self.settings.allKeys():
+            return
+        old = QSettings("Pigment", "Pigment")
+        for k in old.allKeys():
+            self.settings.setValue(k, old.value(k))
 
     # ================================================================ opbouw
     def tool_key(self, tool):
@@ -332,7 +341,7 @@ class MainWindow(QMainWindow):
                 fn = H.get(cid)
                 if fn is None:
                     a.setEnabled(False)
-                    a.setStatusTip("Nog niet beschikbaar in deze versie van Pigment")
+                    a.setStatusTip("Nog niet beschikbaar in deze versie van PixelPickle")
                     a.setProperty("unavailable", True)
                 else:
                     a.triggered.connect(lambda _=False, f=fn, c=cid: self._run(f, c))
@@ -711,7 +720,7 @@ class MainWindow(QMainWindow):
             ext = os.path.splitext(path)[1].lower()
         if ext not in fileio.LAYERED and len(doc.layers) > 1:
             r = QMessageBox.question(self, APP, "Dit formaat kan geen lagen bewaren. De afbeelding wordt "
-                                     "samengevoegd opgeslagen; uw lagen blijven in Pigment behouden.\n\n"
+                                     "samengevoegd opgeslagen; uw lagen blijven in PixelPickle behouden.\n\n"
                                      "Tip: gebruik .ora om de lagen te bewaren.\n\nDoorgaan?")
             if r != QMessageBox.StandardButton.Yes:
                 return False
@@ -1262,7 +1271,7 @@ class MainWindow(QMainWindow):
         box.exec()
 
     def about(self):
-        QMessageBox.about(self, "Over Pigment", "<b>Pigment</b><br>Een fotobewerker voor Linux met de vertrouwde "
+        QMessageBox.about(self, "Over PixelPickle", "<b>PixelPickle</b><br>Een fotobewerker voor Linux met de vertrouwde "
                           "indeling van klassieke Windows fotobewerkers.<br>Python, Qt en NumPy.")
 
     def closeEvent(self, e):
