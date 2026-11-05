@@ -5,7 +5,7 @@ pkgrel=1
 pkgdesc="Fotobewerker voor Linux met de vertrouwde indeling van Paint Shop Pro XI"
 arch=('any')
 url="https://example.invalid/pigment"
-license=('custom')
+license=('GPL-3.0-or-later')
 depends=('python' 'pyside6' 'python-numpy' 'python-pillow')
 optdepends=('noto-fonts: standaard lettertype voor tekst'
             'ttf-dejavu: extra lettertypen')

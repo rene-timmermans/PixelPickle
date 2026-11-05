@@ -33,3 +33,7 @@ python3 -m venv .venv && .venv/bin/pip install PySide6 numpy Pillow
 QT_QPA_PLATFORM=offscreen .venv/bin/python tests/smoke.py   # tests
 tools/build_package.sh                                 # pacman pakket in dist/
 ```
+
+## Licentie
+
+Pigment is vrije software onder de [GNU General Public License v3.0 of later](LICENSE).
