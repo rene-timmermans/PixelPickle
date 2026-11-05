@@ -4,7 +4,7 @@ pkgver=0.2.0
 pkgrel=1
 pkgdesc="Fotobewerker voor Linux met de vertrouwde indeling van Paint Shop Pro XI"
 arch=('any')
-url="https://example.invalid/pixelpickle"
+url="https://github.com/rene-timmermans/pixelpickle"
 license=('GPL-3.0-or-later')
 depends=('python' 'pyside6' 'python-numpy' 'python-pillow')
 optdepends=('noto-fonts: standaard lettertype voor tekst'
@@ -14,14 +14,5 @@ sha256sums=('SKIP')
 
 package() {
     cd "${srcdir}/pixelpickle-${pkgver}"
-    install -d "${pkgdir}/usr/share/pixelpickle"
-    cp -r pixelpickle "${pkgdir}/usr/share/pixelpickle/"
-    find "${pkgdir}/usr/share/pixelpickle" -name '__pycache__' -prune -exec rm -rf {} +
-    install -Dm755 packaging/pixelpickle-launcher.sh "${pkgdir}/usr/bin/pixelpickle"
-    install -Dm644 packaging/pixelpickle.desktop "${pkgdir}/usr/share/applications/pixelpickle.desktop"
-    for s in 16 32 48 64 128 256; do
-        install -Dm644 "icons/pixelpickle-${s}.png" "${pkgdir}/usr/share/icons/hicolor/${s}x${s}/apps/pixelpickle.png"
-    done
-    install -Dm644 README.md "${pkgdir}/usr/share/doc/pixelpickle/README.md"
-    install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/pixelpickle/LICENSE"
+    sh packaging/stage.sh "${pkgdir}"
 }

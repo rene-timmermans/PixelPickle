@@ -1,0 +1,133 @@
+# Bouwt bij elke release de installers voor Arch, Debian/Ubuntu en Fedora, installeert ze in een echte
+# omgeving van die distributie, test of PixelPickle opstart (--selftest) en zet ze bij de release.
+# Met de hand starten (Actions > Pakketten bouwen > Run workflow) bouwt en test zonder te publiceren.
+name: Pakketten bouwen
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  QT_QPA_PLATFORM: offscreen
+
+jobs:
+  bron:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: v
+        run: echo "version=$(sed -n 's/^__version__ = \"\(.*\)\"/\1/p' pixelpickle/__init__.py)" >> "$GITHUB_OUTPUT"
+      - name: Versie moet bij de release passen
+        if: github.event_name == 'release'
+        run: test "${{ github.event.release.tag_name }}" = "v${{ steps.v.outputs.version }}"
+      - run: tools/make_source_tarball.sh
+      - uses: actions/upload-artifact@v4
+        with: { name: bron, path: dist/pixelpickle-*.tar.gz }
+
+  arch:
+    needs: bron
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - run: pacman -Syu --noconfirm --needed base-devel pyside6 python-numpy python-pillow
+      - uses: actions/download-artifact@v4
+        with: { name: bron }
+      - name: Bouwen (makepkg mag niet als root)
+        run: |
+          VER=${{ needs.bron.outputs.version }}
+          tar xzf pixelpickle-$VER.tar.gz
+          useradd -m bouwer
+          mkdir /home/bouwer/pkg
+          cp pixelpickle-$VER.tar.gz pixelpickle-$VER/packaging/PKGBUILD /home/bouwer/pkg/
+          sed -i "s/^pkgver=.*/pkgver=$VER/" /home/bouwer/pkg/PKGBUILD
+          chown -R bouwer /home/bouwer/pkg
+          su bouwer -c "cd /home/bouwer/pkg && makepkg -f --noconfirm"
+          cp /home/bouwer/pkg/pixelpickle-*.pkg.tar.zst .
+      - name: Installeren en testen
+        run: |
+          pacman -U --noconfirm pixelpickle-*.pkg.tar.zst
+          pixelpickle --selftest
+      - uses: actions/upload-artifact@v4
+        with: { name: arch, path: pixelpickle-*.pkg.tar.zst }
+
+  debian:
+    needs: bron
+    runs-on: ubuntu-latest
+    container: debian:trixie
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { name: bron }
+      - name: Bouwen (.deb)
+        run: |
+          VER=${{ needs.bron.outputs.version }}
+          tar xzf pixelpickle-$VER.tar.gz
+          cd pixelpickle-$VER
+          sh packaging/stage.sh ../root
+          mkdir -p ../root/DEBIAN
+          sed "s/@VERSION@/$VER/" packaging/debian/control.in > ../root/DEBIAN/control
+          echo "Installed-Size: $(du -sk ../root/usr | cut -f1)" >> ../root/DEBIAN/control
+          cd ..
+          dpkg-deb --root-owner-group --build root pixelpickle_${VER}-1_all.deb
+      - name: Installeren en testen
+        run: |
+          apt-get update
+          apt-get install -y ./pixelpickle_*_all.deb qt6-qpa-plugins
+          pixelpickle --selftest
+      - uses: actions/upload-artifact@v4
+        with: { name: debian, path: pixelpickle_*_all.deb }
+
+  ubuntu-test:
+    needs: debian
+    runs-on: ubuntu-latest
+    container: ubuntu:24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { name: debian }
+      - name: Hetzelfde .deb op Ubuntu 24.04 installeren en testen
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y ./pixelpickle_*_all.deb qt6-qpa-plugins
+          pixelpickle --selftest
+
+  fedora:
+    needs: bron
+    runs-on: ubuntu-latest
+    container: fedora:latest
+    steps:
+      - run: dnf install -y rpm-build
+      - uses: actions/download-artifact@v4
+        with: { name: bron }
+      - name: Bouwen (.rpm)
+        run: |
+          VER=${{ needs.bron.outputs.version }}
+          mkdir -p ~/rpmbuild/SOURCES
+          cp pixelpickle-$VER.tar.gz ~/rpmbuild/SOURCES/
+          tar xzf pixelpickle-$VER.tar.gz pixelpickle-$VER/packaging/fedora/pixelpickle.spec
+          rpmbuild -bb --define "pp_version $VER" pixelpickle-$VER/packaging/fedora/pixelpickle.spec
+          cp ~/rpmbuild/RPMS/noarch/pixelpickle-*.rpm .
+      - name: Installeren en testen
+        run: |
+          dnf install -y ./pixelpickle-*.rpm
+          pixelpickle --selftest
+      - uses: actions/upload-artifact@v4
+        with: { name: fedora, path: pixelpickle-*.rpm }
+
+  publiceren:
+    if: github.event_name == 'release'
+    needs: [arch, debian, ubuntu-test, fedora]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { path: pakketten, merge-multiple: true }
+      - name: Installers bij de release zetten
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ls -la pakketten
+          gh release upload "${{ github.event.release.tag_name }}" pakketten/* --clobber -R "${{ github.repository }}"
