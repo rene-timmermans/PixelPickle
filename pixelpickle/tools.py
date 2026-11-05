@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QFontComboBox
                                QPushButton, QSpinBox)
 
 from . import imageops as ops
-from .document import CM, TOOL_BLEND_MODES, Layer, apply_region, blend_onto, new_image, paint_layer
+from .document import BG_NAMES, CM, TOOL_BLEND_MODES, Layer, apply_region, blend_onto, new_image, paint_layer
 from .psplayout import TOOL_NAMES
 
 LB = Qt.MouseButton.LeftButton
@@ -152,7 +152,8 @@ class Tool:
 
     @property
     def name(self):
-        return TOOL_NAMES.get(self.cid, "?")
+        from .i18n import tr
+        return tr(TOOL_NAMES.get(self.cid, "?"))
 
     @property
     def o(self):
@@ -279,7 +280,7 @@ class LayerMover:
             p.setCompositionMode(CM.CompositionMode_DestinationOut)
             p.drawImage(0, 0, self.sel)
             p.end()
-            if d.active == 0 and d.layer().name == "Achtergrond":  # gat vullen met achtergrondkleur, zoals PSP
+            if d.active == 0 and d.layer().name in BG_NAMES:  # gat vullen met achtergrondkleur, zoals PSP
                 bgfill = new_image(d.w, d.h, cv.main.bg)
                 p = QPainter(bgfill)
                 p.setCompositionMode(CM.CompositionMode_DestinationIn)

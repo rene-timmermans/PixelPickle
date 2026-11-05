@@ -548,7 +548,8 @@ class GifExportDialog(QDialog):
         p.end()
         self.preview.setPixmap(pm)
         n = len(q.getcolors(256) or [])
-        self.info.setText(f"Kleuren gebruikt: {n}" + ("\nmet transparantie" if "transparency" in q.info else ""))
+        from .i18n import tr
+        self.info.setText(tr("Kleuren gebruikt: {}").format(n) + (tr("\nmet transparantie") if "transparency" in q.info else ""))
 
 
 class JpegExportDialog(QDialog):
@@ -581,3 +582,24 @@ class MaskFromImageDialog(QDialog):
 
     def values(self):
         return ["luminance", "alpha"][self.src.currentIndex()], self.inv.isChecked()
+
+
+class PreferencesDialog(QDialog):
+    """Algemene programmavoorkeuren (voorlopig: taal)."""
+
+    def __init__(self, parent, current):
+        super().__init__(parent)
+        from .i18n import LANGUAGES
+        self.setWindowTitle("Algemene programmavoorkeuren")
+        f = QFormLayout(self)
+        self.lang = QComboBox()
+        self.codes = [c for c, _ in LANGUAGES]
+        self.lang.addItems([name for _, name in LANGUAGES])
+        self.lang.setProperty("pp_notr", True)  # taalnamen altijd in hun eigen taal
+        self.lang.setCurrentIndex(self.codes.index(current) if current in self.codes else 0)
+        f.addRow("Taal / Language:", self.lang)
+        f.addRow(QLabel("De nieuwe taal wordt actief na het herstarten van PixelPickle."))
+        f.addRow(_buttons(self))
+
+    def language(self):
+        return self.codes[self.lang.currentIndex()]

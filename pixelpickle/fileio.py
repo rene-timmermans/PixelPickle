@@ -61,7 +61,8 @@ def load(path: str) -> Document:
     doc = Document(img.width(), img.height())
     doc.layers[0].image = img
     if img.hasAlphaChannel() and ops.qimage_to_rgba(img)[..., 3].min() < 255:
-        doc.layers[0].name = "Raster 1"
+        from .document import raster_name
+        doc.layers[0].name = raster_name(1)
     doc.path = path
     return doc
 

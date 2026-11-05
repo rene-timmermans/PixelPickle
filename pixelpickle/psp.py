@@ -450,7 +450,8 @@ class Reader:
             rgba = self.composite_image(info, composite, pal) if composite else None
             if rgba is None:
                 raise PspError("Dit PSP bestand bevat geen leesbare lagen.")
-            out = [Layer("Achtergrond", ops.rgba_to_qimage(rgba))]
+            from .document import bg_name
+            out = [Layer(bg_name(), ops.rgba_to_qimage(rgba))]
         doc.layers = out
         doc.normalize()
         doc.active = len(doc.layers) - 1

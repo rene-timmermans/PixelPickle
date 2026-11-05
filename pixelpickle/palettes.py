@@ -128,7 +128,8 @@ class MaterialsPalette(QWidget):
 
     def refresh(self):
         f, b = self.main.fg, self.main.bg
-        self.lbl.setText(f"Voorgrond: {f.name().upper()}\nAchtergrond: {b.name().upper()}")
+        from .i18n import tr
+        self.lbl.setText(tr("Voorgrond: {}\nAchtergrond: {}").format(f.name().upper(), b.name().upper()))
         self.sw.update()
 
 
@@ -184,6 +185,7 @@ class LayerRow(QWidget):
             h.addWidget(self.thumb)
         extra = ("  🔒" if layer.lock_alpha else "") + (f"  🔗{layer.link_set}" if layer.link_set else "")
         self.name = QLabel(layer.name + extra)
+        self.name.setProperty("pp_notr", True)  # laagnamen zijn gegevens, niet vertalen
         h.addWidget(self.name, 1)
         if layer.highlight is not None:
             self.setAutoFillBackground(True)
@@ -471,11 +473,12 @@ class HistoryPalette(QWidget):
         d = self.doc
         if d is None:
             return
-        self.list.addItem("Begin")
+        from .i18n import tr
+        self.list.addItem(tr("Begin"))
         for label, _ in d.undo_stack:
-            self.list.addItem(label)
+            self.list.addItem(tr(label))
         for label, _ in reversed(d.redo_stack):
-            it = QListWidgetItem(label)
+            it = QListWidgetItem(tr(label))
             it.setForeground(QBrush(QColor(150, 150, 150)))
             self.list.addItem(it)
         self.list.setCurrentRow(len(d.undo_stack))

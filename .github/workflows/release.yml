@@ -85,11 +85,15 @@ jobs:
   ubuntu-test:
     needs: debian
     runs-on: ubuntu-latest
-    container: ubuntu:24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ["ubuntu:latest", "ubuntu:rolling"]   # nieuwste LTS en nieuwste versie (24.04 heeft geen PySide6)
+    container: ${{ matrix.image }}
     steps:
       - uses: actions/download-artifact@v4
         with: { name: debian }
-      - name: Hetzelfde .deb op Ubuntu 24.04 installeren en testen
+      - name: Hetzelfde .deb op Ubuntu installeren en testen
         run: |
           apt-get update
           DEBIAN_FRONTEND=noninteractive apt-get install -y ./pixelpickle_*_all.deb qt6-qpa-plugins

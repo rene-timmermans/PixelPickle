@@ -7,12 +7,13 @@ from PySide6.QtCore import QPointF, QRect, QSettings, QSize, Qt
 from PySide6.QtGui import QAction, QColor, QFont, QIcon, QImage, QKeySequence, QPainter, QPixmap
 from PySide6.QtWidgets import (QApplication, QDockWidget, QFileDialog, QInputDialog, QLabel,
                                QMainWindow, QMdiArea, QMdiSubWindow, QMenu, QMessageBox, QStyle,
-                               QToolBar, QToolButton, QVBoxLayout, QWidget)
+                               QStatusBar, QToolBar, QToolButton, QVBoxLayout, QWidget)
 
 from . import dialogs, fileio
 from . import imageops as ops
 from .canvas import Canvas
-from .document import Document, Layer, apply_region, new_image, paint_layer
+from .document import BG_NAMES, Document, Layer, apply_region, new_image, paint_layer, raster_name
+from .i18n import tr
 from .materials import MaterialsPalette
 from .palettes import HistoryPalette, LayersPalette
 from .psplayout import PALETTES_MENU, PHOTO_MENU, STANDARD_TOOLBAR, TOOLBAR, load_layout
@@ -93,9 +94,36 @@ class ToolGroupButton(QToolButton):
         self.setToolTip(f"{t.name}" + (f" ({key})" if key else "") + (f"\n{t.tip}" if t.tip else ""))
 
 
+def restart_pixelpickle():
+    """Start PixelPickle opnieuw: de geïnstalleerde starter, of anders vanuit de broncode."""
+    import shutil
+    import sys
+    from PySide6.QtCore import QProcess, QProcessEnvironment
+    launcher = shutil.which("pixelpickle")
+    pkg_parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if launcher and pkg_parent == "/usr/share/pixelpickle":
+        QProcess.startDetached(launcher, [])
+        return
+    p = QProcess()
+    env = QProcessEnvironment.systemEnvironment()
+    env.insert("PYTHONPATH", pkg_parent + os.pathsep + env.value("PYTHONPATH", ""))
+    p.setProcessEnvironment(env)
+    p.setProgram(sys.executable)
+    p.setArguments(["-m", "pixelpickle"])
+    p.startDetached()
+
+
+class TrStatusBar(QStatusBar):
+    """Statusbalk die meldingen in de gekozen taal toont."""
+
+    def showMessage(self, text, timeout=0):
+        super().showMessage(tr(text), timeout)
+
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.setStatusBar(TrStatusBar())
         self.setWindowTitle(APP)
         self.settings = QSettings("PixelPickle", "PixelPickle")
         self._migrate_settings()
@@ -205,7 +233,7 @@ class MainWindow(QMainWindow):
             # Bestand
             0xe100: self.file_new, 0xe101: self.file_open, 0xe102: self.close_active,
             0xe103: self.file_save, 0xe104: self.file_save_as, 0xe10b: lambda: self.file_save_as(copy=True),
-            0xe141: self.close, 0x812d: self.export_gif, 0x814b: self.export_jpeg,
+            0xe141: self.close, 0x8012: self.preferences, 0x812d: self.export_gif, 0x814b: self.export_jpeg,
             # Bewerken
             0xe12b: D(lambda d: d.undo()), 0xe12c: D(lambda d: d.redo()), 0xe128: self.repeat_last,
             0xe123: self.edit_cut, 0xe122: self.edit_copy, 0x8105: lambda: self.edit_copy(merged=True),
@@ -392,7 +420,7 @@ class MainWindow(QMainWindow):
                 tb.addSeparator()
             elif isinstance(item, str):
                 btn = QToolButton()
-                btn.setText(item + " ")
+                btn.setText(tr(item) + " ")
                 btn.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
                 m = QMenu(btn)
                 for cid in (PHOTO_MENU if item == "Foto verbeteren" else PALETTES_MENU):
@@ -482,7 +510,7 @@ class MainWindow(QMainWindow):
             else:
                 self.st_pos.setText("")
                 self.st_col.setText("")
-        self.st_info.setText(f"{cv.doc.w} × {cv.doc.h} px   lagen: {len(cv.doc.layers)}")
+        self.st_info.setText(tr("{} × {} px   lagen: {}").format(cv.doc.w, cv.doc.h, len(cv.doc.layers)))
         w = cv.parentWidget()
         while w is not None and not isinstance(w, DocWindow):
             w = w.parentWidget()
@@ -816,7 +844,7 @@ class MainWindow(QMainWindow):
             return
         d.push_undo(label)
         # achtergrondlaag wordt gewist naar de achtergrondkleur, andere lagen naar transparant (zoals PSP)
-        bg = d.active == 0 and d.layer().name == "Achtergrond"
+        bg = d.active == 0 and d.layer().name in BG_NAMES
         paint_layer(d.layer(), r, new_image(r.width(), r.height(), self.bg if bg else None), d.sel)
         d.changed.emit(r)
         d.structureChanged.emit()
@@ -1000,7 +1028,7 @@ class MainWindow(QMainWindow):
 
     def new_raster_layer(self):
         d = self.doc()
-        layer = Layer(f"Raster {d.raster_counter + 1}", new_image(d.w, d.h))
+        layer = Layer(raster_name(d.raster_counter + 1), new_image(d.w, d.h))
         dlg = dialogs.LayerPropertiesDialog(self, layer, None, "Nieuwe rasterlaag")
         if dlg.exec():
             d.raster_counter += 1
@@ -1026,6 +1054,22 @@ class MainWindow(QMainWindow):
             params = {}
         layer.adjust = (eff_cid, params)
         d.add_layer(layer, label="Nieuwe aanpassingslaag")
+
+    # ================================================================ voorkeuren
+    def preferences(self):
+        from . import i18n
+        dlg = dialogs.PreferencesDialog(self, i18n.setting() or i18n.language())
+        if not dlg.exec():
+            return
+        lang = dlg.language()
+        if lang == (i18n.setting() or i18n.language()):
+            return
+        self.settings.setValue("language", lang)
+        self.settings.sync()
+        r = QMessageBox.question(self, APP, tr("De taal wordt gewijzigd na het herstarten van PixelPickle. Nu herstarten?"))
+        if r == QMessageBox.StandardButton.Yes:
+            self._restart = True
+            self.close()
 
     # ================================================================ snelmenu's (rechtsklik)
     CANVAS_MENU = [0xe12b, 0xe12c, None, 0xe123, 0xe122, 0x8105, 0x810d, 0x801e, 0x801f, 0xe120, None,
@@ -1289,6 +1333,8 @@ class MainWindow(QMainWindow):
                 e.ignore()
                 return
             d.set_modified(False)
+        if getattr(self, "_restart", False):  # herstarten na taalwissel
+            restart_pixelpickle()
         self.settings.setValue("geometry", self.saveGeometry())
         self.settings.setValue("state2", self.saveState())
         e.accept()

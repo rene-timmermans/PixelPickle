@@ -135,6 +135,17 @@ def blend_onto(dst: QImage, src: QImage, mode: int, opacity=1.0, src_rect: QRect
 
 
 UNDO_LIMIT = 60
+BG_NAMES = {"Achtergrond", "Background"}  # de achtergrondlaag, ongeacht de taal
+
+
+def bg_name():
+    from .i18n import tr
+    return tr("Achtergrond")
+
+
+def raster_name(n):
+    from .i18n import tr
+    return tr("Raster {}").format(n)
 
 
 def new_image(w, h, color=None) -> QImage:
@@ -265,15 +276,16 @@ class Document(QObject):
         super().__init__()
         self.w, self.h = w, h
         if background is not None:
-            self.layers = [Layer("Achtergrond", new_image(w, h, background))]
+            self.layers = [Layer(bg_name(), new_image(w, h, background))]
         else:
-            self.layers = [Layer("Raster 1", new_image(w, h))]
+            self.layers = [Layer(raster_name(1), new_image(w, h))]
         self.active = 0
         self.sel: QImage | None = None
         self.sel_lines = []
         self.path = None
         Document._counter += 1
-        self.untitled = f"Afbeelding{Document._counter}"
+        from .i18n import tr
+        self.untitled = tr("Afbeelding{}").format(Document._counter)
         self._modified = False
         self.undo_stack = []
         self.redo_stack = []
@@ -303,7 +315,7 @@ class Document(QObject):
 
     def next_raster_name(self):
         self.raster_counter += 1
-        return f"Raster {self.raster_counter}"
+        return raster_name(self.raster_counter)
 
     # ------------------------------------------------------------ geschiedenis
     def snapshot(self):
@@ -591,7 +603,7 @@ class Document(QObject):
 
     def flatten(self, background=QColor(255, 255, 255)):
         self.push_undo("Alle lagen samenvoegen")
-        self.layers = [Layer("Achtergrond", self.flattened(background))]
+        self.layers = [Layer(bg_name(), self.flattened(background))]
         self.active = 0
         self.structureChanged.emit()
         self.changed.emit(QRect())
@@ -608,7 +620,7 @@ class Document(QObject):
     def new_group(self):
         act = self.layer()
         self.push_undo("Nieuwe lagengroep")
-        if act.name == "Achtergrond" and act.group is None and self.layers.index(act) == 0:
+        if act.name in BG_NAMES and act.group is None and self.layers.index(act) == 0:
             act.name = self.next_raster_name()
         g = self._wrap_in_group(act, f"Groep - {act.name}")
         self.active = self.layers.index(g)
@@ -702,7 +714,7 @@ class Document(QObject):
         if act.kind == "group":
             target_group = act
         else:
-            if act.name == "Achtergrond" and act.group is None and self.layers.index(act) == 0:
+            if act.name in BG_NAMES and act.group is None and self.layers.index(act) == 0:
                 act.name = self.next_raster_name()
             target_group = self._wrap_in_group(act, f"Groep - {act.name}")
         mask = Layer("Masker - " + (act.name if act.kind != "group" else act.name.replace("Groep - ", "")),
@@ -779,7 +791,7 @@ class Document(QObject):
             return fn
         self.push_undo("Canvasgrootte")
         for i, l in enumerate(self.layers):
-            l.image = fn_for(i == 0 and l.name == "Achtergrond")(l.image)
+            l.image = fn_for(i == 0 and l.name in BG_NAMES)(l.image)
         self.w, self.h = w, h
         self._move_text(QTransform.fromTranslate(ox, oy))
         self.set_selection(None)
@@ -839,7 +851,7 @@ class Document(QObject):
         self.push_undo("Vrij roteren")
         for i, l in enumerate(self.layers):
             out = l.image.transformed(t, mode)
-            if fill is not None and i == 0 and l.name == "Achtergrond":
+            if fill is not None and i == 0 and l.name in BG_NAMES:
                 bg = new_image(out.width(), out.height(), fill)
                 p = QPainter(bg)
                 p.drawImage(0, 0, out)
@@ -881,7 +893,7 @@ class Document(QObject):
 
     def promote_background(self):
         l = self.layers[0]
-        if l.name != "Achtergrond":
+        if l.name not in BG_NAMES:
             return
         self.push_undo("Laag maken van achtergrondlaag")
         l.name = self.next_raster_name()

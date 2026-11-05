@@ -20,11 +20,25 @@ def selftest(app):
     return 0 if ok else 1
 
 
+def _qt_translations(app, lang):
+    """Standaardvensters en -knoppen van Qt (Ja/Nee, kleur- en bestandskiezer) in dezelfde taal."""
+    from PySide6.QtCore import QLibraryInfo, QTranslator
+    if lang == "en":
+        return
+    t = QTranslator(app)
+    if t.load(f"qtbase_{lang}", QLibraryInfo.path(QLibraryInfo.LibraryPath.TranslationsPath)):
+        app.installTranslator(t)
+
+
 def main():
     app = QApplication(sys.argv)
     app.setApplicationName("PixelPickle")
     app.setDesktopFileName("pixelpickle")
     app.setStyle("Fusion")
+    from . import i18n
+    lang = i18n.load("nl" if "--selftest" in sys.argv[1:] else None)
+    _qt_translations(app, lang)
+    i18n.install(app)
     if "--selftest" in sys.argv[1:]:
         sys.exit(selftest(app))
     from .mainwindow import MainWindow
