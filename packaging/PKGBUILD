@@ -1,6 +1,6 @@
 # Pakketbeschrijving voor PixelPickle. Bouwen: in deze map  makepkg  (of via ../tools/build_package.sh)
 pkgname=pixelpickle
-pkgver=0.5.0
+pkgver=0.5.1
 pkgrel=1
 pkgdesc="Fotobewerker voor Linux met de vertrouwde indeling van Paint Shop Pro XI"
 arch=('any')
