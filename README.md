@@ -33,8 +33,8 @@ niet hoeft te zoeken.
 - Kleur, verloop (lineair, rechthoekig, zonnestraal, radiaal; met hoek, herhalingen en middelpunt) en
   patroon (met hoek en schaal; ook een geopende afbeelding of een eigen bestand).
 - Werkt met de vulemmer, de penselen en de vormen.
-- Een reeks verlopen en patronen meegeleverd; verlopen en patronen van een bestaande installatie
-  onder Wine worden automatisch ingelezen.
+- 45 verlopen en 43 patronen meegeleverd: van metaal, neon en landschappen tot hout, marmer,
+  stoffen en dierenprints.
 
 **Lagen**
 - 21 mengmodi, dekking, lagengroepen, maskerlagen en aanpassingslagen.

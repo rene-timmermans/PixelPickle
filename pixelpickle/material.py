@@ -13,7 +13,7 @@ import os
 import re
 
 import numpy as np
-from PySide6.QtCore import QPointF, QRect, Qt
+from PySide6.QtCore import QPointF, QRect, QRectF, Qt
 from PySide6.QtGui import QBrush, QColor, QImage, QPainter, QPainterPath, QPen, QTransform
 
 from . import imageops as ops
@@ -38,6 +38,40 @@ GRADIENTS = {
     "Zee": ["#003b46", "#07575b", "#66a5ad", "#c4dfe6"],
     "Bos": ["#0b3d0b", "#2e7d32", "#9ccc65", "#f1f8e9"],
     "Pastel": ["#ffd1dc", "#fff5ba", "#c1f0c1", "#bde0fe", "#e2c2ff"],
+    # een punt kan ook (positie 0..1, kleur) zijn, voor ongelijke afstanden
+    "Wit-transparant": ["#ffffff", "#ffffff00"],
+    "Zwart-transparant": ["#000000", "#00000000"],
+    "Regenboog vervagend": [(0, "#ff0000"), (0.2, "#ffff00"), (0.4, "#00ff00"), (0.6, "#00ffff"),
+                            (0.8, "#0000ff"), (1, "#ff00ff00")],
+    "Duotoon blauw": ["#e3f2fd", "#1e64c8", "#0a1f4d"],
+    "Duotoon groen": ["#effae0", "#4caf50", "#0f3d14"],
+    "Duotoon rood": ["#ffe5e0", "#d32f2f", "#4a0b0b"],
+    "Duotoon paars": ["#f3e5f5", "#8e44ad", "#2e0b3d"],
+    "Duotoon sepia": ["#fbf3e4", "#b07d4f", "#3b2414"],
+    "Duotoon ivoor": ["#fffdf5", "#f1e6c8"],
+    "Duotoon lavendel": ["#ece6f5", "#9b8bc0", "#463c5c"],
+    "Grijstinten": ["#f2f2f2", "#9e9e9e", "#3a3a3a"],
+    "Ochtend": [(0, "#1d4e89"), (0.45, "#7fb2e5"), (0.5, "#fde3a7"), (0.55, "#9ccc65"), (1, "#2e6b1f")],
+    "Woestijn": [(0, "#7ec8f2"), (0.48, "#d9eef9"), (0.52, "#f2d29b"), (1, "#a8642a")],
+    "Nacht": [(0, "#020617"), (0.6, "#1e2a5a"), (0.85, "#4b3b78"), (1, "#c76b98")],
+    "Zomerlucht": ["#2f80ed", "#56ccf2", "#e0f7ff"],
+    "Herfst": ["#5d2a0c", "#b5541c", "#e8a33d", "#f6d58e"],
+    "Lente": ["#d4f5c4", "#8fd694", "#f9e79f", "#f8b4c8"],
+    "Aarde": ["#3e2c1c", "#7a5c3a", "#a99067", "#d8c9a3"],
+    "IJs": ["#ffffff", "#d6f1ff", "#8fd3f4", "#3b8fc4"],
+    "Lava": ["#1a0000", "#7a0c00", "#e33b00", "#ffb000", "#fff3a0"],
+    "Aurora": ["#04121f", "#0b6e4f", "#30d5a0", "#7b4bc9", "#04121f"],
+    "Pauw": ["#023047", "#0a9396", "#94d2bd", "#2a9d8f", "#005f73"],
+    "Neon blauw": [(0, "#001a33"), (0.35, "#00b4ff"), (0.5, "#e6fbff"), (0.65, "#00b4ff"), (1, "#001a33")],
+    "Neon roze": [(0, "#2a0018"), (0.35, "#ff2d95"), (0.5, "#ffe3f1"), (0.65, "#ff2d95"), (1, "#2a0018")],
+    "Neon groen": [(0, "#001a05"), (0.35, "#39ff14"), (0.5, "#eaffe5"), (0.65, "#39ff14"), (1, "#001a05")],
+    "Chroom": [(0, "#2b2b2b"), (0.3, "#f5f5f5"), (0.48, "#8a8a8a"), (0.52, "#3a3a3a"), (0.75, "#d9d9d9"),
+               (1, "#5c5c5c")],
+    "Staal": [(0, "#4b5563"), (0.25, "#d1d5db"), (0.5, "#6b7280"), (0.75, "#e5e7eb"), (1, "#374151")],
+    "Messing": [(0, "#6b4e16"), (0.3, "#e9c46a"), (0.5, "#a07a2c"), (0.75, "#f4dc8f"), (1, "#5c4211")],
+    "Brons": [(0, "#4a2c12"), (0.3, "#cd7f32"), (0.55, "#7a4a1e"), (0.8, "#e3a869"), (1, "#3d230d")],
+    "Rosé goud": [(0, "#7a4a3f"), (0.3, "#f2c2b0"), (0.55, "#b77b6a"), (0.8, "#fbe0d6"), (1, "#6e4035")],
+    "Blauw metaal": [(0, "#0b1d3a"), (0.3, "#9fb6e0"), (0.5, "#2b4a80"), (0.75, "#d6e2f5"), (1, "#122a52")],
 }
 
 
@@ -54,6 +88,8 @@ def _rgba(spec, fg, bg):
     if spec in (FG, FG0, BG, BG0):
         c = QColor(fg if spec in (FG, FG0) else bg)
         return (c.red(), c.green(), c.blue(), 0 if spec.endswith("0") else c.alpha())
+    if len(spec) == 9:  # #rrggbbaa
+        return (int(spec[1:3], 16), int(spec[3:5], 16), int(spec[5:7], 16), int(spec[7:9], 16))
     c = QColor(spec)
     return (c.red(), c.green(), c.blue(), 255)
 
@@ -97,8 +133,14 @@ def gradient_lut(name, fg, bg):
         alpha = _interp(x, [a[0] for a in astops], [[a[2]] for a in astops], [a[1] for a in astops]) \
             if astops else np.full((256, 1), 255, np.float32)
         return np.concatenate([rgb, alpha], axis=1)
-    stops = [_rgba(s, fg, bg) for s in GRADIENTS.get(name, GRADIENTS["Voorgrond-achtergrond"])]
-    return _interp(x, np.linspace(0, 1, len(stops)), stops)
+    entries = GRADIENTS.get(name, GRADIENTS["Voorgrond-achtergrond"])
+    if all(isinstance(e, tuple) for e in entries):
+        pos = [float(e[0]) for e in entries]
+        stops = [_rgba(e[1], fg, bg) for e in entries]
+    else:
+        pos = np.linspace(0, 1, len(entries))
+        stops = [_rgba(e, fg, bg) for e in entries]
+    return _interp(x, pos, stops)
 
 
 def gradient_names():
@@ -234,6 +276,8 @@ def psp_patterns():
             for f in sorted(cands):
                 stem, ext = os.path.splitext(os.path.basename(f))
                 name = _pattern_name(stem)
+                if name in PATTERNS:  # zelfde naam als een eigen patroon: apart houden
+                    name += " 2"
                 if ext.lower() in (".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff") and name not in seen:
                     seen.add(name)
                     _psp_pat.append((name, f))
@@ -506,6 +550,353 @@ def _numpy_pattern(kind, n=128):
     return None
 
 
+# ---------------------------------------------------------------- meer eigen patronen (naadloos)
+def _ramp(a, colors):
+    """a in 0..1 -> kleur langs een reeks kleuren (hex)."""
+    cols = np.array([[int(c[k:k + 2], 16) for k in (1, 3, 5)] for c in colors], np.float32)
+    pos = np.linspace(0, 1, len(cols))
+    out = np.empty(a.shape + (4,), np.float32)
+    for ch in range(3):
+        out[..., ch] = np.interp(a, pos, cols[:, ch])
+    out[..., 3] = 255
+    return out
+
+
+def _voronoi(n, count, seed):
+    """Naadloze Voronoi-cellen: (afstand tot dichtstbijzijnde punt, tot op één na, celnummer)."""
+    rng = np.random.default_rng(seed)
+    pts = rng.random((count, 2)) * n
+    yy, xx = np.mgrid[0:n, 0:n].astype(np.float32)
+    d1 = np.full((n, n), 1e9, np.float32)
+    d2 = np.full((n, n), 1e9, np.float32)
+    idx = np.zeros((n, n), np.int32)
+    for k, (px, py) in enumerate(pts):
+        dx = np.abs(xx - px)
+        dy = np.abs(yy - py)
+        dx = np.minimum(dx, n - dx)
+        dy = np.minimum(dy, n - dy)
+        d = np.hypot(dx, dy)
+        closer = d < d1
+        d2 = np.where(closer, d1, np.minimum(d2, d))
+        idx = np.where(closer, k, idx)
+        d1 = np.where(closer, d, d1)
+    return d1, d2, idx
+
+
+def _coords(n):
+    yy, xx = np.mgrid[0:n, 0:n].astype(np.float32)
+    return xx, yy
+
+
+def _pat_leopard(n=128):
+    d1, d2, idx = _voronoi(n, 28, 21)
+    base = _ramp(_fbm(n, 22) * 0.6 + 0.2, ["#c98f3c", "#e8b765"])
+    edge = d2 - d1
+    ring = (d1 > 4.5) & (d1 < 8.5) & (edge > 1.5)
+    centre = d1 <= 4.5
+    base[ring, :3] = (40, 25, 12)
+    base[centre, :3] = base[centre, :3] * 0.8
+    return _np_img(base)
+
+
+def _pat_zebra(n=128):
+    xx, yy = _coords(n)
+    # rustige, golvende strepen: alleen grove vervorming
+    warp = _smooth_noise(n, 3, 31) * 1.4 + _smooth_noise(n, 6, 32) * 0.35
+    v = np.sin((xx / n * 5 + warp) * 2 * math.pi)
+    a = np.clip((v + 0.15) * 4, 0, 1)  # zachte maar duidelijke rand
+    return _np_img(_ramp(a, ["#f4f1ea", "#151515"]))
+
+
+def _pat_tiger(n=128):
+    xx, yy = _coords(n)
+    warp = _fbm(n, 41) * 2.5
+    v = np.sin((yy / n * 5 + warp) * 2 * math.pi)
+    width = _smooth_noise(n, 4, 42) * 0.6
+    a = (v > 0.75 - width).astype(np.float32)
+    base = _ramp(_fbm(n, 43) * 0.5 + 0.25, ["#d46a1c", "#f2a345"])
+    base[a > 0, :3] = (25, 15, 10)
+    return _np_img(base)
+
+
+def _pat_giraffe(n=128):
+    d1, d2, idx = _voronoi(n, 14, 51)
+    rng = np.random.default_rng(52)
+    shade = rng.random(14)[idx] * 0.25
+    a = np.where(d2 - d1 < 3.2, 0.0, 0.6 + shade)
+    return _np_img(_ramp(a, ["#f3e3c2", "#b8662b", "#8a4519"]))
+
+
+def _pat_snake(n=128):
+    xx, yy = _coords(n)
+    s_ = n / 8
+    row = np.floor(yy / s_)
+    x2 = xx + (row % 2) * s_ / 2
+    cx = (np.floor(x2 / s_) + 0.5) * s_
+    cy = (row + 0.5) * s_
+    d = np.hypot(x2 - cx, (yy - cy) * 1.3) / (s_ * 0.55)
+    a = np.clip(1 - d, 0, 1) ** 0.5
+    return _np_img(_ramp(a * 0.8 + _fbm(n, 61) * 0.2, ["#1f2a14", "#4f6b2a", "#a7b56a"]))
+
+
+def _pat_crackle(n=128):
+    d1, d2, _ = _voronoi(n, 30, 71)
+    a = np.clip((d2 - d1) / 3.0, 0, 1)
+    return _np_img(_ramp(a * 0.85 + _fbm(n, 72) * 0.15, ["#4a4038", "#e8dfcf", "#f6f0e4"]))
+
+
+def _pat_paper(n=128):
+    rng = np.random.default_rng(81)
+    a = _fbm(n, 82) * 0.5 + rng.random((n, n)).astype(np.float32) * 0.15 + 0.35
+    return _np_img(_ramp(a, ["#e9e4d8", "#fbf8f0"]))
+
+
+def _pat_kraft(n=128):
+    rng = np.random.default_rng(91)
+    a = _fbm(n, 92) * 0.6 + rng.random((n, n)).astype(np.float32) * 0.25
+    return _np_img(_ramp(a, ["#8f6a3e", "#c49a64"]))
+
+
+def _pat_denim(n=128):
+    xx, yy = _coords(n)
+    twill = ((xx + yy) % 4 < 2).astype(np.float32)
+    rng = np.random.default_rng(101)
+    a = twill * 0.35 + _fbm(n, 102) * 0.35 + rng.random((n, n)).astype(np.float32) * 0.3
+    return _np_img(_ramp(a, ["#1c2e52", "#3d5a8c", "#8fa8cf"]))
+
+
+def _pat_tartan(p, n):
+    """Schotse ruit: rode grond met doorschijnende groene en blauwe banen en een dunne gele lijn."""
+    p.fillRect(0, 0, n, n, QColor(176, 30, 38))
+    bands = ((0, n * 0.30, QColor(25, 80, 50, 150)), (n * 0.38, n * 0.12, QColor(25, 40, 95, 150)),
+             (n * 0.62, n * 0.04, QColor(240, 200, 60, 200)), (n * 0.75, n * 0.10, QColor(25, 80, 50, 120)))
+    for start, w, col in bands:
+        p.fillRect(QRectF(start, 0, w, n), col)
+        p.fillRect(QRectF(0, start, n, w), col)
+    p.setPen(QPen(QColor(0, 0, 0, 40), 1))  # fijne weefstructuur
+    for k in range(-n, n, 3):
+        p.drawLine(QPointF(k, 0), QPointF(k + n, n))
+
+
+def _pat_argyle(p, n):
+    """Ruitpatroon (argyle): ruiten in twee tinten met een fijne stippellijn eroverheen."""
+    p.fillRect(0, 0, n, n, QColor(40, 60, 110))
+    p.setPen(Qt.PenStyle.NoPen)
+    h = n / 2
+    for cx, cy, col in ((h, h, QColor(200, 170, 90)), (0, 0, QColor(120, 40, 50)), (n, 0, QColor(120, 40, 50)),
+                        (0, n, QColor(120, 40, 50)), (n, n, QColor(120, 40, 50))):
+        p.setBrush(col)
+        path = QPainterPath(QPointF(cx, cy - h))
+        path.lineTo(cx + h / 2, cy)
+        path.lineTo(cx, cy + h)
+        path.lineTo(cx - h / 2, cy)
+        path.closeSubpath()
+        p.drawPath(path)
+    pen = QPen(QColor(240, 240, 230), 1.2)
+    pen.setDashPattern([3, 3])
+    p.setPen(pen)
+    for k in range(-2, 3):  # lijnen door de hoeken van de ruiten, naadloos herhalend
+        p.drawLine(QPointF(k * h, 0), QPointF(k * h + h, n))
+        p.drawLine(QPointF(k * h + h, 0), QPointF(k * h, n))
+
+
+def _pat_herringbone(p, n):
+    p.fillRect(0, 0, n, n, QColor(150, 105, 60))
+    w, h = n / 8, n / 2
+    for k in range(-2, 10):
+        for j in range(-1, 3):
+            x, y = k * w, j * h + (k % 2) * h / 2
+            path = QPainterPath()
+            if k % 2 == 0:
+                path.moveTo(x, y + w)
+                path.lineTo(x + w, y)
+                path.lineTo(x + w, y + h)
+                path.lineTo(x, y + h + w)
+            else:
+                path.moveTo(x, y)
+                path.lineTo(x + w, y + w)
+                path.lineTo(x + w, y + h + w)
+                path.lineTo(x, y + h)
+            path.closeSubpath()
+            tone = 120 + ((k * 7 + j * 13) % 5) * 12
+            p.setBrush(QColor(tone + 40, tone - 5, tone - 55))
+            p.setPen(QPen(QColor(70, 45, 25), 1))
+            p.drawPath(path)
+
+
+def _pat_cork(n=128):
+    rng = np.random.default_rng(111)
+    a = _fbm(n, 112) * 0.5 + rng.random((n, n)).astype(np.float32) * 0.5
+    a = np.where(rng.random((n, n)) < 0.04, a * 0.4, a)
+    return _np_img(_ramp(a, ["#6b4423", "#b98552", "#d9a96f"]))
+
+
+def _pat_granite(n=128):
+    rng = np.random.default_rng(121)
+    a = rng.random((n, n)).astype(np.float32) * 0.5 + _fbm(n, 122) * 0.5
+    img = _ramp(a, ["#3a3a3a", "#8c8c8c", "#d6d6d6"])
+    spots = rng.random((n, n)) < 0.03
+    img[spots, :3] = (180, 120, 110)
+    return _np_img(img)
+
+
+def _pat_leather(n=128):
+    d1, d2, _ = _voronoi(n, 60, 131)
+    a = np.clip((d2 - d1) / 2.5, 0, 1) * 0.6 + _fbm(n, 132) * 0.4
+    return _np_img(_ramp(a, ["#3b2414", "#7a4a26", "#a8693a"]))
+
+
+def _pat_corrugated(n=64):
+    xx, yy = _coords(n)
+    a = (np.sin(xx / n * 8 * 2 * math.pi) + 1) / 2
+    return _np_img(_ramp(a, ["#8a6a42", "#d6b27c"]))
+
+
+def _pat_bubbles(p, n):
+    p.fillRect(0, 0, n, n, QColor(30, 90, 170))
+    rng = np.random.default_rng(141)
+    for _ in range(18):
+        x, y, r = rng.random() * n, rng.random() * n, 4 + rng.random() * 10
+        for dx in (-n, 0, n):
+            for dy in (-n, 0, n):
+                g = QPointF(x + dx, y + dy)
+                p.setPen(QPen(QColor(200, 230, 255, 200), 1.5))
+                p.setBrush(QColor(120, 180, 240, 90))
+                p.drawEllipse(g, r, r)
+                p.setPen(Qt.PenStyle.NoPen)
+                p.setBrush(QColor(255, 255, 255, 200))
+                p.drawEllipse(QPointF(g.x() - r * 0.35, g.y() - r * 0.35), r * 0.22, r * 0.22)
+
+
+def _scatter(p, n, seed, count, draw):
+    rng = np.random.default_rng(seed)
+    for _ in range(count):
+        x, y = rng.random() * n, rng.random() * n
+        c = rng.random(3)
+        for dx in (-n, 0, n):
+            for dy in (-n, 0, n):
+                draw(p, x + dx, y + dy, c, rng)
+
+
+def _pat_confetti(p, n):
+    p.fillRect(0, 0, n, n, QColor(255, 255, 255))
+    cols = [QColor("#e63946"), QColor("#f4a261"), QColor("#2a9d8f"), QColor("#457b9d"), QColor("#e9c46a"),
+            QColor("#9b5de5")]
+
+    def draw(p, x, y, c, rng):
+        p.save()
+        p.translate(x, y)
+        p.rotate(c[0] * 360)
+        p.setPen(Qt.PenStyle.NoPen)
+        p.setBrush(cols[int(c[1] * len(cols)) % len(cols)])
+        p.drawRect(QRectF(-3, -1.5, 6, 3))
+        p.restore()
+    _scatter(p, n, 151, 40, draw)
+
+
+def _pat_stars(p, n):
+    p.fillRect(0, 0, n, n, QColor(10, 14, 40))
+
+    def draw(p, x, y, c, rng):
+        r = 0.6 + c[0] * 1.6
+        p.setPen(Qt.PenStyle.NoPen)
+        p.setBrush(QColor(255, 255, 230, int(140 + c[1] * 115)))
+        p.drawEllipse(QPointF(x, y), r, r)
+    _scatter(p, n, 161, 45, draw)
+
+
+def _pat_hearts(p, n):
+    p.fillRect(0, 0, n, n, QColor(255, 235, 240))
+    p.setPen(Qt.PenStyle.NoPen)
+    p.setBrush(QColor(220, 40, 80))
+    for cx, cy in ((n / 4, n / 4), (3 * n / 4, 3 * n / 4)):
+        s_ = n / 7
+        path = QPainterPath(QPointF(cx, cy + s_))
+        path.cubicTo(QPointF(cx - 1.6 * s_, cy), QPointF(cx - 0.8 * s_, cy - 1.1 * s_), QPointF(cx, cy - 0.4 * s_))
+        path.cubicTo(QPointF(cx + 0.8 * s_, cy - 1.1 * s_), QPointF(cx + 1.6 * s_, cy), QPointF(cx, cy + s_))
+        p.drawPath(path)
+
+
+def _pat_flowers(p, n):
+    p.fillRect(0, 0, n, n, QColor(240, 248, 232))
+    for cx, cy, col in ((n / 4, n / 4, "#e76f51"), (3 * n / 4, 3 * n / 4, "#6d5dfc")):
+        p.setPen(Qt.PenStyle.NoPen)
+        p.setBrush(QColor(col))
+        for k in range(5):
+            a = math.radians(k * 72)
+            p.drawEllipse(QPointF(cx + math.cos(a) * n / 14, cy + math.sin(a) * n / 14), n / 16, n / 16)
+        p.setBrush(QColor("#f4d35e"))
+        p.drawEllipse(QPointF(cx, cy), n / 20, n / 20)
+
+
+def _pat_mosaic(n=128):
+    d1, d2, idx = _voronoi(n, 40, 171)
+    rng = np.random.default_rng(172)
+    pal = np.array([[int(c[k:k + 2], 16) for k in (1, 3, 5)] for c in
+                    ("#1d3557", "#457b9d", "#a8dadc", "#e9c46a", "#e76f51", "#2a9d8f")], np.float32)
+    cols = pal[rng.integers(0, len(pal), 40)][idx]
+    img = np.empty((n, n, 4), np.float32)
+    img[..., :3] = cols
+    img[..., 3] = 255
+    img[(d2 - d1) < 1.6, :3] = (235, 230, 220)
+    return _np_img(img)
+
+
+def _pat_terrazzo(n=128):
+    rng = np.random.default_rng(181)
+    img = _ramp(_fbm(n, 182) * 0.3 + 0.6, ["#d9d4cc", "#f1ede6"])
+    d1, d2, idx = _voronoi(n, 70, 183)
+    chips = d1 < 2.0 + rng.random(70)[idx] * 3
+    pal = np.array([[200, 90, 70], [60, 70, 80], [230, 180, 90], [120, 150, 140]], np.float32)
+    img[chips, :3] = pal[rng.integers(0, 4, 70)][idx][chips]
+    return _np_img(img)
+
+
+def _pat_camo(n=128):
+    a = _fbm(n, 191)
+    b = _fbm(n, 192)
+    img = _ramp(np.zeros((n, n), np.float32), ["#5b6b3a", "#5b6b3a"])
+    img[a > 0.48, :3] = (120, 110, 70)
+    img[b > 0.52, :3] = (45, 50, 30)
+    img[(a < 0.38) & (b < 0.42), :3] = (150, 140, 100)
+    return _np_img(img)
+
+
+def _pat_rust(n=128):
+    rng = np.random.default_rng(201)
+    a = _fbm(n, 202) * 0.7 + rng.random((n, n)).astype(np.float32) * 0.3
+    return _np_img(_ramp(a, ["#3d1f10", "#8b3a12", "#c26a2a", "#d9a066"]))
+
+
+def _pat_concrete(n=128):
+    rng = np.random.default_rng(211)
+    a = _fbm(n, 212) * 0.6 + rng.random((n, n)).astype(np.float32) * 0.25 + 0.1
+    img = _ramp(a, ["#8a8a86", "#c4c3be"])
+    pores = rng.random((n, n)) < 0.01
+    img[pores, :3] = (90, 90, 88)
+    return _np_img(img)
+
+
+def _pat_grass(p, n):
+    p.fillRect(0, 0, n, n, QColor(70, 120, 40))
+    rng = np.random.default_rng(221)
+    for _ in range(260):
+        x, y = rng.random() * n, rng.random() * n
+        h = 6 + rng.random() * 10
+        lean = (rng.random() - 0.5) * 6
+        g = int(110 + rng.random() * 100)
+        p.setPen(QPen(QColor(40 + int(rng.random() * 50), g, 30), 1.2))
+        for dx in (-n, 0, n):
+            for dy in (-n, 0, n):
+                p.drawLine(QPointF(x + dx, y + dy), QPointF(x + dx + lean, y + dy - h))
+
+
+def _pat_wood_dark(n=128):
+    xx, yy = _coords(n)
+    a = (np.sin((xx / n * 10 + _fbm(n, 231) * 2.5) * 2 * math.pi) + 1) / 2
+    return _np_img(_ramp(a ** 0.7, ["#2b160a", "#5a3218", "#7a4724"]))
+
+
 PATTERNS = {
     "Bakstenen": lambda: _paint(64, _bricks),
     "Schaakbord": lambda: _paint(32, _checker),
@@ -522,6 +913,34 @@ PATTERNS = {
     "Wolken": lambda: _numpy_pattern("Wolken"),
     "Zand": lambda: _numpy_pattern("Zand"),
     "Linnen": lambda: _numpy_pattern("Linnen"),
+    "Luipaard": _pat_leopard,
+    "Zebra": _pat_zebra,
+    "Tijger": _pat_tiger,
+    "Giraf": _pat_giraffe,
+    "Slangenhuid": _pat_snake,
+    "Craquelé": _pat_crackle,
+    "Papier": _pat_paper,
+    "Pakpapier": _pat_kraft,
+    "Spijkerstof": _pat_denim,
+    "Schotse ruit": lambda: _paint(96, _pat_tartan),
+    "Ruitpatroon": lambda: _paint(64, _pat_argyle),
+    "Visgraat": lambda: _paint(64, _pat_herringbone),
+    "Kurk": _pat_cork,
+    "Graniet": _pat_granite,
+    "Leer": _pat_leather,
+    "Golfkarton": _pat_corrugated,
+    "Bubbels": lambda: _paint(96, _pat_bubbles),
+    "Confetti": lambda: _paint(96, _pat_confetti),
+    "Sterrenhemel": lambda: _paint(128, _pat_stars),
+    "Hartjes": lambda: _paint(48, _pat_hearts),
+    "Bloemetjes": lambda: _paint(64, _pat_flowers),
+    "Mozaïek": _pat_mosaic,
+    "Terrazzo": _pat_terrazzo,
+    "Camouflage": _pat_camo,
+    "Roest": _pat_rust,
+    "Beton": _pat_concrete,
+    "Gras": lambda: _paint(96, _pat_grass),
+    "Donker hout": _pat_wood_dark,
 }
 _cache = {}
 
