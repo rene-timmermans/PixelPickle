@@ -1,69 +1,113 @@
 # PixelPickle
 
-Fotobewerker voor Linux met een begrijpelijke en vertrouwde indeling van de gereedschappen:
-menu's, gereedschapsbalk met uitklapgroepen, optiebalk, paletten (Materialen, Lagen) en
-documenten met tabs.
+Fotobewerker voor Linux met een begrijpelijke en vertrouwde indeling van de gereedschappen. Menu's,
+gereedschappen en sneltoetsen staan op vaste, logische plekken, zodat je direct aan de slag kunt en
+niet hoeft te zoeken.
+
+## Wat het kan
+
+**Werkruimte**
+- Menubalk, standaardwerkbalk en een gereedschapsbalk met uitklapgroepen.
+- Optiebalk met de instellingen van het gekozen gereedschap, netjes uitgelijnd, met eigen
+  voorinstellingen per gereedschap.
+- Paletten Materialen, Lagen en Geschiedenis, los te maken en vrij te plaatsen.
+- Meerdere afbeeldingen tegelijk, als tabbladen of als losse vensters.
+- Snelmenu's met de rechtermuisknop op de afbeelding, de tabbladen en de lagen.
+- Strakke lijniconen in de accentkleur van je eigen thema; ziet er goed uit op licht en donker.
+- Nederlands en Engels.
+
+**Gereedschappen**
+- Pannen en zoomen, selecteren en verplaatsen.
+- Selecties: rechthoek, ovaal en andere vormen, uit de vrije hand (ook punt tot punt en Slimme rand)
+  en de toverstaf met overeenkomstmodi en tolerantie. Bij de rand van het venster schuift het beeld
+  vanzelf mee.
+- Bijsnijden met een aanpasbaar kader: grepen op hoeken en zijden, vaste verhoudingen, maten in te
+  typen en uitlijnen op laag of afbeelding. Dubbelklik in het kader om bij te snijden.
+- Rechtzetten, rode ogen verwijderen, klonen.
+- Penseel, airbrush, wisser, vlakvulling en kleurwisselaar.
+- Retoucheerpenselen: lichter/donkerder, tegenhouden, doordrukken, vegen, duwen, verzachten,
+  verscherpen, reliëf, verzadiging, tint en meer.
+- Vormen (rechthoek, ovaal, symmetrische vormen, basisvormen), pen en bewerkbare tekst.
+
+**Materialen**
+- Kleur, verloop (lineair, rechthoekig, zonnestraal, radiaal; met hoek, herhalingen en middelpunt) en
+  patroon (met hoek en schaal; ook een geopende afbeelding of een eigen bestand).
+- Werkt met de vulemmer, de penselen en de vormen.
+- Een reeks verlopen en patronen meegeleverd; verlopen en patronen van een bestaande installatie
+  onder Wine worden automatisch ingelezen.
+
+**Lagen**
+- 21 mengmodi, dekking, lagengroepen, maskerlagen en aanpassingslagen.
+- Mengbereiken: bepaal per kanaal waar een laag zichtbaar is, op basis van de laag zelf en van wat
+  eronder ligt.
+- Koppelingssets, transparantie vergrendelen en lagen markeren met een kleur.
+
+**Aanpassen en effecten**
+- 142 aanpassingen en effecten met een Vóór/Na voorbeeld waarin je kunt zoomen en schuiven, een
+  voorbeeld op de afbeelding zelf en voorinstellingen.
+- Effecten zoeken met voorbeelden naast elkaar, en snelle fotocorrecties via Foto verbeteren.
+
+**Bestanden en veiligheid**
+- Openen en opslaan: PNG, JPEG, TIFF, BMP, WebP, GIF (ook transparant, via GIF-optimalisatie),
+  OpenRaster (.ora, met lagen) en PspImage (.pspimage, met lagen).
+- Ongedaan maken en opnieuw, met alle stappen in het palet Geschiedenis.
+- Automatisch opslaan naar een herstelmap, op een instelbaar interval.
+
+**Hulp**
+- Beknopte gebruikershandleiding en een overzicht van alle sneltoetsen in het menu Help.
 
 ## Installeren
 
 Download het pakket voor jouw distributie bij de nieuwste
-[release](https://github.com/rene-timmermans/pixelpickle/releases/latest). De benodigde onderdelen
-(Python, PySide6, NumPy, Pillow) installeert je pakketbeheerder automatisch mee. Daarna staat
-PixelPickle in het menu (Grafisch) of start je het met `pixelpickle`.
+[release](https://github.com/rene-timmermans/pixelpickle/releases/latest). Alles wat PixelPickle nodig
+heeft, installeert je pakketbeheerder automatisch mee. Daarna staat PixelPickle in het menu (Grafisch)
+of start je het met `pixelpickle`.
 
 | Distributie | Installeren | Verwijderen |
 |---|---|---|
 | Arch, SteamOS, Manjaro, EndeavourOS | `sudo pacman -U pixelpickle-<versie>-1-any.pkg.tar.zst` | `sudo pacman -R pixelpickle` |
-| Debian 13 of nieuwer, recente Ubuntu (getest op de nieuwste LTS en de nieuwste versie) | `sudo apt install ./pixelpickle_<versie>-1_all.deb` | `sudo apt remove pixelpickle` |
+| Debian 13 of nieuwer, recente Ubuntu | `sudo apt install ./pixelpickle_<versie>-1_all.deb` | `sudo apt remove pixelpickle` |
 | Fedora | `sudo dnf install ./pixelpickle-<versie>-1.*.noarch.rpm` | `sudo dnf remove pixelpickle` |
 
-Elk pakket wordt bij een release automatisch gebouwd, in een echte omgeving van die distributie
-geïnstalleerd en getest (zie `.github/workflows/release.yml`). Ubuntu 24.04 en Debian 12 hebben geen
-PySide6 pakket en worden daarom niet ondersteund.
-
-### Overstappen van de oude naam "Pigment" (versie 0.1.x)
-
-Er bestaat al een ander Arch pakket met de naam `pigment`; daarom heet dit programma nu PixelPickle.
-Verwijder eerst de oude versie, anders kan `pacman -Syu` hem vervangen door dat andere pakket:
-
-```
-sudo pacman -R pigment
-sudo pacman -U pixelpickle-<versie>-1-any.pkg.tar.zst
-```
-
-Instellingen en voorinstellingen worden bij de eerste start automatisch overgenomen, en .ora bestanden
-van de oude versie openen gewoon.
+Elk pakket wordt bij een release automatisch gebouwd, geïnstalleerd en getest op die distributie.
+Ubuntu 24.04 en Debian 12 worden niet ondersteund.
 
 ## Taal
 
-PixelPickle is er in het Nederlands en het Engels. Kies de taal via
-**Bestand > Voorkeuren > Algemene programmavoorkeuren** (*File > Preferences > General Program
-Preferences*). Bij de eerste start is de taal Engels.
+Bij de eerste start is de taal Engels. Kies Nederlands via
+**File > Preferences > General Program Preferences** (*Bestand > Voorkeuren > Algemene
+programmavoorkeuren*).
 
-## Wat het kan
+## Wat er nieuw is
 
-- Gereedschappen op vaste, logische posities met korte sneltoetsen (A, Z, K, M, S, E, R, C, B, L, J,
-  X, F, I, T, P, G, Q, H, V), waaronder selecties met Slimme rand, toverstaf met overeenkomstmodi en
-  tolerantie, alle retoucheerpenselen, klonen, vormen en bewerkbare tekst.
-- Bijsnijden met aanpasbaar kader, vaste verhoudingen en uitlijnen op laag of afbeelding.
-- Materialen: kleur, verloop (lineair, rechthoekig, zonnestraal, radiaal) en patroon, voor vulemmer,
-  penselen en vormen. Verlopen en patronen van een bestaande installatie worden automatisch ingelezen.
-- Lagen met 21 mengmodi, mengbereiken, groepen, maskerlagen en aanpassingslagen.
-- Eigen lijniconen in de accentkleur van het thema, voor een strak en consistent uiterlijk.
-- 142 effecten en aanpassingen met Vóór/Na voorbeeld en voorinstellingen.
-- Automatisch opslaan naar een herstelmap, op een instelbaar interval.
-- Beknopte gebruikershandleiding in het programma (Help).
-- Openen en opslaan: PNG, JPEG, TIFF, BMP, WebP, GIF (ook transparant via GIF-optimalisatie),
-  OpenRaster (.ora, met lagen) en PspImage (.pspimage).
+**0.5.2** Nieuwe omschrijving van het programma in de pakketten en het menu.
+
+**0.5.1** Het effectvenster meldt het wanneer er een selectie actief is, zodat duidelijk is waarom het
+voorbeeld alleen dat gebied toont.
+
+**0.5.0** Vooral cosmetisch: eigen lijniconen in de accentkleur van het thema voor alle werkbalken,
+paletten en muisaanwijzers, en een strak uitgelijnde optiebalk. Nieuw: mengbereiken in
+Laageigenschappen.
+
+**0.4.0** Bijsnijden met een aanpasbaar kader, verloop en patroon als materiaal, automatisch opslaan,
+gebruikershandleiding en een nieuw venster Info. Zonder geopende afbeelding is geen gereedschap actief;
+daarna komt het laatst gebruikte gereedschap terug.
+
+**0.3** Engels als tweede taal, pakketten voor Debian, Ubuntu en Fedora, een eigen programma-icoon,
+zoomen en schuiven in het effectvoorbeeld en automatisch meeschuiven bij de rand tijdens het selecteren.
+
+**0.2** Eigen muisaanwijzer per gereedschap; vrije software onder de GPL.
+
+**0.1** Eerste versie: menu's, gereedschappen, lagen en effecten.
 
 ## Ontwikkelen
 
 ```
-python3 -m venv .venv && .venv/bin/pip install PySide6 numpy Pillow
 ./pixelpickle.sh                                           # starten vanuit de broncode
 QT_QPA_PLATFORM=offscreen .venv/bin/python tests/smoke.py   # tests
-tools/build_package.sh                                 # pacman pakket in dist/ (Debian/Fedora: via GitHub Actions)
 ```
+
+Functies die nog niet gebouwd zijn, staan in [TODO.md](TODO.md).
 
 ## Licentie
 

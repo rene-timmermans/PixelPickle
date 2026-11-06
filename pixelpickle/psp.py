@@ -540,7 +540,7 @@ _LAYER_TAIL = bytes.fromhex(
     "01000000000000000020030000e8030000000000000000000020030000e8030000ff00010000000000000000000000000000"
     "000000000000000000000000000000000000000000000000000000ffff0000ffff0000ffff0000ffff0000ffff0000ffff00"
     "00ffff0000ffff0000ffff0000ffff00ffff4000")
-PIGMENT_TO_PSP_BLEND = {v: k for k, v in PSP_BLEND.items()}
+PP_TO_PSP_BLEND = {v: k for k, v in PSP_BLEND.items()}
 
 
 def _block(bid, body: bytes) -> bytes:
@@ -654,7 +654,7 @@ def save(doc, path):
 
     def emit(group):
         for l in doc.children(group):
-            blend = PIGMENT_TO_PSP_BLEND.get(l.mode, 0)
+            blend = PP_TO_PSP_BLEND.get(l.mode, 0)
             common = (l.opacity, blend, l.visible, l.lock_alpha, l.link_set, l.highlight, l.blend_ranges)
             if l.kind == "group":
                 n = len(doc.subtree(l)) - 1

@@ -133,7 +133,6 @@ class MainWindow(QMainWindow):
         self.setStatusBar(TrStatusBar())
         self.setWindowTitle(APP)
         self.settings = QSettings("PixelPickle", "PixelPickle")
-        self._migrate_settings()
         self.fg = QColor(0, 0, 0)
         self.bg = QColor(255, 255, 255)
         self.fg_none = self.bg_none = False
@@ -186,17 +185,6 @@ class MainWindow(QMainWindow):
         if state is not None:
             self.restoreState(state)
         self.update_actions()
-
-    def _migrate_settings(self):
-        """Eenmalig de instellingen van eerdere namen overnemen (Brushwork, daarvoor Pigment)."""
-        if self.settings.allKeys():
-            return
-        for name in ("Brushwork", "Pigment"):
-            old = QSettings(name, name)
-            if old.allKeys():
-                for k in old.allKeys():
-                    self.settings.setValue(k, old.value(k))
-                return
 
     # ================================================================ opbouw
     def tool_key(self, tool):

@@ -9,8 +9,8 @@ import sys
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 sys.path.insert(0, ROOT)
-SKIP_RE = re.compile(r"^([a-z0-9_.\-]+|#[0-9a-fA-F]{3,8}|[<>=!@]?[0-9A-Za-z]{1,4}|svg:.*|pixelpickle[-:].*|pigment[-:].*|"
-                     r"brushwork[-:].*|.*\.(png|json|ora|py|qm)|~BK.*|[A-Z_]+)$")
+SKIP_RE = re.compile(r"^([a-z0-9_.\-]+|#[0-9a-fA-F]{3,8}|[<>=!@]?[0-9A-Za-z]{1,4}|svg:.*|pixelpickle[-:].*|"
+                     r".*\.(png|json|ora|py|qm)|~BK.*|[A-Z_]+)$")
 out = {}
 
 
