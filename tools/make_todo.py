@@ -97,7 +97,6 @@ Totaal: {len(rows_tools)} gereedschappen en {len(rows_menu)} menu-opdrachten.
 - [ ] Tekst en vectorvormen blijven bij opslaan als .pspimage geen tekst/vector (worden een rasterlaag)
 - [ ] Vectorvormen uit .pspimage (rechthoek, pijl, pen) worden nog niet ingelezen
 - [ ] .pspimage: alleen Curven als PSP aanpassingslaag; andere aanpassingslagen worden bij opslaan weggelaten
-- [ ] Laageigenschappen: tabblad Mengbereiken
 - [ ] Effect Lampen: 2 lampen in plaats van 5
 - [ ] Textuur en Sculptuur: eigen patronen in plaats van de PSP patroonbestanden
 - [ ] Rode ogen verwijderen (menu): herkent geen ogen, maakt alle sterk rode vlakken donkerder

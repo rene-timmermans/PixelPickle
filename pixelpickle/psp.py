@@ -10,7 +10,7 @@ import numpy as np
 from PySide6.QtGui import QColor
 
 from . import imageops as ops
-from .document import Document, Layer, new_image
+from .document import BLEND_CHANNELS, FULL_RANGE, Document, Layer, new_image, ranges_active
 
 SIG = b"Paint Shop Pro Image File\n\x1a\0\0\0\0\0"
 B_IMAGE, B_CREATOR, B_COLOR, B_LAYER_START, B_LAYER, B_CHANNEL = 0, 1, 2, 3, 4, 5
@@ -170,6 +170,7 @@ class Reader:
             L["mask_rect"] = struct.unpack_from("<4i", d, p + 38)
             L["mask_saved"] = struct.unpack_from("<4i", d, p + 54)
             L["mask_disabled"] = d[p + 71] if p + 71 < body + cl else 0
+            L["ranges"] = _read_ranges(d, p + 75) if p + 115 <= body + cl else None
             tail_end = body + cl
             if tail_end - p >= 120 and d[tail_end - 5] == 1:  # markeren in lagenpalet + COLORREF
                 r_, g_, b_ = d[tail_end - 4], d[tail_end - 3], d[tail_end - 2]
@@ -189,6 +190,7 @@ class Reader:
             L["mask_rect"] = struct.unpack_from("<4i", d, p + 38)
             L["mask_saved"] = struct.unpack_from("<4i", d, p + 54)
             L["mask_disabled"] = d[p + 71]
+            L["ranges"] = _read_ranges(d, p + 75)
             # vaste lengte: + mengbereiken (5x2x4) + bitmap/kanaal aantallen
             sub_start = p + 75 + 2 + 40 + 4
             nxt = d.find(b"~BK\0", p, end)
@@ -386,6 +388,7 @@ class Reader:
             lay = Layer(L["name"] or "Laag", new_image(W, H), L["opacity"] / 255,
                         bool(L["flags"] & 1), PSP_BLEND.get(L["blend"], 0), bool(L["protect"]))
             lay.link_set = L["link"]
+            lay.blend_ranges = L.get("ranges")
             if L.get("highlight"):
                 lay.highlight = QColor(*L["highlight"])
             if L["rgba"] is not None:
@@ -573,7 +576,28 @@ def _layer_block(name, rgba, rect, opacity, blend, visible, protect, link, full_
 _CURVE_SEP = bytes.fromhex("2b0100000002000000ffff0000000000000000000000000000000000000000000000000000000000000000")
 
 
-def _info_chunk(name, ltype, rect, opacity, blend, visible, protect, link, highlight=None, mask_rect=None):
+def _ranges_bytes(ranges):
+    """Mengbereiken als 5 x (bron, doel) x 4 bytes: grijs, rood, groen, blauw en een ongebruikt vijfde."""
+    out = bytearray()
+    for ch in BLEND_CHANNELS + [None]:
+        mine, below = (ranges or {}).get(ch, (FULL_RANGE, FULL_RANGE)) if ch else (FULL_RANGE, FULL_RANGE)
+        for rng in (mine, below):
+            out += bytes(max(0, min(255, int(v))) for v in rng)
+    return bytes(out)
+
+
+def _read_ranges(d, q):
+    out = {}
+    for i, ch in enumerate(BLEND_CHANNELS):
+        mine = tuple(d[q + i * 8:q + i * 8 + 4])
+        below = tuple(d[q + i * 8 + 4:q + i * 8 + 8])
+        if len(mine) == 4 and len(below) == 4:
+            out[ch] = (mine, below)
+    return out if ranges_active(out) else None
+
+
+def _info_chunk(name, ltype, rect, opacity, blend, visible, protect, link, highlight=None, ranges=None,
+                mask_rect=None):
     nm = name.encode("cp1252", "replace")[:255]
     tail = bytearray(_LAYER_TAIL)
     tail[0] = ltype
@@ -586,6 +610,8 @@ def _info_chunk(name, ltype, rect, opacity, blend, visible, protect, link, highl
     tail[37] = link & 0xff
     if highlight is not None:
         tail[-5:] = bytes([1, highlight.red(), highlight.green(), highlight.blue(), 0])
+    if ranges_active(ranges):
+        tail[75:115] = _ranges_bytes(ranges)
     if ltype in (LT_MASK, LT_ADJUST):
         tail[72] = 1  # zo schrijft PSP XI het bij masker- en aanpassingslagen
         if mask_rect is not None:
@@ -629,7 +655,7 @@ def save(doc, path):
     def emit(group):
         for l in doc.children(group):
             blend = PIGMENT_TO_PSP_BLEND.get(l.mode, 0)
-            common = (l.opacity, blend, l.visible, l.lock_alpha, l.link_set, l.highlight)
+            common = (l.opacity, blend, l.visible, l.lock_alpha, l.link_set, l.highlight, l.blend_ranges)
             if l.kind == "group":
                 n = len(doc.subtree(l)) - 1
                 info = _info_chunk(l.name, LT_GROUP, (0, 0, 0, 0), *common)

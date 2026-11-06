@@ -5,7 +5,8 @@ import traceback
 import numpy as np
 from PySide6.QtCore import QPointF, QRect, QSettings, QSize, Qt, QTimer
 from PySide6.QtGui import QAction, QColor, QFont, QIcon, QImage, QKeySequence, QPainter, QPixmap
-from PySide6.QtWidgets import (QApplication, QDockWidget, QFileDialog, QInputDialog, QLabel,
+from PySide6.QtWidgets import (QAbstractButton, QApplication, QCheckBox, QDockWidget, QFileDialog, QHBoxLayout,
+                               QInputDialog, QLabel,
                                QMainWindow, QMdiArea, QMdiSubWindow, QMenu, QMessageBox, QStyle,
                                QStatusBar, QToolBar, QToolButton, QVBoxLayout, QWidget)
 
@@ -26,6 +27,12 @@ APP = "PixelPickle"
 
 
 def glyph_icon(glyph, enabled=True, size=24):
+    """Icoon voor een gereedschap of werkbalkknop: een eigen lijnicoon in de accentkleur van het thema
+    (zie icons.py); alleen als daar geen tekening voor is, het teken zelf."""
+    from . import icons
+    ic = icons.icon(glyph, enabled)
+    if ic is not None:
+        return ic
     pm = QPixmap(size, size)
     pm.fill(Qt.GlobalColor.transparent)
     p = QPainter(pm)
@@ -165,11 +172,11 @@ class MainWindow(QMainWindow):
         # zonder afbeelding is er geen gereedschap actief (zoals in PSP); bij de eerste afbeelding
         # wordt het laatst gebruikte gereedschap weer gekozen, ook na een herstart
         try:
-            last = int(str(self.settings.value("last_tool", "d091")), 16)
+            last = int(str(self.settings.value("last_tool", "d001")), 16)
         except ValueError:
-            last = 0xd091
+            last = 0xd001
         t = self.tools.get(last)
-        self._last_tool = t if t is not None and t.available and last in self.group_buttons else self.tools[0xd091]
+        self._last_tool = t if t is not None and t.available and last in self.group_buttons else self.tools[0xd001]
 
         self.resize(1400, 900)
         geo = self.settings.value("geometry")
@@ -471,11 +478,8 @@ class MainWindow(QMainWindow):
         self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.opt_bar)
         self.opt_bar.show()
         self.std_toolbar = tb
-        st = self.style()
-        icons = {0xe100: st.standardIcon(QStyle.StandardPixmap.SP_FileIcon),
-                 0xe101: st.standardIcon(QStyle.StandardPixmap.SP_DirOpenIcon),
-                 0xe103: st.standardIcon(QStyle.StandardPixmap.SP_DialogSaveButton),
-                 0xe104: glyph_icon("💾"), 0x82ec: glyph_icon("🖨", False),
+        icons = {0xe100: glyph_icon("new"), 0xe101: glyph_icon("open"),
+                 0xe103: glyph_icon("💾"), 0xe104: glyph_icon("save_as"), 0x82ec: glyph_icon("🖨"),
                  0xe12b: glyph_icon("↶"), 0xe12c: glyph_icon("↷"), 0x80d1: glyph_icon("⤢"),
                  0x8242: glyph_icon("↻"), 0x8243: glyph_icon("↺")}
         for item in STANDARD_TOOLBAR:
@@ -555,13 +559,17 @@ class MainWindow(QMainWindow):
         self.opt_bar.setEnabled(on)
         if on and self.tool is None:
             self.select_tool(self._last_tool, force=True)
-        elif not on and self.tool is not None:
-            self.tool.deactivate()
-            self.tool = None
-            for btn in set(self.group_buttons.values()):
-                btn.setChecked(False)
-            self.opt_bar.clear()
-            self.statusBar().clearMessage()
+        elif not on:
+            if self.tool is not None:
+                self.tool.deactivate()
+                self.tool = None
+                for btn in set(self.group_buttons.values()):
+                    btn.setChecked(False)
+                self.statusBar().clearMessage()
+            if not getattr(self, "_idle_opts", False):
+                # zoals in PSP: de instellingen van het (laatste) gereedschap staan er grijs
+                self._build_options(self._last_tool)
+                self._idle_opts = True
 
     def on_active(self, sw):
         if sw is None:
@@ -606,7 +614,9 @@ class MainWindow(QMainWindow):
             self._last_tool = tool
             self.settings.setValue("last_tool", f"{tool.cid:04x}")
         if not force and self.tool is None and not self.mdi.subWindowList():
-            return  # geen afbeelding open: alleen onthouden
+            self._idle_opts = False
+            self._tools_enabled(False)  # geen afbeelding open: onthouden en grijs tonen
+            return
         if self.tool is not None:
             self.tool.deactivate()
         self.tool = tool
@@ -617,32 +627,76 @@ class MainWindow(QMainWindow):
             return
         btn.show_tool(tool)
         btn.setChecked(True)
+        self._build_options(tool)
+        self.statusBar().showMessage(f"{tool.name}: {tool.tip}")
+        for sw in self.mdi.subWindowList():
+            sw.canvas.apply_cursor()
+            sw.canvas.update()
+
+    def _build_options(self, tool):
+        """Optiebalk vullen met de instellingen van een gereedschap."""
+        self._idle_opts = False
         self.opt_bar.clear()
         widgets, self.tool_opt_keys = recorded_keys(tool)
         self.opt_bar.addWidget(self._presets_button(tool))
         lbl = QLabel(f"  {tool.name}  ")
         lbl.setStyleSheet("font-weight: bold;")
-        self.opt_bar.addWidget(lbl)
+        self.opt_bar.addWidget(self._opt_column(None, lbl))
         i = 0
         while i < len(widgets):  # label boven het invoerveld, zoals in PSP
             w = widgets[i]
             if isinstance(w, QLabel) and i + 1 < len(widgets):
-                box = QWidget()
-                v = QVBoxLayout(box)
-                v.setContentsMargins(4, 0, 4, 0)
-                v.setSpacing(0)
-                w.setStyleSheet("font-size: 10px;")
-                v.addWidget(w)
-                v.addWidget(widgets[i + 1])
-                self.opt_bar.addWidget(box)
+                j = i + 1
+                if isinstance(widgets[j], QAbstractButton) and not isinstance(widgets[j], QCheckBox):
+                    # een rij knoppen onder één label (bijvoorbeeld uitlijnen bij bijsnijden)
+                    row = QWidget()
+                    h = QHBoxLayout(row)
+                    h.setContentsMargins(0, 0, 0, 0)
+                    h.setSpacing(2)
+                    while j < len(widgets) and isinstance(widgets[j], QAbstractButton) \
+                            and not isinstance(widgets[j], QCheckBox):
+                        h.addWidget(widgets[j])
+                        j += 1
+                    h.addStretch()
+                    self.opt_bar.addWidget(self._opt_column(w, row))
+                    i = j
+                    continue
+                self.opt_bar.addWidget(self._opt_column(w, widgets[i + 1]))
                 i += 2
-            else:
-                self.opt_bar.addWidget(w)
+            elif isinstance(w, QCheckBox):
+                # vinkjes per twee onder elkaar, zoals in PSP; zo blijft de balk compact
+                pair = [w]
+                if i + 1 < len(widgets) and isinstance(widgets[i + 1], QCheckBox):
+                    pair.append(widgets[i + 1])
+                self.opt_bar.addWidget(self._opt_column(pair[0], pair[1] if len(pair) > 1 else None, small=False))
+                i += len(pair)
+            else:  # los veld of knop: op de hoogte van de invoervelden
+                self.opt_bar.addWidget(self._opt_column(None, w))
                 i += 1
-        self.statusBar().showMessage(f"{tool.name}: {tool.tip}")
-        for sw in self.mdi.subWindowList():
-            sw.canvas.apply_cursor()
-            sw.canvas.update()
+
+    def _opt_column(self, top, bottom, small=True):
+        """Kolom in de optiebalk: klein label (of lege regel) boven, invoerveld eronder. Zo staan alle
+        velden, de gereedschapsnaam en losse knoppen op dezelfde hoogte."""
+        box = QWidget()
+        v = QVBoxLayout(box)
+        v.setContentsMargins(4, 0, 4, 0)
+        v.setSpacing(0)
+        if top is None:
+            top = QLabel("")
+        if small and isinstance(top, QLabel):
+            top.setStyleSheet("font-size: 10px;")
+        v.addWidget(top)
+        if isinstance(bottom, QLabel):
+            # tekst even hoog als een invoerveld en verticaal gecentreerd, zodat hij op één lijn
+            # staat met de tekst in de keuzelijsten en invoervelden ernaast
+            from PySide6.QtWidgets import QComboBox
+            bottom.setFixedHeight(QComboBox().sizeHint().height())
+            bottom.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
+        if bottom is not None:
+            v.addWidget(bottom)
+        else:
+            v.addStretch()
+        return box
 
     # ---------------------------------------------------------------- voorinstellingen
     def psp_preset_list(self, cid):

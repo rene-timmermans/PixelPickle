@@ -10,7 +10,7 @@ from PySide6.QtCore import QBuffer, QByteArray, QIODevice, Qt
 from PySide6.QtGui import QColor, QImage, QPainter
 
 from . import imageops as ops
-from .document import BLEND_MODES, Document, Layer, new_image
+from .document import BLEND_MODES, Document, Layer, new_image, ranges_active
 
 OPEN_FILTER = ("Alle afbeeldingen (*.ora *.png *.jpg *.jpeg *.jpe *.bmp *.gif *.tif *.tiff *.webp "
                "*.tga *.pcx *.ico *.psd *.ppm *.pgm *.pbm *.xpm *.jp2 *.dds *.pspimage *.psp *.pspframe "
@@ -117,6 +117,8 @@ def save_ora(doc: Document, path: str):
                 el.set("pixelpickle-lock-alpha", "1")
             if l.link_set:
                 el.set("pixelpickle-link-set", str(l.link_set))
+            if ranges_active(l.blend_ranges):
+                el.set("pixelpickle-blend-ranges", json.dumps({k: [list(a), list(b)] for k, (a, b) in l.blend_ranges.items()}))
 
         def emit(parent, group):
             for l in reversed(doc.children(group)):  # OpenRaster: bovenste eerst
@@ -173,6 +175,12 @@ def load_ora(path: str) -> Document:
             lay.mode = ops_by_name.get(el.get("composite-op", "svg:src-over"), 0)
             lay.lock_alpha = _attr(el, "lock-alpha") == "1"
             lay.link_set = int(_attr(el, "link-set", 0))
+            br = _attr(el, "blend-ranges")
+            if br:
+                try:
+                    lay.blend_ranges = {k: (tuple(v[0]), tuple(v[1])) for k, v in json.loads(br).items()}
+                except (ValueError, TypeError, IndexError):
+                    lay.blend_ranges = None
 
         def walk(stack, group, dx=0, dy=0):
             for el in stack:

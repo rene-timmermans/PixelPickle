@@ -5,6 +5,7 @@ from PySide6.QtWidgets import (QColorDialog, QComboBox, QHBoxLayout, QInputDialo
                                QListWidget, QListWidgetItem, QSlider, QSpinBox, QToolButton,
                                QVBoxLayout, QWidget)
 
+from . import icons
 from .document import BLEND_MODES
 
 
@@ -155,7 +156,8 @@ class LayerRow(QWidget):
         h = QHBoxLayout(self)
         h.setContentsMargins(2 + depth * 18, 2, 2, 2)
         if layer.kind == "group":
-            tog = QToolButton(text="▸" if layer.collapsed else "▾")
+            tog = QToolButton()
+            icons.set_button(tog, "chevron_right" if layer.collapsed else "chevron_down", 12)
             tog.setAutoRaise(True)
             tog.setFixedSize(16, 22)
             tog.setToolTip("Groep in- of uitklappen")
@@ -167,26 +169,40 @@ class LayerRow(QWidget):
         self.eye.setAutoRaise(True)
         self.eye.setFixedSize(22, 22)
         self.eye.setToolTip("Zichtbaarheid aan/uit")
-        self.eye.setText("👁" if layer.visible else " ")
+        icons.set_button(self.eye, "eye" if layer.visible else "eye_off", 16)
+        self.eye.toggled.connect(lambda v: icons.set_button(self.eye, "eye" if v else "eye_off", 16))
         self.eye.toggled.connect(lambda v: palette.set_visible(layer, v))
         h.addWidget(self.eye)
-        kind = {"group": ("📁", "Lagengroep"), "mask": ("▣", "Maskerlaag (wit = tonen, zwart = verbergen)")}.get(layer.kind)
+        kind = {"group": ("folder", "Lagengroep"), "mask": ("mask", "Maskerlaag (wit = tonen, zwart = verbergen)")}.get(layer.kind)
         if layer.adjust is not None:
-            kind = ("◐", "Aanpassingslaag (wit = effect, zwart = geen effect)")
+            kind = ("adjust", "Aanpassingslaag (wit = effect, zwart = geen effect)")
         if layer.text is not None:
-            kind = ("T", "Tekstlaag: klik met het tekstgereedschap op de tekst om te bewerken")
+            kind = ("A", "Tekstlaag: klik met het tekstgereedschap op de tekst om te bewerken")
         if kind:
-            k = QLabel(kind[0])
+            k = QLabel()
+            k.setPixmap(icons.label_pixmap(kind[0], 16, icons.text_color()))
             k.setToolTip(kind[1])
             h.addWidget(k)
         self.thumb = QLabel()
         if layer.kind != "group":
             self.thumb.setPixmap(_checker_thumb(layer.image))
             h.addWidget(self.thumb)
-        extra = ("  🔒" if layer.lock_alpha else "") + (f"  🔗{layer.link_set}" if layer.link_set else "")
-        self.name = QLabel(layer.name + extra)
+        self.name = QLabel(layer.name)
         self.name.setProperty("pp_notr", True)  # laagnamen zijn gegevens, niet vertalen
         h.addWidget(self.name, 1)
+        if layer.lock_alpha:
+            lk = QLabel()
+            lk.setPixmap(icons.label_pixmap("lock", 14, icons.text_color()))
+            lk.setToolTip("Transparantie vergrendeld")
+            h.addWidget(lk)
+        if layer.link_set:
+            ln = QLabel(str(layer.link_set))
+            ln.setProperty("pp_notr", True)
+            ic = QLabel()
+            ic.setPixmap(icons.label_pixmap("link", 14, icons.text_color()))
+            ic.setToolTip("Koppelingsset")
+            h.addWidget(ic)
+            h.addWidget(ln)
         if layer.highlight is not None:
             self.setAutoFillBackground(True)
             pal = self.palette()
@@ -210,8 +226,8 @@ class LayersPalette(QWidget):
         lay.setSpacing(3)
 
         bar = QHBoxLayout()
-        new = QToolButton(text="▤＋")
-        new.setToolTip("Nieuwe rasterlaag")
+        new = QToolButton()
+        icons.set_button(new, "layer_new", 18, "Nieuwe rasterlaag")
         new.setPopupMode(QToolButton.ToolButtonPopupMode.MenuButtonPopup)
         self.new_menu = QMenu(new)
         self.new_menu.aboutToShow.connect(self._fill_new_menu)
@@ -219,14 +235,14 @@ class LayersPalette(QWidget):
         new.clicked.connect(lambda: self.doc and self.main._run(self.main.new_raster_layer))
         bar.addWidget(new)
         for glyph, tip, fn in [
-            ("✕", "Laag verwijderen", lambda d: d.delete_layer()),
-            ("⚙", "Laageigenschappen", lambda d: self.main.layer_properties()),
-            ("▲", "Omhoog verplaatsen", lambda d: d.move_layer(1)),
-            ("▼", "Omlaag verplaatsen", lambda d: d.move_layer(-1)),
-            ("⤓", "Omlaag samenvoegen", lambda d: d.merge_down()),
+            ("delete", "Laag verwijderen", lambda d: d.delete_layer()),
+            ("gear", "Laageigenschappen", lambda d: self.main.layer_properties()),
+            ("up", "Omhoog verplaatsen", lambda d: d.move_layer(1)),
+            ("down", "Omlaag verplaatsen", lambda d: d.move_layer(-1)),
+            ("merge_down", "Omlaag samenvoegen", lambda d: d.merge_down()),
         ]:
-            b = QToolButton(text=glyph)
-            b.setToolTip(tip)
+            b = QToolButton()
+            icons.set_button(b, glyph, 18, tip)
             b.setAutoRaise(True)
             b.clicked.connect(lambda _=False, f=fn: self.doc and f(self.doc))
             bar.addWidget(b)
@@ -243,7 +259,10 @@ class LayersPalette(QWidget):
         self.slider.valueChanged.connect(self.spin.setValue)
         self.spin.valueChanged.connect(self.slider.setValue)
         self.spin.valueChanged.connect(self.on_opacity)
-        row.addWidget(QLabel("▦"))
+        op = QLabel()
+        op.setPixmap(icons.label_pixmap("opacity", 16))
+        op.setToolTip("Dekking")
+        row.addWidget(op)
         row.addWidget(self.spin)
         row.addWidget(self.slider)
         self.mode = QComboBox()
@@ -251,7 +270,8 @@ class LayersPalette(QWidget):
         self.mode.setToolTip("Mengmodus")
         self.mode.currentIndexChanged.connect(self.on_mode)
         row.addWidget(self.mode, 1)
-        self.lock = QToolButton(text="🔒")
+        self.lock = QToolButton()
+        icons.set_button(self.lock, "lock", 16)
         self.lock.setCheckable(True)
         self.lock.setToolTip("Transparantie vergrendelen")
         self.lock.toggled.connect(self.on_lock)

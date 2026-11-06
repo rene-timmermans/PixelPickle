@@ -272,6 +272,201 @@ class BordersDialog(QDialog):
         return l, t, r, b
 
 
+class RangeSlider(QWidget):
+    """Mengbereik: kleurbalk met een dekkingsgrafiek en vier sleepbare driehoekjes (a <= b <= c <= d).
+    Onder a en boven d is de laag onzichtbaar, tussen b en c volledig zichtbaar."""
+    changed = Signal()
+    PAD = 7
+
+    def __init__(self):
+        super().__init__()
+        from PySide6.QtWidgets import QSizePolicy
+        self.v = list((0, 0, 255, 255))
+        self.color = QColor(255, 255, 255)
+        self.drag = None
+        self.setMinimumSize(260, 46)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.setMouseTracking(True)
+
+    def set_values(self, v):
+        self.v = [int(x) for x in v]
+        self.update()
+
+    def set_color(self, c):
+        self.color = QColor(c)
+        self.update()
+
+    def _x(self, val):
+        return self.PAD + val / 255 * (self.width() - 2 * self.PAD)
+
+    def _val(self, x):
+        return round(max(0, min(255, (x - self.PAD) / max(1, self.width() - 2 * self.PAD) * 255)))
+
+    def paintEvent(self, e):
+        from PySide6.QtCore import QPointF, QRectF
+        from PySide6.QtGui import QLinearGradient, QPainter, QPen, QPolygonF
+        p = QPainter(self)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        w = self.width()
+        bar = QRectF(self.PAD, 4, w - 2 * self.PAD, 18)
+        g = QLinearGradient(bar.left(), 0, bar.right(), 0)
+        g.setColorAt(0, QColor(0, 0, 0))
+        g.setColorAt(1, self.color)
+        p.fillRect(bar, g)
+        # dekkingsgrafiek over de balk
+        a, b, c, d = (self._x(x) for x in self.v)
+        top, bot = bar.top() + 2, bar.bottom() - 1
+        poly = QPolygonF([QPointF(bar.left(), bot), QPointF(a, bot), QPointF(b, top), QPointF(c, top),
+                          QPointF(d, bot), QPointF(bar.right(), bot)])
+        for col, wd in ((QColor(0, 0, 0, 160), 3), (QColor(255, 255, 255), 1.2)):
+            p.setPen(QPen(col, wd))
+            p.drawPolyline(poly)
+        p.setPen(QPen(self.palette().mid().color(), 1))
+        p.setBrush(Qt.BrushStyle.NoBrush)
+        p.drawRect(bar)
+        # driehoekjes: binnenste twee gevuld, buitenste twee open
+        hl = self.palette().highlight().color()
+        for k, x in enumerate((a, b, c, d)):
+            tri = QPolygonF([QPointF(x, bar.bottom() + 2), QPointF(x - 6, bar.bottom() + 12),
+                             QPointF(x + 6, bar.bottom() + 12)])
+            p.setPen(QPen(self.palette().windowText().color(), 1))
+            p.setBrush(hl if k in (1, 2) else self.palette().base().color())
+            p.drawPolygon(tri)
+        p.end()
+
+    def mousePressEvent(self, e):
+        x = e.position().x()
+        d = [abs(self._x(v) - x) for v in self.v]
+        k = min(range(4), key=lambda i: (d[i], -i if x > self._x(self.v[i]) else i))
+        self.drag = k
+        self.mouseMoveEvent(e)
+
+    def mouseMoveEvent(self, e):
+        if self.drag is None or not (e.buttons() & Qt.MouseButton.LeftButton):
+            return
+        k = self.drag
+        lo = self.v[k - 1] if k > 0 else 0
+        hi = self.v[k + 1] if k < 3 else 255
+        nv = max(lo, min(hi, self._val(e.position().x())))
+        if nv != self.v[k]:
+            self.v[k] = nv
+            self.update()
+            self.changed.emit()
+
+    def mouseReleaseEvent(self, e):
+        self.drag = None
+
+
+class BlendRangesPage(QWidget):
+    """Tabblad Mengbereiken van Laageigenschappen."""
+    changed = Signal()
+    COLORS = {"Grijs": QColor(255, 255, 255), "Rood": QColor(255, 0, 0), "Groen": QColor(0, 255, 0),
+              "Blauw": QColor(0, 0, 255)}
+
+    def __init__(self, ranges):
+        super().__init__()
+        from PySide6.QtWidgets import QGridLayout, QHBoxLayout, QPushButton, QVBoxLayout
+        from .document import BLEND_CHANNELS, FULL_RANGE
+        self.channels = BLEND_CHANNELS
+        self.full = FULL_RANGE
+        self.ranges = {ch: (list(FULL_RANGE), list(FULL_RANGE)) for ch in BLEND_CHANNELS}
+        for ch, (a, b) in (ranges or {}).items():
+            if ch in self.ranges:
+                self.ranges[ch] = (list(a), list(b))
+        self._busy = False
+        v = QVBoxLayout(self)
+        top = QHBoxLayout()
+        top.addWidget(QLabel("Mengkanaal:"))
+        self.channel = QComboBox()
+        self.channel.addItems(BLEND_CHANNELS)
+        self.channel.currentIndexChanged.connect(self._show)
+        top.addWidget(self.channel)
+        top.addStretch()
+        reset = QPushButton("Standaard")
+        reset.setToolTip("Dit kanaal terugzetten: laag overal zichtbaar")
+        reset.clicked.connect(self._reset)
+        top.addWidget(reset)
+        v.addLayout(top)
+        self.sliders, self.spins = [], []
+        for title in ("Deze laag:", "Onderliggende laag:"):
+            v.addWidget(QLabel(title))
+            sl = RangeSlider()
+            sl.changed.connect(self._from_slider)
+            v.addWidget(sl)
+            row = QGridLayout()
+            sp = []
+            for k in range(4):
+                b = _spin(0, 255, 0)
+                b.valueChanged.connect(self._from_spin)
+                row.addWidget(b, 0, k)
+                sp.append(b)
+            v.addLayout(row)
+            self.sliders.append(sl)
+            self.spins.append(sp)
+        tip = QLabel("Tussen de twee gevulde driehoekjes is de laag volledig zichtbaar; buiten de open "
+                     "driehoekjes onzichtbaar, met een zachte overgang daartussen. 'Onderliggende laag' "
+                     "kijkt naar de pixels onder deze laag.")
+        tip.setWordWrap(True)
+        v.addWidget(tip)
+        v.addStretch()
+        self._show()
+
+    def _show(self, *_):
+        ch = self.channels[self.channel.currentIndex()]
+        self._busy = True
+        for i in range(2):
+            vals = self.ranges[ch][i]
+            self.sliders[i].set_values(vals)
+            self.sliders[i].set_color(self.COLORS[ch])
+            for k in range(4):
+                self.spins[i][k].setValue(vals[k])
+        self._busy = False
+
+    def _store(self, i, vals):
+        ch = self.channels[self.channel.currentIndex()]
+        pair = list(self.ranges[ch])
+        pair[i] = list(vals)
+        self.ranges[ch] = tuple(pair)
+        self.changed.emit()
+
+    def _from_slider(self):
+        if self._busy:
+            return
+        for i in range(2):
+            vals = self.sliders[i].v
+            self._busy = True
+            for k in range(4):
+                self.spins[i][k].setValue(vals[k])
+            self._busy = False
+            self._store(i, vals)
+
+    def _from_spin(self):
+        if self._busy:
+            return
+        for i in range(2):
+            vals = [sp.value() for sp in self.spins[i]]
+            for k in range(1, 4):  # volgorde bewaken
+                vals[k] = max(vals[k], vals[k - 1])
+            self._busy = True
+            for k in range(4):
+                self.spins[i][k].setValue(vals[k])
+            self.sliders[i].set_values(vals)
+            self._busy = False
+            self._store(i, vals)
+
+    def _reset(self):
+        ch = self.channels[self.channel.currentIndex()]
+        self.ranges[ch] = (list(self.full), list(self.full))
+        self._show()
+        self.changed.emit()
+
+    def value(self):
+        """Mengbereiken voor de laag, of None als alles op standaard staat."""
+        from .document import ranges_active
+        r = {ch: (tuple(a), tuple(b)) for ch, (a, b) in self.ranges.items()}
+        return r if ranges_active(r) else None
+
+
 class LayerPropertiesDialog(QDialog):
     """Laageigenschappen zoals PSP: tabbladen Algemeen / Mengbereiken, met voorbeeld op afbeelding."""
 
@@ -281,7 +476,9 @@ class LayerPropertiesDialog(QDialog):
         from .document import BLEND_MODES
         self.setWindowTitle(title)
         self.layer, self.doc = layer, doc
-        self.orig = (layer.name, layer.opacity, layer.mode, layer.visible, layer.lock_alpha, layer.link_set, layer.highlight)
+        from .document import copy_ranges
+        self.orig = (layer.name, layer.opacity, layer.mode, layer.visible, layer.lock_alpha, layer.link_set,
+                     layer.highlight, copy_ranges(layer.blend_ranges))
         v = QVBoxLayout(self)
         head = QHBoxLayout()
         head.addStretch()
@@ -333,8 +530,11 @@ class LayerPropertiesDialog(QDialog):
         hrow.addStretch()
         g.addLayout(hrow, 5, 0, 1, 4)
         tabs.addTab(gen, "Algemeen")
-        tabs.addTab(QWidget(), "Mengbereiken")
-        tabs.setTabEnabled(1, False)
+        self.ranges = BlendRangesPage(layer.blend_ranges)
+        self.ranges.changed.connect(self._live)
+        tabs.addTab(self.ranges, "Mengbereiken")
+        if layer.kind == "mask":  # een maskerlaag mengt niet
+            tabs.setTabEnabled(1, False)
         v.addWidget(tabs)
         v.addWidget(_buttons(self))
         for w in (self.op, self.link):
@@ -356,7 +556,8 @@ class LayerPropertiesDialog(QDialog):
     def values(self):
         return dict(name=self.name.text() or "Laag", opacity=self.op.value() / 100, mode=self.mode.currentIndex(),
                     visible=self.vis.isChecked(), lock_alpha=self.lock.isChecked(), link_set=self.link.value(),
-                    highlight=QColor(self.hl_color) if self.hl.isChecked() else None)
+                    highlight=QColor(self.hl_color) if self.hl.isChecked() else None,
+                    blend_ranges=self.ranges.value())
 
     def _set(self, vals):
         for k, val in vals.items():
@@ -374,8 +575,9 @@ class LayerPropertiesDialog(QDialog):
         self.doc.changed.emit(QRect())
 
     def _restore(self):
-        n, o, m, vis, lock, link, hl = self.orig
-        self._set(dict(name=n, opacity=o, mode=m, visible=vis, lock_alpha=lock, link_set=link, highlight=hl))
+        n, o, m, vis, lock, link, hl, br = self.orig
+        self._set(dict(name=n, opacity=o, mode=m, visible=vis, lock_alpha=lock, link_set=link, highlight=hl,
+                       blend_ranges=br))
 
     def accept(self):
         if self.doc is not None:

@@ -48,7 +48,8 @@ Preferences*). Bij de eerste start is de taal Engels.
 - Bijsnijden met aanpasbaar kader, vaste verhoudingen en uitlijnen op laag of afbeelding.
 - Materialen: kleur, verloop (lineair, rechthoekig, zonnestraal, radiaal) en patroon, voor vulemmer,
   penselen en vormen. Verlopen en patronen van een bestaande installatie worden automatisch ingelezen.
-- Lagen met 21 mengmodi, groepen, maskerlagen en aanpassingslagen.
+- Lagen met 21 mengmodi, mengbereiken, groepen, maskerlagen en aanpassingslagen.
+- Eigen lijniconen in de accentkleur van het thema, voor een strak en consistent uiterlijk.
 - 142 effecten en aanpassingen met Vóór/Na voorbeeld en voorinstellingen.
 - Automatisch opslaan naar een herstelmap, met herstel na een onverwachte afsluiting.
 - Beknopte gebruikershandleiding in het programma (Help).

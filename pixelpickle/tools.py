@@ -99,15 +99,20 @@ def tool_cursor(glyph):
     if glyph in _CURSORS:
         return _CURSORS[glyph]
     from PySide6.QtGui import QCursor, QPixmap
-    # 1. het icoon apart tekenen (werkt voor gewone symbolen en kleuren-emoji)
+    # 1. het icoon apart tekenen: zwart lijnicoon in dezelfde stijl als de werkbalk (icons.py);
+    #    alleen zonder tekening het teken zelf
+    from . import icons
     icon = QImage(20, 20, QImage.Format.Format_ARGB32_Premultiplied)
     icon.fill(Qt.GlobalColor.transparent)
     q = QPainter(icon)
-    f = QFont()
-    f.setPixelSize(15)
-    q.setFont(f)
-    q.setPen(QColor(0, 0, 0))
-    q.drawText(QRectF(0, 0, 20, 20), Qt.AlignmentFlag.AlignCenter, glyph)
+    if glyph in icons.ICONS:
+        q.drawPixmap(1, 1, icons.render(glyph, 18, QColor(0, 0, 0)))
+    else:
+        f = QFont()
+        f.setPixelSize(15)
+        q.setFont(f)
+        q.setPen(QColor(0, 0, 0))
+        q.drawText(QRectF(0, 0, 20, 20), Qt.AlignmentFlag.AlignCenter, glyph)
     q.end()
     # 2. wit silhouet van het icoon, voor een rand die op elke ondergrond zichtbaar is
     halo = QImage(icon)

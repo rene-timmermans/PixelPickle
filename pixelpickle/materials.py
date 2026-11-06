@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (QButtonGroup, QCheckBox, QDialog, QDialogButtonBo
                                QHBoxLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem, QPushButton,
                                QSpinBox, QTabWidget, QToolButton, QVBoxLayout, QWidget)
 
+from . import icons
 from . import material as M
 
 BASIC = [
@@ -435,16 +436,17 @@ class MaterialBox(QWidget):
         row = QHBoxLayout()
         row.setSpacing(1)
         self.kinds = QButtonGroup(self)
-        for i, (g, tip) in enumerate((("●", "Kleur"), ("◑", "Verloop"), ("✣", "Patroon"))):
-            b = QToolButton(text=g)
-            b.setToolTip(tip)
+        for i, (g, tip) in enumerate((("color", "Kleur"), ("gradient", "Verloop"), ("pattern", "Patroon"))):
+            b = QToolButton()
+            icons.set_button(b, g, 12, tip)
             b.setCheckable(True)
             b.setChecked(i == 0)
             b.setFixedSize(18, 18)
             self.kinds.addButton(b, i)
             row.addWidget(b)
         self.kinds.idClicked.connect(self.kind_chosen)
-        self.none = QToolButton(text="⊘")
+        self.none = QToolButton()
+        icons.set_button(self.none, "none", 12)
         self.none.setCheckable(True)
         self.none.setFixedSize(18, 18)
         self.none.setToolTip("Transparant: geen " + ("rand" if fg else "vulling"))
@@ -525,7 +527,8 @@ class MaterialsPalette(QWidget):
         self.fgbox.kind_chosen.connect(lambda k: main.set_material_kind(True, k))
         self.bgbox.kind_chosen.connect(lambda k: main.set_material_kind(False, k))
         right.addWidget(self.fgbox, 0, 0)
-        swap = QToolButton(text="⇅")
+        swap = QToolButton()
+        icons.set_button(swap, "swap", 14)
         swap.setToolTip("Kleuren wisselen")
         swap.setFixedSize(20, 20)
         swap.clicked.connect(main.swap_colors)

@@ -212,6 +212,7 @@ class Layer:
         self.group = None       # de groep (kop-laag) waar deze laag in zit, of None
         self.collapsed = False  # groep ingeklapt in het lagenpalet
         self.text = None        # bewerkbare tekst (zie textlayer.py); image is dan de weergave
+        self.blend_ranges = None  # mengbereiken: {kanaal: (deze laag, onderliggend)}, zie BLEND_CHANNELS
 
     def clone(self):
         # QImage kopie deelt pixels tot er geschreven wordt (copy on write)
@@ -222,6 +223,7 @@ class Layer:
         l.kind, l.collapsed, l.group = self.kind, self.collapsed, self.group
         from .textlayer import copy_text
         l.text = copy_text(self.text)
+        l.blend_ranges = copy_ranges(self.blend_ranges)
         return l
 
 
@@ -232,6 +234,58 @@ def clone_layers(layers):
     for c in clones:
         c.group = m.get(id(c.group)) if c.group is not None else None
     return clones
+
+
+# ---------------------------------------------------------------- mengbereiken
+# Per kanaal twee bereiken (deze laag en de onderliggende lagen), elk vier punten a <= b <= c <= d (0..255):
+# onder a en boven d is de laag onzichtbaar, tussen b en c volledig zichtbaar, daartussen een zachte
+# overgang. Alle bereiken samen worden vermenigvuldigd.
+BLEND_CHANNELS = ["Grijs", "Rood", "Groen", "Blauw"]
+FULL_RANGE = (0, 0, 255, 255)
+
+
+def copy_ranges(r):
+    return None if r is None else {k: (tuple(a), tuple(b)) for k, (a, b) in r.items()}
+
+
+def ranges_active(r):
+    return bool(r) and any(tuple(a) != FULL_RANGE or tuple(b) != FULL_RANGE for a, b in r.values())
+
+
+def _channel_values(rgb, ch):
+    if ch == "Grijs":
+        return rgb[..., 0] * 0.299 + rgb[..., 1] * 0.587 + rgb[..., 2] * 0.114
+    return rgb[..., {"Rood": 0, "Groen": 1, "Blauw": 2}[ch]]
+
+
+def range_weight(v, rng):
+    """Zichtbaarheid 0..1 voor waarden v (0..255) volgens bereik (a, b, c, d)."""
+    a, b, c, d = (float(x) for x in rng)
+    w = np.ones_like(v, dtype=np.float32)
+    if a > 0 or b > 0:
+        w = np.where(v < a, 0.0, w)
+        w = np.where((v >= a) & (v < b), (v - a) / max(b - a, 1e-6), w)
+    if c < 255 or d < 255:
+        w = np.where(v > d, 0.0, w)
+        w = np.where((v > c) & (v <= d), (d - v) / max(d - c, 1e-6), w)
+    return w.astype(np.float32)
+
+
+def apply_blend_ranges(src: QImage, under: QImage, ranges) -> QImage:
+    """Laagpixels (src) minder dekkend maken waar ze, of de onderliggende pixels (under, zelfde
+    grootte), buiten de mengbereiken vallen."""
+    if not ranges_active(ranges):
+        return src
+    s = ops.qimage_to_rgba(src).astype(np.float32)
+    u = ops.qimage_to_rgba(under).astype(np.float32)
+    w = np.ones(s.shape[:2], np.float32)
+    for ch, (mine, below) in ranges.items():
+        if tuple(mine) != FULL_RANGE:
+            w *= range_weight(_channel_values(s[..., :3], ch), mine)
+        if tuple(below) != FULL_RANGE:
+            w *= range_weight(_channel_values(u[..., :3], ch), below)
+    s[..., 3] *= w
+    return ops.rgba_to_qimage(np.clip(np.rint(s), 0, 255))
 
 
 def apply_mask(out: QImage, layer, r: QRect) -> QImage:
@@ -417,11 +471,16 @@ class Document(QObject):
                     continue
                 if l.kind == "group":
                     buf = comp(self.children(l, L))
+                    if ranges_active(l.blend_ranges):
+                        buf = apply_blend_ranges(buf, out, l.blend_ranges)
                     blend_onto(out, buf, l.mode, l.opacity, None, r.topLeft())
                 elif l.kind == "mask":
                     out = apply_mask(out, l, r)
                 elif l.adjust is not None:
                     out = apply_adjustment(out, l, r)
+                elif ranges_active(l.blend_ranges):
+                    part = apply_blend_ranges(l.image.copy(r), out, l.blend_ranges)
+                    blend_onto(out, part, l.mode, l.opacity, None, r.topLeft())
                 else:
                     blend_onto(out, l.image, l.mode, l.opacity, r, r.topLeft())
             return out
@@ -578,7 +637,7 @@ class Document(QObject):
             elif up.kind == "mask":
                 img = apply_mask(img, up, self.rect())
             else:
-                blend_onto(img, up.image, up.mode, up.opacity)
+                blend_onto(img, apply_blend_ranges(up.image, img, up.blend_ranges), up.mode, up.opacity)
         low.image = img
         self.layers.remove(up)
         self.active = self.layers.index(low)
