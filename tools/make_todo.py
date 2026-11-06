@@ -104,6 +104,27 @@ Totaal: {len(rows_tools)} gereedschappen en {len(rows_menu)} menu-opdrachten.
 - [ ] Materialen: verloop en patroon werken nog niet bij tekst, en zelf verlopen samenstellen (verloopbewerker) kan nog niet
 - [ ] Inhoud van de snelmenu's (rechtsklik) precies gelijk aan PSP maken
 - [ ] Gentoo installer (ebuild)
+
+## Afgerond
+
+Wat al gebouwd is, met de versie waarin het verscheen.
+
+- [x] Eigen set van 45 verlopen en 43 patronen in het programma zelf (0.5.3)
+- [x] Effectvenster meldt een actieve selectie (0.5.1)
+- [x] Mengbereiken in Laageigenschappen (0.5.0)
+- [x] Eigen lijniconen in de accentkleur van het thema voor werkbalken, paletten en aanwijzers (0.5.0)
+- [x] Optiebalk strak uitgelijnd; zonder afbeelding grijs de instellingen van het laatste gereedschap (0.5.0)
+- [x] Materialen: verloop en patroon voor vulemmer, penselen en vormen (0.4.0)
+- [x] Bijsnijden met aanpasbaar kader, grepen, vaste verhoudingen en uitlijnen (0.4.0)
+- [x] Automatisch opslaan naar een herstelmap (0.4.0)
+- [x] Gebruikershandleiding, venster Info en schuifbare toetsenbordlayout (0.4.0)
+- [x] Zonder afbeelding geen actief gereedschap; laatst gebruikte gereedschap komt terug (0.4.0)
+- [x] Pen scrolt niet mee bij de rand van het venster (0.4.0)
+- [x] Geen merknamen van het oorspronkelijke programma in beeld (0.4.0)
+- [x] Eigen programma-icoon, zoomen en schuiven in het effectvoorbeeld, meeschuiven bij de rand (0.3.1)
+- [x] Engels als tweede taal; pakketten voor Debian, Ubuntu en Fedora (0.3.0)
+- [x] Eigen muisaanwijzer per gereedschap (0.2.0)
+- [x] Lagengroepen, maskerlagen, aanpassingslagen, bewerkbare tekst en lezen/schrijven van .pspimage (0.1)
 """
 open(OUT, "w", encoding="utf-8").write(text)
 print(f"{OUT}: {len(rows_tools)} gereedschappen, {len(rows_menu)} menu-opdrachten")
