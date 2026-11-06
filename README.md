@@ -1,7 +1,7 @@
 # PixelPickle
 
-Fotobewerker voor Linux met de vertrouwde indeling en sneltoetsen van Paint Shop Pro XI:
-dezelfde menu's, gereedschapsbalk met uitklapgroepen, optiebalk, paletten (Materialen, Lagen) en
+Fotobewerker voor Linux met een begrijpelijke en vertrouwde indeling van de gereedschappen:
+menu's, gereedschapsbalk met uitklapgroepen, optiebalk, paletten (Materialen, Lagen) en
 documenten met tabs.
 
 ## Installeren
@@ -42,7 +42,7 @@ Preferences*). Bij de eerste start is de taal Engels.
 
 ## Wat het kan
 
-- Gereedschappen zoals in PSP XI, met dezelfde posities en sneltoetsen (A, Z, K, M, S, E, R, C, B, L, J,
+- Gereedschappen op vaste, logische posities met korte sneltoetsen (A, Z, K, M, S, E, R, C, B, L, J,
   X, F, I, T, P, G, Q, H, V), waaronder selecties met Slimme rand, toverstaf met overeenkomstmodi en
   tolerantie, alle retoucheerpenselen, klonen, vormen en bewerkbare tekst.
 - Bijsnijden met aanpasbaar kader, vaste verhoudingen en uitlijnen op laag of afbeelding.
@@ -54,7 +54,7 @@ Preferences*). Bij de eerste start is de taal Engels.
 - Automatisch opslaan naar een herstelmap, op een instelbaar interval.
 - Beknopte gebruikershandleiding in het programma (Help).
 - Openen en opslaan: PNG, JPEG, TIFF, BMP, WebP, GIF (ook transparant via GIF-optimalisatie),
-  OpenRaster (.ora, met lagen) en Paint Shop Pro (.pspimage).
+  OpenRaster (.ora, met lagen) en PspImage (.pspimage).
 
 ## Ontwikkelen
 

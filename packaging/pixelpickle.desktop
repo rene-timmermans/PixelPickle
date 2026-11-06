@@ -2,7 +2,7 @@
 Type=Application
 Name=PixelPickle
 GenericName=Fotobewerker
-Comment=Fotobewerker met de vertrouwde indeling van Paint Shop Pro
+Comment=Fotobewerker voor Linux met een begrijpelijke en vertrouwde indeling van de gereedschappen
 Exec=pixelpickle %F
 Icon=pixelpickle
 Terminal=false

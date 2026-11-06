@@ -1,7 +1,7 @@
 Name:           pixelpickle
 Version:        %{pp_version}
 Release:        1%{?dist}
-Summary:        Fotobewerker met de indeling van Paint Shop Pro XI
+Summary:        Fotobewerker voor Linux met een begrijpelijke en vertrouwde indeling van de gereedschappen
 License:        GPL-3.0-or-later
 URL:            https://github.com/rene-timmermans/pixelpickle
 Source0:        pixelpickle-%{version}.tar.gz
@@ -16,8 +16,8 @@ Recommends:     google-noto-sans-fonts
 %global __requires_exclude_from ^%{_datadir}/pixelpickle/.*$
 
 %description
-PixelPickle is een fotobewerker voor Linux met de vertrouwde menu's, gereedschapsbalk en
-sneltoetsen van Paint Shop Pro XI: lagen, maskers, aanpassingslagen, selecties, retoucheren
+PixelPickle is een fotobewerker voor Linux met een begrijpelijke en vertrouwde indeling van
+menu's, gereedschappen en sneltoetsen: lagen, maskers, aanpassingslagen, selecties, retoucheren
 en ruim 140 effecten.
 
 %prep

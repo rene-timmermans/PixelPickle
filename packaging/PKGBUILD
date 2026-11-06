@@ -2,7 +2,7 @@
 pkgname=pixelpickle
 pkgver=0.5.1
 pkgrel=1
-pkgdesc="Fotobewerker voor Linux met de vertrouwde indeling van Paint Shop Pro XI"
+pkgdesc="Fotobewerker voor Linux met een begrijpelijke en vertrouwde indeling van de gereedschappen"
 arch=('any')
 url="https://github.com/rene-timmermans/pixelpickle"
 license=('GPL-3.0-or-later')
