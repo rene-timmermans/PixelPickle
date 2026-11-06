@@ -33,7 +33,7 @@ class PspError(Exception):
 class Reader:
     def __init__(self, data: bytes):
         if not data.startswith(SIG[:27]):
-            raise PspError("Geen Paint Shop Pro bestand.")
+            raise PspError("Geen geldig .pspimage bestand.")
         self.d = data
         self.major, self.minor = struct.unpack_from("<HH", data, 32)
         self.hdr = 14 if self.major <= 3 else 10  # versie 3 heeft een extra lengteveld
@@ -449,7 +449,7 @@ class Reader:
         if not any(l.kind == "raster" and l.adjust is None for l in out):
             rgba = self.composite_image(info, composite, pal) if composite else None
             if rgba is None:
-                raise PspError("Dit PSP bestand bevat geen leesbare lagen.")
+                raise PspError("Dit .pspimage bestand bevat geen leesbare lagen.")
             from .document import bg_name
             out = [Layer(bg_name(), ops.rgba_to_qimage(rgba))]
         doc.layers = out
@@ -661,7 +661,7 @@ def save(doc, path):
                         bm = struct.pack("<IHH", 8, 1, 1) + _channel(g, 7, 0, W * H)
                     out.append(_block(B_LAYER, info + _curves_ext(l.adjust[1]["points"]) + bm))
                 else:
-                    warn.append(f"aanpassingslaag '{l.name}' kan nog niet als PSP aanpassingslaag worden "
+                    warn.append(f"aanpassingslaag '{l.name}' kan nog niet als .pspimage aanpassingslaag worden "
                                 "bewaard en is weggelaten (in .ora blijft hij bewaard)")
             else:
                 rgba = ops.qimage_to_rgba(l.image)

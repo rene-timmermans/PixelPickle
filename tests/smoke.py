@@ -120,7 +120,7 @@ w.new_raster_layer()
 # --- voorinstellingen
 from pixelpickle.effectdialog import EffectDialog
 ed = EffectDialog(w, doc, w.effects[0x8091])
-psp_items = [ed.presets.itemText(i) for i in range(ed.presets.count()) if "(PSP)" in ed.presets.itemText(i)]
+psp_items = [ed.presets.itemText(i) for i in range(ed.presets.count()) if "(geïmporteerd)" in ed.presets.itemText(i)]
 print("PSP voorinstellingen Spiraal:", psp_items[:3])
 if psp_items:
     ed._load_preset([ed.presets.itemText(i) for i in range(ed.presets.count())].index(psp_items[0]))

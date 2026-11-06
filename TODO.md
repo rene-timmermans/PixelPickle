@@ -8,7 +8,7 @@ Vul de kolom **Prioriteit** in (bijvoorbeeld *hoog*, *middel*, *laag* of *nooit*
 voor opmerkingen. Bijwerken: `QT_QPA_PLATFORM=offscreen .venv/bin/python -I tools/make_todo.py`
 (ingevulde prioriteiten en notities blijven bewaard).
 
-Totaal: 16 gereedschappen en 204 menu-opdrachten.
+Totaal: 16 gereedschappen en 203 menu-opdrachten.
 
 ## Gereedschappen
 
@@ -75,7 +75,6 @@ Totaal: 16 gereedschappen en 204 menu-opdrachten.
 |  | Voorkeuren bestandsindelingen... | File Format Preferences... | Bestand > Voorkeuren |  | `8014` |
 |  | Koppelingen met bestandsindelingen... | File Format Associations... | Bestand > Voorkeuren |  | `80fb` |
 |  | Bestandslocaties... | File Locations... | Bestand > Voorkeuren |  | `8152` |
-|  | Instellingen voor automatisch opslaan... | Autosave Settings... | Bestand > Voorkeuren |  | `8151` |
 |  | Voorkeuren herstellen... | Reset Preferences... | Bestand > Voorkeuren |  | `8204` |
 |  | Laden... | Load... | Bestand > Werkvlak |  | `814e` |
 |  | Opslaan... | Save... | Bestand > Werkvlak |  | `814f` |
@@ -251,6 +250,6 @@ Totaal: 16 gereedschappen en 204 menu-opdrachten.
 - [ ] Textuur en Sculptuur: eigen patronen in plaats van de PSP patroonbestanden
 - [ ] Rode ogen verwijderen (menu): herkent geen ogen, maakt alle sterk rode vlakken donkerder
 - [ ] Zwakke effecten: Wind (te subtiel), Fijn leer, Contour overtrekken
-- [ ] Materialen: verloop en patroon als vulling (nu alleen effen kleur)
+- [ ] Materialen: verloop en patroon werken nog niet bij tekst, en zelf verlopen samenstellen (verloopbewerker) kan nog niet
 - [ ] Inhoud van de snelmenu's (rechtsklik) precies gelijk aan PSP maken
 - [ ] Gentoo installer (ebuild)

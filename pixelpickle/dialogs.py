@@ -603,3 +603,85 @@ class PreferencesDialog(QDialog):
 
     def language(self):
         return self.codes[self.lang.currentIndex()]
+
+
+class AutosaveDialog(QDialog):
+    """Instellingen voor automatisch opslaan."""
+
+    def __init__(self, parent, enabled, minutes):
+        super().__init__(parent)
+        self.setWindowTitle("Instellingen voor automatisch opslaan")
+        f = QFormLayout(self)
+        self.enabled = QCheckBox("Automatisch opslaan inschakelen")
+        self.enabled.setChecked(enabled)
+        f.addRow(self.enabled)
+        self.minutes = _spin(1, 999, minutes)
+        self.minutes.setEnabled(enabled)
+        self.enabled.toggled.connect(self.minutes.setEnabled)
+        f.addRow("Minuten:", self.minutes)
+        info = QLabel("Gewijzigde afbeeldingen worden bewaard in een herstelmap, niet over uw eigen "
+                      "bestanden heen. Sluit PixelPickle onverwacht af, dan kunt u ze bij de volgende "
+                      "start terughalen.")
+        info.setWordWrap(True)
+        info.setMinimumWidth(320)
+        f.addRow(info)
+        f.addRow(_buttons(self))
+
+
+def text_window(parent, title, html, size=(720, 640)):
+    """Venster met opgemaakte tekst, schuifbalk en aanpasbare grootte (handleiding, sneltoetsen)."""
+    from PySide6.QtWidgets import QTextBrowser, QVBoxLayout
+    dlg = QDialog(parent)
+    dlg.setWindowTitle(title)
+    dlg.setSizeGripEnabled(True)
+    v = QVBoxLayout(dlg)
+    tb = QTextBrowser()
+    tb.setOpenExternalLinks(True)
+    tb.setHtml(html)
+    v.addWidget(tb)
+    bb = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
+    bb.accepted.connect(dlg.accept)
+    v.addWidget(bb)
+    dlg.resize(*size)
+    return dlg
+
+
+class AboutDialog(QDialog):
+    """Info over PixelPickle: versie, makers, licentie en gebruikte onderdelen."""
+
+    def __init__(self, parent, icon):
+        super().__init__(parent)
+        import platform
+        import numpy
+        import PIL
+        import PySide6
+        from PySide6.QtCore import qVersion
+        from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout
+        from . import __version__
+        from .i18n import tr
+        self.setWindowTitle("Over PixelPickle")
+        v = QVBoxLayout(self)
+        top = QHBoxLayout()
+        pic = QLabel()
+        pic.setPixmap(icon.pixmap(96, 96))
+        pic.setAlignment(Qt.AlignmentFlag.AlignTop)
+        top.addWidget(pic)
+        url = "https://github.com/rene-timmermans/pixelpickle"
+        txt = QLabel(
+            f"<h2 style='margin:0'>PixelPickle {__version__}</h2>"
+            f"<p>{tr('Een fotobewerker voor Linux met de vertrouwde indeling van klassieke Windows fotobewerkers.')}</p>"
+            f"<p><b>{tr('Gemaakt door')}</b><br>René Timmermans<br>{tr('met Claude (Anthropic)')}</p>"
+            f"<p><b>{tr('Licentie')}</b><br>{tr('Vrije software onder de GNU General Public License, versie 3 of later.')}</p>"
+            f"<p><b>{tr('Website')}</b><br><a href='{url}'>{url}</a></p>"
+            f"<p style='color:gray'>{tr('Gebouwd met')} Python {platform.python_version()}, Qt {qVersion()}, "
+            f"PySide6 {PySide6.__version__}, NumPy {numpy.__version__}, Pillow {PIL.__version__}</p>")
+        txt.setProperty("pp_notr", True)
+        txt.setWordWrap(True)
+        txt.setOpenExternalLinks(True)
+        txt.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
+        txt.setMinimumWidth(420)
+        top.addWidget(txt, 1)
+        v.addLayout(top)
+        bb = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
+        bb.accepted.connect(self.accept)
+        v.addWidget(bb)

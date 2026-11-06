@@ -130,6 +130,8 @@ class MainWindow(QMainWindow):
         self.fg = QColor(0, 0, 0)
         self.bg = QColor(255, 255, 255)
         self.fg_none = self.bg_none = False
+        self.fg_mat = self.bg_mat = None  # verloop of patroon in plaats van effen kleur
+        self._last_mat = {}  # (voorgrond?, soort) -> laatst gekozen verloop/patroon
         self.opts = dict(DEFAULT_OPTS)
         self.menu_tree, self.tool_keys = load_layout()
         self.effects = effects_pkg.load_all()
@@ -158,7 +160,16 @@ class MainWindow(QMainWindow):
             a.triggered.connect(fn)
             self.addAction(a)
         self.set_tab_mode(self.settings.value("tabs", "true") == "true")
-        self.select_tool(self.tools[0xd091])
+        from .autosave import AutoSaver
+        self.autosaver = AutoSaver(self)
+        # zonder afbeelding is er geen gereedschap actief (zoals in PSP); bij de eerste afbeelding
+        # wordt het laatst gebruikte gereedschap weer gekozen, ook na een herstart
+        try:
+            last = int(str(self.settings.value("last_tool", "d091")), 16)
+        except ValueError:
+            last = 0xd091
+        t = self.tools.get(last)
+        self._last_tool = t if t is not None and t.available and last in self.group_buttons else self.tools[0xd091]
 
         self.resize(1400, 900)
         geo = self.settings.value("geometry")
@@ -344,7 +355,7 @@ class MainWindow(QMainWindow):
             0x80d3: self.mdi.closeAllSubWindows, 0x80d4: self.duplicate_image, 0x80d5: self.fit_window_to_image,
             0x81d0: lambda: self.canvas().fit(),
             # Help
-            0x8028: self.show_shortcuts, 0xe140: self.about, 0xe142: self.about,
+            0x8028: self.show_shortcuts, 0xe140: self.about, 0xe142: self.show_manual, 0x8151: self.autosave_settings,
         }
 
     def effect_browser(self):
@@ -370,7 +381,7 @@ class MainWindow(QMainWindow):
 
     # Opdrachten die ook zonder geopende afbeelding werken (o.a. voorkeuren, zoals in PSP)
     NO_DOC = {0x8012, 0xe100, 0xe101, 0xe141, 0x80e6, 0x8020, 0x8185, 0x81ae, 0x8002, 0x81ba, 0x81f9, 0xe800, 0xe801,
-              0x801d, 0x82ce, 0xe132, 0xe133, 0xe134, 0x80d3, 0x8028, 0xe140, 0xe142}
+              0x801d, 0x82ce, 0xe132, 0xe133, 0xe134, 0x80d3, 0x8028, 0xe140, 0xe142, 0x8151}
     CHECKABLE = {0x821f: None, 0x8185: "dock_mat", 0x81ae: "dock_layers", 0x8002: "dock_hist", 0x82ce: None, 0x8021: None, 0x811a: None}
 
     @staticmethod
@@ -536,6 +547,21 @@ class MainWindow(QMainWindow):
         has = self.canvas() is not None
         for a in self.doc_actions:
             a.setEnabled(has)
+        self._tools_enabled(has or bool(self.mdi.subWindowList()))
+
+    def _tools_enabled(self, on):
+        """Gereedschapsbalk en optiebalk alleen actief als er een afbeelding open is."""
+        self.tools_toolbar.setEnabled(on)
+        self.opt_bar.setEnabled(on)
+        if on and self.tool is None:
+            self.select_tool(self._last_tool, force=True)
+        elif not on and self.tool is not None:
+            self.tool.deactivate()
+            self.tool = None
+            for btn in set(self.group_buttons.values()):
+                btn.setChecked(False)
+            self.opt_bar.clear()
+            self.statusBar().clearMessage()
 
     def on_active(self, sw):
         if sw is None:
@@ -575,7 +601,12 @@ class MainWindow(QMainWindow):
             dock.raise_()
 
     # ================================================================ gereedschap en kleur
-    def select_tool(self, tool):
+    def select_tool(self, tool, force=False):
+        if tool.cid in self.group_buttons:
+            self._last_tool = tool
+            self.settings.setValue("last_tool", f"{tool.cid:04x}")
+        if not force and self.tool is None and not self.mdi.subWindowList():
+            return  # geen afbeelding open: alleen onthouden
         if self.tool is not None:
             self.tool.deactivate()
         self.tool = tool
@@ -660,7 +691,7 @@ class MainWindow(QMainWindow):
             for name, vals in own.items():
                 m.addAction(name, lambda v=vals: self._apply_tool_preset(tool, v))
         if psp:
-            sub = m.addMenu("PSP voorinstellingen")
+            sub = m.addMenu("Geïmporteerde voorinstellingen")
             for name, vals in psp:
                 sub.addAction(name, lambda v=vals: self._apply_tool_preset(tool, v))
         m.addSeparator()
@@ -706,17 +737,63 @@ class MainWindow(QMainWindow):
     def swap_colors(self):
         self.fg_none, self.bg_none = self.bg_none, self.fg_none
         self.fg, self.bg = self.bg, self.fg
+        self.fg_mat, self.bg_mat = self.bg_mat, self.fg_mat
         self.materials.refresh()
 
     def reset_colors(self):
         self.fg, self.bg = QColor(0, 0, 0), QColor(255, 255, 255)
+        self.fg_mat = self.bg_mat = None
         self.materials.refresh()
+
+    # ---------------------------------------------------------------- verloop en patroon
+    def material(self, fg=True):
+        """Verloop of patroon voor voorgrond/achtergrond, of None bij een effen kleur."""
+        return self.fg_mat if fg else self.bg_mat
+
+    def set_material(self, fg, mat):
+        if mat is not None:
+            self._last_mat[(fg, mat["kind"])] = dict(mat)
+        if fg:
+            self.fg_mat = mat
+        else:
+            self.bg_mat = mat
+        self.materials.refresh()
+
+    def set_material_kind(self, fg, kind):
+        """Stijlknopjes onder het materiaalvak: 0 kleur, 1 verloop, 2 patroon (laatst gebruikte)."""
+        from . import material as M
+        if kind == 0:
+            self.set_material(fg, None)
+            return
+        k = "gradient" if kind == 1 else "pattern"
+        mat = self._last_mat.get((fg, k)) or (M.default_gradient() if kind == 1 else M.default_pattern())
+        self.set_material(fg, dict(mat))
+
+    def material_image(self, fg, rect, span=None):
+        """Afbeelding van het verloop/patroon voor rect (documentcoördinaten), of None bij effen kleur."""
+        from . import material as M
+        return M.render(self.material(fg), rect, span, self.fg, self.bg)
+
+    def material_brush(self, fg, span):
+        from . import material as M
+        return M.brush(self.material(fg), span, self.fg, self.bg)
+
+    def pattern_sources(self):
+        """Open afbeeldingen, te gebruiken als patroon."""
+        out = []
+        for s in self.mdi.subWindowList():
+            cv = getattr(s, "canvas", None)
+            if cv is not None:
+                out.append((cv.doc.title().rstrip(" *"), cv.doc.composite()))
+        return out
 
     # ================================================================ documenten
     def add_document(self, doc, canvas_of=None):
+        self._tools_enabled(True)
         cv = Canvas(doc, self)
         sw = DocWindow(self, cv)
         self.mdi.addSubWindow(sw)
+        sw.destroyed.connect(lambda *_: QTimer.singleShot(0, self._after_close))
         area = self.mdi.viewport().size()
         sw.resize(QSize(min(area.width() - 40, max(400, doc.w + 40)), min(area.height() - 40, max(300, doc.h + 60))))
         sw.show()
@@ -725,6 +802,10 @@ class MainWindow(QMainWindow):
         cv.setFocus()
         self.on_active(sw)
         return sw
+
+    def _after_close(self):
+        self.update_actions()
+        self.autosaver.cleanup()
 
     def close_active(self):
         sw = self.mdi.activeSubWindow()
@@ -805,7 +886,7 @@ class MainWindow(QMainWindow):
                 self.settings.value("lastdir", os.path.expanduser("~/Afbeeldingen")), doc.untitled)
             default_ext = ".pspimage" if len(doc.layers) > 1 else ".png"
             path, flt = QFileDialog.getSaveFileName(self, "Opslaan als", base + default_ext, fileio.SAVE_FILTER,
-                                                    "Paint Shop Pro (*.pspimage)" if default_ext == ".pspimage" else "PNG (*.png)")
+                                                    "PspImage (*.pspimage)" if default_ext == ".pspimage" else "PNG (*.png)")
             if not path:
                 return False
             if not os.path.splitext(path)[1]:
@@ -833,7 +914,7 @@ class MainWindow(QMainWindow):
             return False
         QApplication.restoreOverrideCursor()
         if warnings:
-            QMessageBox.information(self, APP, "Opgeslagen, met deze aanpassingen voor het PSP formaat:\n\n• "
+            QMessageBox.information(self, APP, "Opgeslagen, met deze aanpassingen voor het .pspimage formaat:\n\n• "
                                     + "\n• ".join(warnings) + "\n\nTip: bewaar ook een .ora om alles bewerkbaar te houden.")
         self.settings.setValue("lastdir", os.path.dirname(path))
         self._add_recent(path)
@@ -841,6 +922,7 @@ class MainWindow(QMainWindow):
             doc.path = path
             doc.set_modified(False)
             doc.titleChanged.emit()
+            self.autosaver.cleanup()
         self.statusBar().showMessage(f"Opgeslagen: {path}", 4000)
         return True
 
@@ -1373,15 +1455,64 @@ class MainWindow(QMainWindow):
                     rows.append((" > ".join(path + [name]), ", ".join(it["keys"])))
         walk(self.menu_tree, [])
         tools = [(f"Gereedschap: {t.name}", self.tool_key(t)) for t in self.tools.values() if self.tool_key(t)]
-        html = "<table cellspacing=3>" + "".join(f"<tr><td>{a}</td><td><b>{b}</b></td></tr>" for a, b in tools + rows) + "</table>"
-        box = QMessageBox(self)
-        box.setWindowTitle("Toetsenbordlayout")
-        box.setText(html)
-        box.exec()
+        html = "<table cellspacing=3>" + "".join(f"<tr><td>{tr(a)}</td><td style='padding-left:16px'><b>{b}</b></td></tr>"
+                                                 for a, b in tools + rows) + "</table>"
+        dialogs.text_window(self, tr("Toetsenbordlayout"), html, (760, 720)).exec()
 
     def about(self):
-        QMessageBox.about(self, "Over PixelPickle", "<b>PixelPickle</b><br>Een fotobewerker voor Linux met de vertrouwde "
-                          "indeling van klassieke Windows fotobewerkers.<br>Python, Qt en NumPy.")
+        dialogs.AboutDialog(self, self.windowIcon()).exec()
+
+    def manual_html(self):
+        """Beknopte gebruikershandleiding (Nederlands of Engels), met de echte sneltoetsen."""
+        from . import i18n
+        folder = os.path.join(os.path.dirname(__file__), "data")
+        path = os.path.join(folder, f"manual_{i18n.language()}.html")
+        if not os.path.exists(path):
+            path = os.path.join(folder, "manual_nl.html")
+        html = open(path, encoding="utf-8").read()
+        rows = "".join(f"<tr><td>{tr(t.name)}</td><td style='padding-left:16px'><b>{self.tool_key(t)}</b></td></tr>"
+                       for t in self.tools.values() if t.available and self.tool_key(t))
+        return html.replace("{tools}", f"<table cellspacing=2>{rows}</table>")
+
+    def show_manual(self):
+        dialogs.text_window(self, tr("Gebruikershandleiding"), self.manual_html(), (820, 760)).show()
+
+    # ---------------------------------------------------------------- automatisch opslaan
+    def autosave_settings(self):
+        a = self.autosaver
+        dlg = dialogs.AutosaveDialog(self, a.enabled(), a.minutes())
+        if dlg.exec():
+            self.settings.setValue("autosave/enabled", "true" if dlg.enabled.isChecked() else "false")
+            self.settings.setValue("autosave/minutes", dlg.minutes.value())
+            a.apply_settings()
+
+    def offer_recovery(self):
+        """Na een onverwachte afsluiting: automatisch opgeslagen afbeeldingen terughalen."""
+        import shutil
+        from .autosave import leftovers
+        found = leftovers()
+        if not found:
+            return
+        names = [i["title"] for _, items in found for i in items]
+        r = QMessageBox.question(
+            self, APP, tr("PixelPickle is de vorige keer niet normaal afgesloten. Er zijn automatisch "
+                          "opgeslagen afbeeldingen gevonden:\n\n{}\n\nWilt u deze herstellen?").format(
+                "\n".join("• " + n for n in names)))
+        for d, items in found:
+            if r == QMessageBox.StandardButton.Yes:
+                for info in items:
+                    try:
+                        doc = fileio.load(info["file"])
+                    except Exception as e:
+                        QMessageBox.warning(self, APP, f"Kan het bestand niet openen:\n{info['title']}\n\n{e}")
+                        continue
+                    doc.path = info.get("path")
+                    if not doc.path:
+                        doc.untitled = info["title"]
+                    self.add_document(doc)
+                    doc.set_modified(True)
+                    doc.titleChanged.emit()
+            shutil.rmtree(d, ignore_errors=True)
 
     def closeEvent(self, e):
         seen = set()
@@ -1399,6 +1530,7 @@ class MainWindow(QMainWindow):
             restart_pixelpickle()
         self.settings.setValue("geometry", self.saveGeometry())
         self.settings.setValue("state2", self.saveState())
+        self.autosaver.shutdown()
         e.accept()
 
 

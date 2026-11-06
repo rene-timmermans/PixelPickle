@@ -2,9 +2,12 @@
 import math
 
 from PySide6.QtCore import QPointF, QRect, QRectF, QSize, Qt, Signal
-from PySide6.QtGui import QColor, QConicalGradient, QImage, QLinearGradient, QPainter, QPen
-from PySide6.QtWidgets import (QCheckBox, QDialog, QDialogButtonBox, QGridLayout, QHBoxLayout, QLabel,
-                               QLineEdit, QSpinBox, QTabWidget, QToolButton, QVBoxLayout, QWidget)
+from PySide6.QtGui import QColor, QConicalGradient, QIcon, QImage, QLinearGradient, QPainter, QPen, QPixmap
+from PySide6.QtWidgets import (QButtonGroup, QCheckBox, QDialog, QDialogButtonBox, QFileDialog, QGridLayout,
+                               QHBoxLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem, QPushButton,
+                               QSpinBox, QTabWidget, QToolButton, QVBoxLayout, QWidget)
+
+from . import material as M
 
 BASIC = [
     "#ff0000", "#800000", "#a00000", "#c00000", "#ff4040", "#ff8080", "#000000",
@@ -103,11 +106,15 @@ class Swatch(QWidget):
     def __init__(self, color, size=QSize(16, 16)):
         super().__init__()
         self.color = QColor(color)
+        self.image = None  # verloop of patroon in plaats van de kleur
         self.setFixedSize(size)
 
     def paintEvent(self, e):
         p = QPainter(self)
-        p.fillRect(self.rect(), self.color)
+        if self.image is not None:
+            p.drawImage(self.rect(), self.image)
+        else:
+            p.fillRect(self.rect(), self.color)
         p.setPen(QColor(90, 90, 90))
         p.drawRect(self.rect().adjusted(0, 0, -1, -1))
 
@@ -115,20 +122,32 @@ class Swatch(QWidget):
         self.clicked.emit()
 
 
+KEY = Qt.ItemDataRole.UserRole + 2  # naam van een patroon (de getoonde tekst kan vertaald zijn)
+
+
 class MaterialDialog(QDialog):
-    def __init__(self, parent, color, title="Materiaaleigenschappen"):
+    def __init__(self, parent, color, title="Materiaaleigenschappen", mat=None, fg=None, bg=None,
+                 documents=()):
+        """mat: huidig materiaal (None = effen kleur); fg/bg: kleuren voor verlopen als
+        Voorgrond-achtergrond; documents: [(naam, QImage)] open afbeeldingen, te gebruiken als patroon."""
         super().__init__(parent)
         self.setWindowTitle(title)
         self.prev = QColor(color)
         self.cur = QColor(color)
+        self.prev_mat = mat
+        self.fgc = QColor(fg if fg is not None else color)
+        self.bgc = QColor(bg if bg is not None else QColor(255, 255, 255))
+        self.grad = dict(mat) if mat and mat["kind"] == "gradient" else M.default_gradient()
+        self.pat = dict(mat) if mat and mat["kind"] == "pattern" else M.default_pattern()
+        self.documents = list(documents)
         self._busy = False
         outer = QHBoxLayout(self)
-        tabs = QTabWidget()
+        self.tabs = tabs = QTabWidget()
+        tabs.setMinimumWidth(440)
         page = QWidget()
         tabs.addTab(page, "● Kleur")
-        for name in ("◑ Verloop", "✣ Patroon"):
-            tabs.addTab(QWidget(), name)
-            tabs.setTabEnabled(tabs.count() - 1, False)
+        tabs.addTab(self._gradient_page(), "◑ Verloop")
+        tabs.addTab(self._pattern_page(), "✣ Patroon")
         v = QVBoxLayout(page)
         self.wheel = ColorWheel(color)
         self.wheel.changed.connect(self._from_wheel)
@@ -166,7 +185,9 @@ class MaterialDialog(QDialog):
         side.addWidget(self.sw_cur)
         side.addWidget(QLabel("Vorige:"))
         self.sw_prev = Swatch(color, QSize(80, 50))
-        self.sw_prev.clicked.connect(lambda: self.set_color(self.prev))
+        if mat is not None:
+            self.sw_prev.image = M.preview(mat, 80, 50, self.fgc, self.bgc)
+        self.sw_prev.clicked.connect(self._back_to_prev)
         side.addWidget(self.sw_prev)
         side.addStretch()
         bb = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
@@ -180,6 +201,180 @@ class MaterialDialog(QDialog):
         for k in "hsl":
             self.sp[k].valueChanged.connect(self._from_hsl)
         self.set_color(color)
+        tabs.currentChanged.connect(self._update_current)
+        tabs.setCurrentIndex({None: 0, "gradient": 1, "pattern": 2}[mat["kind"] if mat else None])
+        self._update_current()
+
+    # ------------------------------------------------------------ verloop
+    def _gradient_page(self):
+        page = QWidget()
+        v = QVBoxLayout(page)
+        self.glist = QListWidget()
+        self.glist.setIconSize(QSize(96, 18))
+        names = M.gradient_names()
+        for name in names:
+            it = QListWidgetItem(M.gradient_label(name))
+            it.setData(Qt.ItemDataRole.UserRole, name)
+            self.glist.addItem(it)
+        self._gradient_icons()
+        self.glist.setCurrentRow(names.index(self.grad["preset"]) if self.grad["preset"] in names else 0)
+        self.glist.currentRowChanged.connect(self._grad_changed)
+        v.addWidget(self.glist, 1)
+        row = QHBoxLayout()
+        row.addWidget(QLabel("Stijl:"))
+        self.gstyle = QButtonGroup(self)
+        for i, name in enumerate(M.STYLES):
+            b = QToolButton()
+            b.setCheckable(True)
+            b.setToolTip(name)
+            m = dict(self.grad, preset="Zwart-wit", style=i, angle=0 if i != 0 else 90, cx=50, cy=50,
+                     repeats=0, invert=False)
+            b.setIcon(QIcon(QPixmap.fromImage(M.preview(m, 24, 24, self.fgc, self.bgc))))
+            b.setIconSize(QSize(24, 24))
+            self.gstyle.addButton(b, i)
+            row.addWidget(b)
+        self.gstyle.button(self.grad["style"]).setChecked(True)
+        self.gstyle.idClicked.connect(self._grad_changed)
+        row.addStretch()
+        v.addLayout(row)
+        form = QGridLayout()
+        self.gsp = {}
+        for i, (k, lbl, lo, hi) in enumerate([("angle", "Hoek:", 0, 359), ("repeats", "Herhalingen:", 0, 99),
+                                              ("cx", "Middelpunt horizontaal:", 0, 100),
+                                              ("cy", "Middelpunt verticaal:", 0, 100)]):
+            sp = QSpinBox()
+            sp.setRange(lo, hi)
+            sp.setValue(int(self.grad.get(k, 0)))
+            if k in ("cx", "cy"):
+                sp.setSuffix(" %")
+            sp.valueChanged.connect(self._grad_changed)
+            self.gsp[k] = sp
+            form.addWidget(QLabel(lbl), i, 0)
+            form.addWidget(sp, i, 1)
+        self.ginv = QCheckBox("Omkeren")
+        self.ginv.setChecked(bool(self.grad.get("invert")))
+        self.ginv.toggled.connect(self._grad_changed)
+        form.addWidget(self.ginv, 4, 0, 1, 2)
+        v.addLayout(form)
+        for k in ("cx", "cy"):  # middelpunt telt niet bij een lineair verloop
+            self.gsp[k].setEnabled(self.grad["style"] != 0)
+        return page
+
+    def _gradient_icons(self):
+        for i in range(self.glist.count()):
+            it = self.glist.item(i)
+            m = M.default_gradient()
+            m.update(preset=it.data(Qt.ItemDataRole.UserRole), angle=90)
+            it.setIcon(QIcon(QPixmap.fromImage(M.preview(m, 96, 18, self.fgc, self.bgc))))
+
+    def _grad_changed(self, *_):
+        it = self.glist.currentItem()
+        self.grad.update(preset=it.data(Qt.ItemDataRole.UserRole) if it else "Voorgrond-achtergrond",
+                         style=max(self.gstyle.checkedId(), 0), invert=self.ginv.isChecked(),
+                         **{k: sp.value() for k, sp in self.gsp.items()})
+        centered = self.grad["style"] != 0
+        self.gsp["cx"].setEnabled(centered)
+        self.gsp["cy"].setEnabled(centered)
+        self._update_current()
+
+    # ------------------------------------------------------------ patroon
+    def _pattern_page(self):
+        page = QWidget()
+        v = QVBoxLayout(page)
+        self.plist = QListWidget()
+        self.plist.setViewMode(QListWidget.ViewMode.IconMode)
+        self.plist.setIconSize(QSize(48, 48))
+        self.plist.setGridSize(QSize(100, 76))
+        self.plist.setResizeMode(QListWidget.ResizeMode.Adjust)
+        self.plist.setMovement(QListWidget.Movement.Static)
+        self.plist.setWordWrap(True)
+        from .i18n import tr
+        for name in M.PATTERNS:
+            self._add_pattern(name, M.pattern_image(name), tr(name))
+        for name, _ in M.psp_patterns():
+            img = M.pattern_image(name)
+            if img is not None:
+                self._add_pattern(name, img, tr(name))
+        for name, img in self.documents:
+            self._add_pattern(name, img)
+        keys = [self.plist.item(i).data(KEY) for i in range(self.plist.count())]
+        if self.pat["name"] not in keys:
+            self._add_pattern(self.pat["name"], self.pat["image"])
+        for i in range(self.plist.count()):
+            if self.plist.item(i).data(KEY) == self.pat["name"]:
+                self.plist.setCurrentRow(i)
+        self.plist.currentRowChanged.connect(self._pat_changed)
+        v.addWidget(self.plist, 1)
+        load = QPushButton("Uit bestand laden...")
+        load.clicked.connect(self._pat_from_file)
+        v.addWidget(load, 0, Qt.AlignmentFlag.AlignLeft)
+        form = QGridLayout()
+        self.psp = {}
+        for i, (k, lbl, lo, hi, suf) in enumerate([("angle", "Hoek:", 0, 359, ""), ("scale", "Schaal:", 10, 250, " %")]):
+            sp = QSpinBox()
+            sp.setRange(lo, hi)
+            sp.setSuffix(suf)
+            sp.setValue(int(self.pat.get(k, 100 if k == "scale" else 0)))
+            sp.valueChanged.connect(self._pat_changed)
+            self.psp[k] = sp
+            form.addWidget(QLabel(lbl), i, 0)
+            form.addWidget(sp, i, 1)
+        v.addLayout(form)
+        return page
+
+    def _add_pattern(self, name, img, label=None):
+        thumb = img.scaled(48, 48, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        it = QListWidgetItem(QIcon(QPixmap.fromImage(thumb)), label or name)
+        it.setData(Qt.ItemDataRole.UserRole, img)
+        it.setData(KEY, name)
+        self.plist.addItem(it)
+        return it
+
+    def _pat_from_file(self):
+        fn, _ = QFileDialog.getOpenFileName(self, "Patroon laden", "",
+                                            "Afbeeldingen (*.png *.jpg *.jpeg *.bmp *.gif *.tif *.tiff *.webp)")
+        if not fn:
+            return
+        img = QImage(fn)
+        if img.isNull():
+            return
+        import os
+        it = self._add_pattern(os.path.basename(fn), img.convertToFormat(QImage.Format.Format_ARGB32_Premultiplied))
+        self.plist.setCurrentItem(it)
+
+    def _pat_changed(self, *_):
+        it = self.plist.currentItem()
+        if it is not None:
+            self.pat.update(name=it.data(KEY), image=it.data(Qt.ItemDataRole.UserRole))
+        self.pat.update({k: sp.value() for k, sp in self.psp.items()})
+        self._update_current()
+
+    # ------------------------------------------------------------ algemeen
+    def material(self):
+        """Gekozen materiaal: None (effen kleur), een verloop of een patroon."""
+        i = self.tabs.currentIndex()
+        if i == 1:
+            return dict(self.grad)
+        if i == 2:
+            return dict(self.pat)
+        return None
+
+    def _update_current(self, *_):
+        if not hasattr(self, "sw_cur"):
+            return
+        m = self.material()
+        self.sw_cur.image = M.preview(m, 80, 50, self.fgc, self.bgc) if m is not None else None
+        self.sw_cur.update()
+
+    def _back_to_prev(self):
+        m = self.prev_mat
+        if m is None:
+            self.tabs.setCurrentIndex(0)
+            self.set_color(self.prev)
+        elif m["kind"] == "gradient":
+            self.tabs.setCurrentIndex(1)
+        else:
+            self.tabs.setCurrentIndex(2)
 
     def _spin(self):
         s = QSpinBox()
@@ -202,6 +397,7 @@ class MaterialDialog(QDialog):
         self.sw_cur.color = QColor(c)
         self.sw_cur.update()
         self._busy = False
+        self._update_current()
 
     def _from_wheel(self, c):
         self.set_color(c, "wheel")
@@ -225,6 +421,7 @@ class MaterialBox(QWidget):
     """Groot kleurvak met daaronder stijlknopjes en de transparant-schakelaar."""
     clicked = Signal()
     toggled_none = Signal(bool)
+    kind_chosen = Signal(int)  # 0 kleur, 1 verloop, 2 patroon
 
     def __init__(self, main, fg):
         super().__init__()
@@ -232,19 +429,21 @@ class MaterialBox(QWidget):
         v = QVBoxLayout(self)
         v.setContentsMargins(0, 0, 0, 0)
         v.setSpacing(1)
-        self.box = Swatch(QColor(0, 0, 0), QSize(56, 42))
+        self.box = Swatch(QColor(0, 0, 0), QSize(52, 30))
         self.box.clicked.connect(self.clicked)
         v.addWidget(self.box)
         row = QHBoxLayout()
         row.setSpacing(1)
-        for g, tip, en in (("●", "Kleur", True), ("◑", "Verloop (volgt)", False), ("✣", "Patroon (volgt)", False)):
+        self.kinds = QButtonGroup(self)
+        for i, (g, tip) in enumerate((("●", "Kleur"), ("◑", "Verloop"), ("✣", "Patroon"))):
             b = QToolButton(text=g)
             b.setToolTip(tip)
-            b.setEnabled(en)
             b.setCheckable(True)
-            b.setChecked(g == "●")
+            b.setChecked(i == 0)
             b.setFixedSize(18, 18)
+            self.kinds.addButton(b, i)
             row.addWidget(b)
+        self.kinds.idClicked.connect(self.kind_chosen)
         self.none = QToolButton(text="⊘")
         self.none.setCheckable(True)
         self.none.setFixedSize(18, 18)
@@ -253,12 +452,39 @@ class MaterialBox(QWidget):
         row.addWidget(self.none)
         v.addLayout(row)
 
-    def refresh(self, color, none):
+    def refresh(self, color, none, mat=None, fg=None, bg=None):
         self.box.color = QColor(color) if not none else QColor(255, 255, 255)
+        self.box.image = None if (none or mat is None) else M.preview(mat, 52, 30, fg, bg)
         self.box.update()
+        self.kinds.button({None: 0, "gradient": 1, "pattern": 2}[mat["kind"] if mat else None]).setChecked(True)
         self.none.blockSignals(True)
         self.none.setChecked(none)
         self.none.blockSignals(False)
+
+
+def _tab_icon(kind):
+    """Icoontjes voor de tabbladen van het materialenpalet (zoals in PSP, zonder tekst)."""
+    img = QImage(18, 18, QImage.Format.Format_ARGB32_Premultiplied)
+    img.fill(Qt.GlobalColor.transparent)
+    p = QPainter(img)
+    if kind == "rainbow":
+        g = QLinearGradient(1, 0, 17, 0)
+        for i in range(7):
+            g.setColorAt(i / 6, QColor.fromHsvF((i / 6) % 1.0, 1, 1))
+        p.fillRect(1, 1, 16, 16, g)
+        v = QLinearGradient(0, 1, 0, 17)
+        v.setColorAt(0, QColor(255, 255, 255, 200))
+        v.setColorAt(0.5, QColor(255, 255, 255, 0))
+        v.setColorAt(1, QColor(0, 0, 0, 220))
+        p.fillRect(1, 1, 16, 16, v)
+    else:
+        cols = ["#e02020", "#f0c000", "#20a040", "#2060e0", "#a040c0", "#f08020", "#20b0c0", "#606060", "#ffffff"]
+        for k, c in enumerate(cols):
+            p.fillRect(1 + (k % 3) * 6, 1 + (k // 3) * 6, 5, 5, QColor(c))
+    p.setPen(QColor(90, 90, 90))
+    p.drawRect(0, 0, 17, 17)
+    p.end()
+    return QIcon(QPixmap.fromImage(img))
 
 
 class MaterialsPalette(QWidget):
@@ -270,20 +496,25 @@ class MaterialsPalette(QWidget):
         lay.setContentsMargins(4, 4, 4, 4)
         tabs = QTabWidget()
         tabs.setTabPosition(QTabWidget.TabPosition.North)
+        tabs.setIconSize(QSize(18, 18))
         self.spectrum = Spectrum()
+        self.spectrum.setMinimumSize(140, 80)
         self.spectrum.picked.connect(main.set_color)
-        tabs.addTab(self.spectrum, "Regenboog")
+        tabs.addTab(self.spectrum, _tab_icon("rainbow"), "")
+        tabs.setTabToolTip(0, "Regenboog")
         sw = QWidget()
         g = QGridLayout(sw)
         g.setSpacing(1)
+        g.setContentsMargins(2, 2, 2, 2)
         for i, hexc in enumerate(BASIC):
-            s = Swatch(hexc, QSize(14, 14))
+            s = Swatch(hexc, QSize(12, 12))
             s.clicked.connect(lambda c=hexc: main.set_color(QColor(c), True))
             s.setToolTip("Klik: voorgrondkleur")
             g.addWidget(s, i // 7, i % 7)
-        tabs.addTab(sw, "Stalen")
+        tabs.addTab(sw, _tab_icon("swatches"), "")
+        tabs.setTabToolTip(1, "Stalen")
         lay.addWidget(tabs, 1)
-        right = QVBoxLayout()
+        right = QGridLayout()
         right.setSpacing(2)
         self.fgbox = MaterialBox(main, True)
         self.bgbox = MaterialBox(main, False)
@@ -291,30 +522,39 @@ class MaterialsPalette(QWidget):
         self.bgbox.clicked.connect(lambda: self.choose(False))
         self.fgbox.toggled_none.connect(lambda v: main.set_none(True, v))
         self.bgbox.toggled_none.connect(lambda v: main.set_none(False, v))
-        right.addWidget(QLabel("Voorgrond en rand"))
-        right.addWidget(self.fgbox)
+        self.fgbox.kind_chosen.connect(lambda k: main.set_material_kind(True, k))
+        self.bgbox.kind_chosen.connect(lambda k: main.set_material_kind(False, k))
+        right.addWidget(self.fgbox, 0, 0)
         swap = QToolButton(text="⇅")
         swap.setToolTip("Kleuren wisselen")
+        swap.setFixedSize(20, 20)
         swap.clicked.connect(main.swap_colors)
-        right.addWidget(swap)
-        right.addWidget(QLabel("Achtergrond en vulling"))
-        right.addWidget(self.bgbox)
+        right.addWidget(swap, 0, 1, 2, 1, Qt.AlignmentFlag.AlignVCenter)
+        right.addWidget(self.bgbox, 1, 0)
         self.all_tools = QCheckBox("Alle gereedschappen")
         self.all_tools.setChecked(True)
-        right.addWidget(self.all_tools)
-        right.addStretch()
+        right.addWidget(self.all_tools, 2, 0, 1, 2)
+        right.setRowStretch(3, 1)
         lay.addLayout(right)
+        # niet hoger dan nodig, zodat Lagen en Geschiedenis de ruimte krijgen (zoals in PSP)
+        from PySide6.QtWidgets import QSizePolicy
+        self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
         self.refresh()
 
     def choose(self, fg):
-        cur = self.main.fg if fg else self.main.bg
-        dlg = MaterialDialog(self, cur)
+        m = self.main
+        cur = m.fg if fg else m.bg
+        dlg = MaterialDialog(self, cur, mat=m.material(fg), fg=m.fg, bg=m.bg, documents=m.pattern_sources())
         if dlg.exec():
-            self.main.set_color(dlg.color(), fg)
-            self.main.set_none(fg, False)
+            m.set_color(dlg.color(), fg)
+            m.set_material(fg, dlg.material())
+            m.set_none(fg, False)
 
     def refresh(self):
-        self.fgbox.refresh(self.main.fg, self.main.fg_none)
-        self.bgbox.refresh(self.main.bg, self.main.bg_none)
-        self.fgbox.setToolTip(f"Voorgrond: {self.main.fg.name().upper()}")
-        self.bgbox.setToolTip(f"Achtergrond: {self.main.bg.name().upper()}")
+        m = self.main
+        self.fgbox.refresh(m.fg, m.fg_none, m.fg_mat, m.fg, m.bg)
+        self.bgbox.refresh(m.bg, m.bg_none, m.bg_mat, m.fg, m.bg)
+        def what(c, mat):
+            return {"gradient": "Verloop", "pattern": "Patroon"}[mat["kind"]] if mat else c.name().upper()
+        self.fgbox.setToolTip(f"Voorgrond en rand: {what(m.fg, m.fg_mat)}")
+        self.bgbox.setToolTip(f"Achtergrond en vulling: {what(m.bg, m.bg_mat)}")

@@ -58,7 +58,28 @@ def _qt_translations(app, lang):
         app.installTranslator(t)
 
 
+def _crash_log():
+    """Bij een harde crash (Qt) de Python-stapel wegschrijven, zodat de oorzaak te vinden is:
+    ~/.cache/PixelPickle/crash.log"""
+    import faulthandler
+    import os
+    import time
+    folder = os.path.join(os.environ.get("XDG_CACHE_HOME") or os.path.expanduser("~/.cache"), "PixelPickle")
+    try:
+        os.makedirs(folder, exist_ok=True)
+        path = os.path.join(folder, "crash.log")
+        big = os.path.exists(path) and os.path.getsize(path) > 256 * 1024
+        f = open(path, "w" if big else "a", encoding="utf-8")
+        f.write(f"\n=== start {time.strftime('%Y-%m-%d %H:%M:%S')} pid {os.getpid()}\n")
+        f.flush()
+        faulthandler.enable(f, all_threads=False)
+        return f
+    except OSError:
+        return None
+
+
 def main():
+    _log = _crash_log()  # noqa: F841 (bestand moet open blijven)
     app = QApplication(sys.argv)
     app.setApplicationName("PixelPickle")
     # alleen als het menu-item geïnstalleerd is; anders klaagt de desktop-portal bij afsluiten
@@ -79,7 +100,16 @@ def main():
     w.show()
     for path in sys.argv[1:]:
         w.open_path(path)
-    sys.exit(app.exec())
+    from PySide6.QtCore import QTimer
+    QTimer.singleShot(400, w.offer_recovery)
+    code = app.exec()
+    # Het opruimen van Qt-objecten door Python bij het afsluiten kan crashen (bekend PySide-probleem);
+    # alles is dan al opgeslagen, dus direct stoppen.
+    w.settings.sync()
+    sys.stdout.flush()
+    sys.stderr.flush()
+    import os
+    os._exit(code)
 
 
 if __name__ == "__main__":

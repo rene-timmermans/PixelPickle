@@ -381,7 +381,7 @@ class EffectDialog(QDialog):
         for name, flat in self.main.psp_preset_list(self.eff.cid):
             prm = psp.usable(self.eff, flat)
             if prm is not None:
-                label = f"{name}  (PSP)"
+                label = f"{name}  (geïmporteerd)"
                 self._psp[label] = prm
                 self.presets.addItem(label)
         self.presets.setCurrentIndex(-1)

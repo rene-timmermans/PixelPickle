@@ -102,7 +102,7 @@ Totaal: {len(rows_tools)} gereedschappen en {len(rows_menu)} menu-opdrachten.
 - [ ] Textuur en Sculptuur: eigen patronen in plaats van de PSP patroonbestanden
 - [ ] Rode ogen verwijderen (menu): herkent geen ogen, maakt alle sterk rode vlakken donkerder
 - [ ] Zwakke effecten: Wind (te subtiel), Fijn leer, Contour overtrekken
-- [ ] Materialen: verloop en patroon als vulling (nu alleen effen kleur)
+- [ ] Materialen: verloop en patroon werken nog niet bij tekst, en zelf verlopen samenstellen (verloopbewerker) kan nog niet
 - [ ] Inhoud van de snelmenu's (rechtsklik) precies gelijk aan PSP maken
 - [ ] Gentoo installer (ebuild)
 """

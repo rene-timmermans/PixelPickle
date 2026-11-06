@@ -3,11 +3,11 @@ import math
 import random
 
 import numpy as np
-from PySide6.QtCore import QPointF, QRect, QRectF, Qt, QTimer
+from PySide6.QtCore import QPoint, QPointF, QRect, QRectF, Qt, QTimer
 from PySide6.QtGui import (QBrush, QColor, QFont, QImage, QPainter, QPainterPath, QPen,
                            QPolygonF, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QFontComboBox, QInputDialog, QLabel,
-                               QPushButton, QSpinBox)
+                               QPushButton, QSpinBox, QToolButton)
 
 from . import imageops as ops
 from .document import BG_NAMES, CM, TOOL_BLEND_MODES, Layer, apply_region, blend_onto, new_image, paint_layer
@@ -170,6 +170,9 @@ class Tool:
     def key(self, cv, ev): return False
     def deactivate(self): pass
     def hover_cursor(self, cv, pt): return None
+
+    # Automatisch scrollen bij de rand tijdens slepen (uit voor gereedschappen waar dat hindert)
+    autoscroll = True
 
     # Rechtsklik zonder slepen opent het snelmenu bij gereedschappen die de rechterknop niet zelf gebruiken
     context_menu = False
@@ -600,7 +603,7 @@ class SelectionBase(Tool):
     context_menu = True
     edits_pixels = False
     """Gemeenschappelijk: binnen een bestaande selectie slepen verplaatst de pixels,
-    rechts slepen verplaatst alleen het kader (zoals in PSP)."""
+    rechts slepen verplaatst alleen het kader."""
     MODES = ["Vervangen", "Toevoegen", "Verwijderen"]
 
     def __init__(self, main):
@@ -1068,6 +1071,7 @@ class PaintBrushTool(StrokeTool):
         self.make_stamp(color)
         self.base = QImage(d.layer().image)
         self.stroke = new_image(d.w, d.h)
+        self.mat_img = None if self.erase else self.material_layer(cv)
 
     def dab(self, cv, c):
         full = self.stamp_rect(c)
@@ -1097,13 +1101,36 @@ class PaintBrushTool(StrokeTool):
             p.setOpacity(self.o["opacity"] / 100)
             p.drawImage(QPointF(0, 0), self.stroke, QRectF(r))
             p.end()
+        elif self.mat_img is not None:
+            blend_onto(local, self.colored(self.stroke.copy(r), r), self.o["blend"], self.o["opacity"] / 100,
+                       None, r.topLeft())
         else:
             blend_onto(local, self.stroke, self.o["blend"], self.o["opacity"] / 100, r, r.topLeft())
         paint_layer(d.layer(), r, local, d.sel)
         self.dirty = self.dirty.united(r)
 
     def end(self, cv):
-        self.base = self.stroke = None
+        self.base = self.stroke = self.mat_img = None
+
+    mat_img = None
+
+    def material_layer(self, cv):
+        """Verloop/patroon voor deze streek, over de selectie of anders de hele afbeelding."""
+        d = cv.doc
+        fg = not self.right
+        if self.main.material(fg) is None:
+            return None
+        span = d.selection_bbox() if d.sel is not None else d.rect()
+        return self.main.material_image(fg, d.rect(), span)
+
+    def colored(self, alpha_img, r):
+        """Het materiaal op plek r, met de dekking van alpha_img (zelfde grootte als r)."""
+        out = self.mat_img.copy(r)
+        p = QPainter(out)
+        p.setCompositionMode(CM.CompositionMode_DestinationIn)
+        p.drawImage(0, 0, alpha_img)
+        p.end()
+        return out
 
 
 class AirbrushTool(PaintBrushTool):
@@ -1116,6 +1143,7 @@ class AirbrushTool(PaintBrushTool):
     def begin(self, cv, pt):
         color = QColor(self.main.bg if self.right else self.main.fg)
         self.make_stamp(color)
+        self.mat_img = self.material_layer(cv)
         self.timer = QTimer()
         self.timer.timeout.connect(self._tick)
         if self.o["rate"] > 0:
@@ -1137,12 +1165,15 @@ class AirbrushTool(PaintBrushTool):
         p = QPainter(src)
         p.drawImage(QPointF(full.x() - r.x(), full.y() - r.y()), self.stamp)
         p.end()
+        if self.mat_img is not None:
+            src = self.colored(src, r)
         blend_onto(local, src, self.o["blend"], self.o["opacity"] / 100 * 0.35, None, r.topLeft())
         paint_layer(d.layer(), r, local, d.sel)
         self.dirty = self.dirty.united(r)
 
     def end(self, cv):
         self.timer.stop()
+        self.mat_img = None
 
 
 class EraserTool(PaintBrushTool):
@@ -1470,9 +1501,11 @@ class FillTool(Tool):
             return
         d = cv.doc
         layer = d.layer()
-        color = QColor(self.main.fg if ev.button() == LB else self.main.bg)
+        fg = ev.button() == LB
+        color = QColor(self.main.fg if fg else self.main.bg)
         local = layer.image.copy(r)
-        fill = new_image(r.width(), r.height(), color)
+        # verloop/patroon: loopt over het gevulde gebied
+        fill = self.main.material_image(fg, r) or new_image(r.width(), r.height(), color)
         blend_onto(local, fill, self.o["blend"], self.o["opacity"] / 100, None, r.topLeft())
         d.push_undo("Vlakvulling")
         paint_layer(layer, r, local, ops.mask_to_qimage(m8))
@@ -1655,18 +1688,106 @@ class StraightenTool(Tool):
 
 
 class CropTool(Tool):
+    """Bijsnijden zoals PSP: kader met grepen op hoeken en zijden, zwevend balkje (toepassen, kantelen,
+    verhouding), optiebalk met maten en uitlijnen. Dubbelklik in het kader snijdt bij."""
     context_menu = True
     edits_pixels = False
     cid, glyph = 0xd040, "⛶"
-    tip = "Sleep een rechthoek; dubbelklik, Enter of Toepassen om bij te snijden. Esc annuleert"
+    tip = ("Sleep een rechthoek; versleep de grepen om de grootte aan te passen en binnen het kader om het "
+           "te verplaatsen. Dubbelklik in het kader, Enter of ✓ om bij te snijden. Esc annuleert")
+    HANDLE = 4
+    RATIOS = [("Vrije vorm", None), ("1 × 1", 1.0), ("4 × 3", 4 / 3), ("3 × 2", 3 / 2), ("16 × 9", 16 / 9),
+              ("5 × 4", 5 / 4), ("7 × 5", 7 / 5), ("A4 (1 × 1,41)", 1 / 1.4142)]
 
     def __init__(self, main):
         super().__init__(main)
         self.r = None
-        self.a = None
+        self.drag = None
+        self.spins = {}
+        self.ratio = None   # breedte / hoogte, of None (vrije vorm)
+        self.bars = {}      # zwevend balkje per werkvlak
 
+    # ---------------------------------------------------------------- optiebalk
     def options(self):
-        return button("Toepassen", lambda: self.apply(self.main.canvas())) + button("Wissen", self.clear)
+        out = []
+        self.spins = {}
+        for key, label in (("w", "Breedte:"), ("h", "Hoogte:"), ("l", "Links:"), ("t", "Boven:"),
+                           ("r", "Rechts:"), ("b", "Onder:")):
+            sp = QSpinBox()
+            sp.setRange(0, 100000)
+            sp.setKeyboardTracking(False)
+            sp.valueChanged.connect(lambda _v, k=key: self._from_spins(k))
+            self.spins[key] = sp
+            out += [QLabel(label), sp]
+        self.keep = QCheckBox("Verhouding behouden")
+        self.keep.setChecked(self.ratio is not None)
+        self.keep.toggled.connect(self._keep_toggled)
+        out.append(self.keep)
+        out.append(QLabel("Bijsnijkader uitlijnen op:"))
+        for glyph, tip, mode in (("⬚", "Huidige afbeelding", "image"), ("▣", "Dekkende delen van de laag", "layer"),
+                                 ("◼", "Dekkende delen van alle lagen", "merged")):
+            b = QToolButton(text=glyph)
+            b.setToolTip(tip)
+            b.clicked.connect(lambda _=False, m=mode: self.snap(m))
+            out.append(b)
+        self._to_spins()
+        return out
+
+    def _keep_toggled(self, on):
+        if on and self.r is not None and self.ratio is None:
+            self.ratio = self.r.width() / max(1, self.r.height())
+        elif not on:
+            self.ratio = None
+        self._sync_bar_combo()
+
+    def _to_spins(self):
+        if not self.spins:
+            return
+        for sp in self.spins.values():
+            sp.blockSignals(True)
+        r = self.r or QRect()
+        vals = dict(w=r.width(), h=r.height(), l=r.x(), t=r.y(), r=r.x() + r.width(), b=r.y() + r.height())
+        for k, v in vals.items():
+            self.spins[k].setValue(v)
+        for sp in self.spins.values():
+            sp.blockSignals(False)
+
+    def _from_spins(self, key):
+        cv = self.main.canvas()
+        if cv is None:
+            return
+        v = {k: sp.value() for k, sp in self.spins.items()}
+        if key in ("w", "h"):
+            w, h = v["w"], v["h"]
+            if self.ratio:
+                if key == "w":
+                    h = round(w / self.ratio)
+                else:
+                    w = round(h * self.ratio)
+            r = QRect(v["l"], v["t"], max(1, w), max(1, h))
+        else:
+            r = QRect(QPoint(v["l"], v["t"]), QPoint(max(v["l"] + 1, v["r"]) - 1, max(v["t"] + 1, v["b"]) - 1))
+        self.r = r.intersected(cv.doc.rect())
+        self._to_spins()
+        cv.update()
+
+    def snap(self, mode):
+        cv = self.main.canvas()
+        if cv is None:
+            return
+        d = cv.doc
+        if mode == "image":
+            r = d.rect()
+        else:
+            img = d.layer().image if mode == "layer" else cv.cache
+            r = ops.mask_bbox(ops.qimage_to_rgba(img)[..., 3] > 0)
+            if r.isEmpty():
+                return
+        self.ratio = None
+        self.r = r
+        self._to_spins()
+        self._sync_bar_combo()
+        cv.update()
 
     def context_actions(self, cv):
         if self.r is None:
@@ -1675,33 +1796,243 @@ class CropTool(Tool):
 
     def clear(self):
         self.r = None
+        self._to_spins()
         cv = self.main.canvas()
         if cv:
             cv.update()
+        self._hide_bars()
 
+    # ---------------------------------------------------------------- zwevend balkje onder het kader
+    def _bar(self, cv):
+        bar = self.bars.get(id(cv))
+        if bar is None:
+            from PySide6.QtWidgets import QFrame, QHBoxLayout
+            bar = QFrame(cv)
+            bar.setFrameShape(QFrame.Shape.StyledPanel)
+            bar.setAutoFillBackground(True)
+            h = QHBoxLayout(bar)
+            h.setContentsMargins(3, 2, 3, 2)
+            h.setSpacing(3)
+            ok = QToolButton(text="✓")
+            ok.setToolTip("Toepassen")
+            ok.setStyleSheet("color: #2e9e3e; font-weight: bold;")
+            ok.clicked.connect(lambda: self.apply(cv))
+            turn = QToolButton(text="⇄")
+            turn.setToolTip("Bijsnijkader kantelen (liggend / staand)")
+            turn.clicked.connect(lambda: self.rotate_frame(cv))
+            combo = QComboBox()
+            combo.addItems([n for n, _ in self.RATIOS])
+            combo.setToolTip("Verhouding")
+            combo.activated.connect(lambda i: self.set_ratio(cv, self.RATIOS[i][1]))
+            for wdg in (ok, turn, combo):
+                h.addWidget(wdg)
+            bar.combo = combo
+            bar.adjustSize()
+            self.bars[id(cv)] = bar
+            bar.destroyed.connect(lambda *_a, k=id(cv): self.bars.pop(k, None))
+        return bar
+
+    def _sync_bar_combo(self):
+        for bar in self.bars.values():
+            idx = 0
+            for i, (_, rt) in enumerate(self.RATIOS):
+                if rt and self.ratio and (abs(rt - self.ratio) < 1e-3 or abs(1 / rt - self.ratio) < 1e-3):
+                    idx = i
+            bar.combo.setCurrentIndex(idx)
+        if hasattr(self, "keep") and self.keep is not None:
+            try:
+                self.keep.blockSignals(True)
+                self.keep.setChecked(self.ratio is not None)
+                self.keep.blockSignals(False)
+            except RuntimeError:
+                pass
+
+    def _place_bar(self, cv):
+        bar = self._bar(cv)
+        if self.r is None or self.drag is not None and self.drag[0] == "new":
+            bar.hide()
+            return
+        hs = self._handles(cv)
+        x, y = int(hs[3].x()) + 10, int(hs[3].y()) + 6
+        if y + bar.height() > cv.height():
+            y = int(hs[0].y()) - bar.height() - 6
+        x = max(2, min(cv.width() - bar.width() - 2, x))
+        y = max(2, min(cv.height() - bar.height() - 2, y))
+        if bar.pos() != QPoint(x, y):
+            bar.move(x, y)
+        if not bar.isVisible():
+            bar.show()
+
+    def _hide_bars(self):
+        for bar in list(self.bars.values()):
+            try:
+                bar.hide()
+            except RuntimeError:
+                pass
+
+    def set_ratio(self, cv, ratio):
+        """Vaste verhouding kiezen; het kader past zich aan rond het midden, binnen de afbeelding."""
+        if ratio is not None and self.r is not None and self.r.height() > self.r.width():
+            ratio = 1 / ratio  # het kader staat: verhouding staand houden
+        self.ratio = ratio
+        if ratio and self.r is not None:
+            c = QRectF(self.r).center()
+            w, h = self.r.width(), self.r.height()
+            if w / h > ratio:
+                w = h * ratio
+            else:
+                h = w / ratio
+            self.r = QRectF(c.x() - w / 2, c.y() - h / 2, w, h).toRect().intersected(cv.doc.rect())
+        self._to_spins()
+        self._sync_bar_combo()
+        cv.update()
+
+    def rotate_frame(self, cv):
+        """Kader kantelen rond het midden (breedte en hoogte wisselen)."""
+        if self.r is None:
+            return
+        c = QRectF(self.r).center()
+        w, h = self.r.height(), self.r.width()
+        d = cv.doc
+        if w > d.w or h > d.h:  # past niet: evenredig verkleinen
+            f = min(d.w / w, d.h / h)
+            w, h = w * f, h * f
+        x = min(max(c.x() - w / 2, 0), d.w - w)
+        y = min(max(c.y() - h / 2, 0), d.h - h)
+        self.r = QRectF(x, y, w, h).toRect()
+        if self.ratio:
+            self.ratio = 1 / self.ratio
+        self._to_spins()
+        cv.update()
+
+    # ---------------------------------------------------------------- grepen
+    def _handles(self, cv):
+        """0-3 hoeken (LB, RB, RO, LO), 4-7 zijden (boven, rechts, onder, links), in schermcoördinaten."""
+        r = self.r
+        tl = cv.to_widget(QPointF(r.x(), r.y()))
+        br = cv.to_widget(QPointF(r.x() + r.width(), r.y() + r.height()))
+        cx, cy = (tl.x() + br.x()) / 2, (tl.y() + br.y()) / 2
+        return [QPointF(tl.x(), tl.y()), QPointF(br.x(), tl.y()), QPointF(br.x(), br.y()), QPointF(tl.x(), br.y()),
+                QPointF(cx, tl.y()), QPointF(br.x(), cy), QPointF(cx, br.y()), QPointF(tl.x(), cy)]
+
+    def _hit(self, cv, pt):
+        if self.r is None:
+            return None
+        w = cv.to_widget(pt)
+        for i, h in enumerate(self._handles(cv)):
+            if abs(h.x() - w.x()) <= self.HANDLE + 3 and abs(h.y() - w.y()) <= self.HANDLE + 3:
+                return ("handle", i)
+        if QRectF(self.r).contains(pt):
+            return ("inside", None)
+        return None
+
+    def hover_cursor(self, cv, pt):
+        hit = self._hit(cv, pt)
+        if hit is None:
+            return None
+        if hit[0] == "inside":
+            return Qt.CursorShape.SizeAllCursor
+        return [Qt.CursorShape.SizeFDiagCursor, Qt.CursorShape.SizeBDiagCursor, Qt.CursorShape.SizeFDiagCursor,
+                Qt.CursorShape.SizeBDiagCursor, Qt.CursorShape.SizeVerCursor, Qt.CursorShape.SizeHorCursor,
+                Qt.CursorShape.SizeVerCursor, Qt.CursorShape.SizeHorCursor][hit[1]]
+
+    # ---------------------------------------------------------------- muis
     def press(self, cv, pt, ev):
-        if ev.button() == LB:
-            self.a = QPointF(round(pt.x()), round(pt.y()))
+        if ev.button() != LB:
+            return
+        hit = self._hit(cv, pt)
+        p = QPointF(round(pt.x()), round(pt.y()))
+        if hit and hit[0] == "handle":
+            self.drag = ("handle", hit[1], QRect(self.r))
+        elif hit and hit[0] == "inside":
+            self.drag = ("move", p, QRect(self.r))
+        else:
+            self.drag = ("new", p)
             self.r = None
+        self._place_bar(cv)
+
+    @staticmethod
+    def _corner_ratio(ax, ay, px, py, ratio):
+        """Rechthoek van ankerpunt (ax, ay) naar (px, py) met vaste verhouding."""
+        w, h = abs(px - ax), abs(py - ay)
+        if h == 0 or w / max(h, 1e-6) > ratio:
+            h = w / ratio
+        else:
+            w = h * ratio
+        x1 = ax + (w if px >= ax else -w)
+        y1 = ay + (h if py >= ay else -h)
+        return QRectF(QPointF(ax, ay), QPointF(x1, y1)).normalized()
 
     def move(self, cv, pt, ev):
-        if self.a is not None and ev.buttons() & LB:
-            b = QPointF(round(pt.x()), round(pt.y()))
-            self.r = QRectF(self.a, b).normalized().toRect().intersected(cv.doc.rect())
-            cv.update()
+        if self.drag is None or not ev.buttons() & LB:
+            return
+        d = cv.doc
+        p = QPointF(min(max(round(pt.x()), 0), d.w), min(max(round(pt.y()), 0), d.h))
+        kind = self.drag[0]
+        if kind == "new":
+            a = self.drag[1]
+            rf = self._corner_ratio(a.x(), a.y(), p.x(), p.y(), self.ratio) if self.ratio else QRectF(a, p).normalized()
+            self.r = rf.toRect().intersected(d.rect())
+        elif kind == "move":
+            r0 = self.drag[2]
+            dx = int(p.x() - self.drag[1].x())
+            dy = int(p.y() - self.drag[1].y())
+            dx = max(-r0.x(), min(d.w - (r0.x() + r0.width()), dx))
+            dy = max(-r0.y(), min(d.h - (r0.y() + r0.height()), dy))
+            self.r = r0.translated(dx, dy)
+        else:
+            i, r0 = self.drag[1], self.drag[2]
+            x0, y0, x1, y1 = r0.x(), r0.y(), r0.x() + r0.width(), r0.y() + r0.height()
+            if self.ratio and i < 4:  # hoek met vaste verhouding: tegenoverliggende hoek blijft staan
+                ax, ay = [(x1, y1), (x0, y1), (x0, y0), (x1, y0)][i]
+                self.r = self._corner_ratio(ax, ay, p.x(), p.y(), self.ratio).toRect().intersected(d.rect())
+            elif self.ratio:  # zijde met vaste verhouding: de andere maat groeit mee rond het midden
+                cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+                if i in (4, 6):
+                    h = abs((y1 if i == 4 else y0) - p.y())
+                    w = h * self.ratio
+                    top = p.y() if i == 4 else y0
+                    self.r = QRectF(cx - w / 2, min(top, top + h), w, h).toRect().intersected(d.rect())
+                else:
+                    w = abs((x1 if i == 7 else x0) - p.x())
+                    h = w / self.ratio
+                    left = p.x() if i == 7 else x0
+                    self.r = QRectF(left, cy - h / 2, w, h).toRect().intersected(d.rect())
+            else:
+                px, py = int(p.x()), int(p.y())
+                if i in (0, 3, 7):
+                    x0 = px
+                if i in (1, 2, 5):
+                    x1 = px
+                if i in (0, 1, 4):
+                    y0 = py
+                if i in (2, 3, 6):
+                    y1 = py
+                self.r = QRect(min(x0, x1), min(y0, y1), max(1, abs(x1 - x0)), max(1, abs(y1 - y0)))
+        self._to_spins()
+        cv.update()
+        if self.r is not None:
             self.main.statusBar().showMessage(f"Bijsnijden: {self.r.width()} × {self.r.height()} px")
 
     def release(self, cv, pt, ev):
-        self.a = None
+        if self.drag and self.drag[0] == "new" and (self.r is None or self.r.width() < 2 or self.r.height() < 2):
+            self.r = None
+        self.drag = None
+        self._to_spins()
+        self._place_bar(cv)
+        cv.update()
 
     def double_click(self, cv, pt, ev):
-        self.apply(cv)
+        if self.r is not None and QRectF(self.r).contains(pt):  # dubbelklik in het kader, zoals PSP
+            self.apply(cv)
 
     def apply(self, cv):
         if cv is None or self.r is None or self.r.width() < 1 or self.r.height() < 1:
             return
         cv.doc.crop(self.r)
         self.r = None
+        self._to_spins()
+        self._hide_bars()
 
     def key(self, cv, ev):
         if ev.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
@@ -1714,20 +2045,34 @@ class CropTool(Tool):
 
     def overlay(self, cv, p):
         if self.r is None:
+            self._hide_bars()
             return
         full = QRectF(cv.to_widget(QPointF(0, 0)), cv.to_widget(QPointF(cv.doc.w, cv.doc.h)))
-        inner = QRectF(cv.to_widget(QPointF(self.r.topLeft())),
-                       cv.to_widget(QPointF(self.r.x() + self.r.width(), self.r.y() + self.r.height())))
+        hs = self._handles(cv)
+        inner = QRectF(hs[0], hs[2])
         path = QPainterPath()
         path.addRect(full)
         path.addRect(inner)
-        p.fillPath(path, QColor(0, 0, 0, 120))
-        rp = QPainterPath()
-        rp.addRect(inner)
-        draw_dashed(p, rp)
+        p.fillPath(path, QColor(0, 0, 0, 90))  # buiten het kader iets donkerder
+        p.setBrush(Qt.BrushStyle.NoBrush)
+        p.setPen(QPen(QColor(0, 0, 0, 160), 3))
+        p.drawRect(inner)
+        p.setPen(QPen(QColor(235, 235, 235), 1))
+        p.drawRect(inner)
+        k = self.HANDLE
+        for h in hs:  # holle vierkantjes, zoals PSP
+            sq = QRectF(h.x() - k, h.y() - k, 2 * k, 2 * k)
+            p.setPen(QPen(QColor(0, 0, 0, 180), 3))
+            p.drawRect(sq)
+            p.setPen(QPen(QColor(240, 240, 240), 1))
+            p.drawRect(sq)
+        if self.drag is None:
+            self._place_bar(cv)
 
     def deactivate(self):
         self.r = None
+        self.drag = None
+        self._hide_bars()
 
 
 # ================================================================ vormen
@@ -1781,13 +2126,17 @@ class ShapeBase(Tool):
         p = QPainter(local)
         p.setRenderHint(QPainter.RenderHint.Antialiasing, self.o["antialias"])
         p.translate(-r.x(), -r.y())
+        span = path.boundingRect().toAlignedRect()  # verloop loopt over de vorm
         if (not self.main.fg_none or not self.fillable) and lw > 0:
-            pen = QPen(self.main.fg, lw)
+            pen = QPen(self.main.material_brush(True, span) or QBrush(self.main.fg), lw)
             pen.setJoinStyle(Qt.PenJoinStyle.MiterJoin)
             p.setPen(pen)
         else:
             p.setPen(Qt.PenStyle.NoPen)
-        p.setBrush(self.main.bg if not self.main.bg_none and self.fillable else Qt.BrushStyle.NoBrush)
+        if not self.main.bg_none and self.fillable:
+            p.setBrush(self.main.material_brush(False, span) or QBrush(self.main.bg))
+        else:
+            p.setBrush(Qt.BrushStyle.NoBrush)
         p.drawPath(path)
         p.end()
         paint_layer(d.layer(), r, local, d.sel)
@@ -1912,6 +2261,7 @@ class PresetShapeTool(ShapeBase):
 
 
 class PenTool(ShapeBase):
+    autoscroll = False  # bij tekenen met de pen mag het beeld niet meeschuiven
     cid, glyph = 0xd110, "✒"
     tip = "Teken lijnen in de voorgrondkleur. Shift: hoeken in stappen van 45°"
     fillable = False
@@ -1949,7 +2299,7 @@ class TextTool(Tool):
     context_menu = True
     cid, glyph = 0xd0f0, "A"
     tip = ("Klik om tekst te maken, of klik op bestaande tekst om die te bewerken. "
-           "Vulling: achtergrondkleur, rand: voorgrondkleur (zoals PSP)")
+           "Vulling: achtergrondkleur, rand: voorgrondkleur")
     cursor = Qt.CursorShape.IBeamCursor
     edits_pixels = False  # werkt zelf met tekstlagen
 

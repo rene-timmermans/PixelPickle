@@ -288,7 +288,7 @@ class Canvas(QWidget):
     def _autoscroll_wanted(self):
         """Alleen tijdens een bewerking: slepen met een muisknop, of een punt-tot-punt selectie in uitvoering."""
         tool = self.main.tool
-        if self._pan is not None or self.space or getattr(tool, "is_pan", False):
+        if self._pan is not None or self.space or getattr(tool, "is_pan", False) or not getattr(tool, "autoscroll", True):
             return False
         if self._as_buttons & (Qt.MouseButton.LeftButton | Qt.MouseButton.RightButton):
             return True
