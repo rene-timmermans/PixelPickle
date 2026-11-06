@@ -620,10 +620,15 @@ class SelectionBase(Tool):
                 + spin(self.main, "feather", "Doezelen:", 0, 200)
                 + check(self.main, "antialias", "Anti-alias"))
 
+    def _replace_mode(self, mods):
+        """Alleen in de modus Vervangen (zonder Shift/Ctrl) verplaatst slepen binnen de selectie de
+        pixels; bij Toevoegen en Verwijderen begint een klik binnen de selectie gewoon een nieuwe vorm."""
+        return not mods & (SHIFT | CTRL) and self.o.get("sel_mode", 0) == 0
+
     def try_move(self, cv, pt, ev):
         d = cv.doc
         x, y = ipt(pt)
-        if (d.sel is not None and not ev.modifiers() & (SHIFT | CTRL) and d.rect().contains(x, y)
+        if (d.sel is not None and self._replace_mode(ev.modifiers()) and d.rect().contains(x, y)
                 and d.sel.pixelColor(x, y).alpha() > 127):
             if ev.button() != RB and not self.main.ensure_raster():
                 return True
@@ -636,8 +641,7 @@ class SelectionBase(Tool):
         x, y = ipt(pt)
         if (d.sel is not None and d.rect().contains(x, y) and d.sel.pixelColor(x, y).alpha() > 127
                 and not getattr(self, "pts", None)):
-            mods = QApplication.keyboardModifiers()
-            if not mods & (SHIFT | CTRL):
+            if self._replace_mode(QApplication.keyboardModifiers()):
                 return Qt.CursorShape.SizeAllCursor
         return None
 

@@ -80,6 +80,11 @@ programmavoorkeuren*).
 
 ## Wat er nieuw is
 
+**0.5.4** Een stuk uit een selectie halen of eraan toevoegen met de modus Verwijderen of Toevoegen werkt nu
+ook als je binnen de bestaande selectie klikt.
+
+**0.5.3** 45 verlopen en 43 patronen, direct in het programma.
+
 **0.5.2** Nieuwe omschrijving van het programma in de pakketten en het menu.
 
 **0.5.1** Het effectvenster meldt het wanneer er een selectie actief is, zodat duidelijk is waarom het
