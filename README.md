@@ -51,7 +51,7 @@ Preferences*). Bij de eerste start is de taal Engels.
 - Lagen met 21 mengmodi, mengbereiken, groepen, maskerlagen en aanpassingslagen.
 - Eigen lijniconen in de accentkleur van het thema, voor een strak en consistent uiterlijk.
 - 142 effecten en aanpassingen met Vóór/Na voorbeeld en voorinstellingen.
-- Automatisch opslaan op een instelbaar interval, zonder je eigen bestanden te overschrijven.
+- Automatisch opslaan naar een herstelmap, op een instelbaar interval.
 - Beknopte gebruikershandleiding in het programma (Help).
 - Openen en opslaan: PNG, JPEG, TIFF, BMP, WebP, GIF (ook transparant via GIF-optimalisatie),
   OpenRaster (.ora, met lagen) en Paint Shop Pro (.pspimage).
