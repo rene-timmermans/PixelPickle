@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QColorDialog, QComboBox,
                                QFormLayout, QGroupBox, QHBoxLayout, QInputDialog, QLabel, QPushButton, QSlider,
                                QSpinBox, QToolButton, QVBoxLayout, QWidget)
 
+from .i18n import tr
 from . import imageops as ops
 from .document import apply_region
 from .effects import Ctx, defaults
@@ -203,6 +204,22 @@ class EffectDialog(QDialog):
         self.on_image.setEnabled(mode == "apply")
         head.addWidget(self.on_image)
         v.addLayout(head)
+        if doc.sel is not None and mode == "apply":
+            # met een actieve selectie werkt het effect alleen daarbinnen; zonder deze melding is
+            # dat verwarrend als de selectie (bijna) buiten de inhoud van de laag valt
+            filled = float(alpha.mean()) if alpha.size else 0.0
+            if filled < 0.02:
+                msg = tr("Let op: de selectie valt (bijna) buiten de inhoud van deze laag, dus het effect "
+                         "verandert vrijwel niets. Niets selecteren: Ctrl+D")
+            else:
+                msg = tr("Alleen binnen de selectie; het voorbeeld toont het geselecteerde gebied. "
+                         "Niets selecteren: Ctrl+D")
+            self.sel_note = QLabel(msg)
+            self.sel_note.setWordWrap(True)
+            self.sel_note.setProperty("pp_notr", True)
+            if filled < 0.02:
+                self.sel_note.setStyleSheet("color: palette(highlight); font-weight: bold;")
+            v.addWidget(self.sel_note)
         self.pv = QWidget()
         pvv = QVBoxLayout(self.pv)
         pvv.setContentsMargins(0, 0, 0, 0)
