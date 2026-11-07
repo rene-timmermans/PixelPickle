@@ -248,6 +248,7 @@ Totaal: 7 gereedschappen en 202 menu-opdrachten.
 
 Wat al gebouwd is, met de versie waarin het verscheen.
 
+- [x] Vernieuwde optiebalk: vaste hoogte, strak uitgelijnd, groot gereedschapsicoon, kleine vinkjes (0.8.0)
 - [x] Vectorlagen: pen en vormen blijven bewerkbaar (oppakken met de Pen in Bewerken), ook in .ora (0.7.0)
 - [x] Pen met modi Bewerken, Lijnen en polylijnen, Punt tot punt (Bézier) en Uit de vrije hand, met lijnstijl,
   verbinding, verstek, tracking en knooppunten (0.6.1)

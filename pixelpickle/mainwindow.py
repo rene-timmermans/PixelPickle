@@ -630,10 +630,20 @@ class MainWindow(QMainWindow):
         self._idle_opts = False
         self.opt_bar.clear()
         widgets, self.tool_opt_keys = recorded_keys(tool)
+        # vooraan alleen een groot icoon van het gereedschap (de naam staat in de tooltip en de statusbalk);
+        # zo begint de rest van de opties bij elk gereedschap op dezelfde plek
+        H = self._opt_height()
+        head = QLabel()
+        head.setFixedSize(H + 12, H)
+        head.setPixmap(glyph_icon(tool.glyph, tool.available).pixmap(32, 32))
+        head.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        head.setToolTip(tool.name)
+        head.setContentsMargins(6, 0, 0, 0)
+        self.opt_bar.addWidget(head)
+        gap = QWidget()
+        gap.setFixedWidth(8)  # wat lucht tussen het icoon en de voorinstellingen
+        self.opt_bar.addWidget(gap)
         self.opt_bar.addWidget(self._presets_button(tool))
-        lbl = QLabel(f"  {tool.name}  ")
-        lbl.setStyleSheet("font-weight: bold;")
-        self.opt_bar.addWidget(self._opt_column(None, lbl))
         i = 0
         while i < len(widgets):  # label boven het invoerveld, zoals in PSP
             w = widgets[i]
@@ -666,28 +676,68 @@ class MainWindow(QMainWindow):
                 self.opt_bar.addWidget(self._opt_column(None, w))
                 i += 1
 
+    def _opt_metrics(self):
+        """Hoogte van een klein label, een invoerveld en een vinkje in deze stijl (eenmalig gemeten)."""
+        if not hasattr(self, "_optm"):
+            from PySide6.QtWidgets import QComboBox
+            lab = QLabel("Xg")
+            lab.setStyleSheet("font-size: 10px;")
+            self._optm = (lab.sizeHint().height(), QComboBox().sizeHint().height(),
+                          QCheckBox("Xg").sizeHint().height())
+        return self._optm
+
+    # vinkjes in de optiebalk: zelfde kleine letter als de labels en een kleiner vakje; het klikbare
+    # gebied blijft de hele regel (vakje en tekst)
+    CHECK_CSS = "QCheckBox { font-size: 10px; spacing: 4px; } QCheckBox::indicator { width: 11px; height: 11px; }"
+
+    def _opt_height(self):
+        """Vaste hoogte voor elke kolom, zodat de balk bij elk gereedschap even hoog is: label boven
+        invoerveld. Twee vinkjes passen daar ook in (bovenste op de lijn van de labels, onderste op die
+        van de invoervelden)."""
+        lab, inp, cb = self._opt_metrics()
+        return lab + inp
+
     def _opt_column(self, top, bottom, small=True):
-        """Kolom in de optiebalk: klein label (of lege regel) boven, invoerveld eronder. Zo staan alle
-        velden, de gereedschapsnaam en losse knoppen op dezelfde hoogte."""
+        """Kolom in de optiebalk met vaste hoogte: klein label boven het invoerveld (onderaan uitgelijnd,
+        zodat labels en velden van alle kolommen op dezelfde lijn staan), of twee vinkjes onder elkaar."""
+        lab_h, inp_h, cb_h = self._opt_metrics()
+        H = self._opt_height()
         box = QWidget()
+        box.setFixedHeight(H)
         v = QVBoxLayout(box)
         v.setContentsMargins(4, 0, 4, 0)
         v.setSpacing(0)
+        if not small:  # vinkjes: bovenste (of een los vinkje) op de lijn van de labels, onderste bij de velden
+            for w, hgt in ((top, lab_h), (bottom, inp_h)):
+                if w is None:
+                    spacer = QWidget()
+                    spacer.setFixedHeight(hgt)
+                    v.addWidget(spacer)
+                    continue
+                w.setStyleSheet(self.CHECK_CSS)
+                w.setFixedHeight(hgt)
+                v.addWidget(w)
+            return box
+        v.addStretch()
         if top is None:
             top = QLabel("")
-        if small and isinstance(top, QLabel):
+        if isinstance(top, QLabel):
             top.setStyleSheet("font-size: 10px;")
+        top.setFixedHeight(lab_h)
         v.addWidget(top)
         if isinstance(bottom, QLabel):
-            # tekst even hoog als een invoerveld en verticaal gecentreerd, zodat hij op één lijn
-            # staat met de tekst in de keuzelijsten en invoervelden ernaast
-            from PySide6.QtWidgets import QComboBox
-            bottom.setFixedHeight(QComboBox().sizeHint().height())
+            # tekst even hoog als een invoerveld en verticaal gecentreerd
             bottom.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
+        # het veld staat altijd in een vak met de hoogte van een keuzelijst, zodat labels en velden van
+        # alle kolommen precies op dezelfde lijn liggen, ook als een knop lager is dan een keuzelijst
+        holder = QWidget()
+        holder.setFixedHeight(inp_h)
+        hl = QHBoxLayout(holder)
+        hl.setContentsMargins(0, 0, 0, 0)
         if bottom is not None:
-            v.addWidget(bottom)
-        else:
-            v.addStretch()
+            bottom.setMaximumHeight(inp_h)
+            hl.addWidget(bottom, 0, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        v.addWidget(holder, 0, Qt.AlignmentFlag.AlignLeft)
         return box
 
     # ---------------------------------------------------------------- voorinstellingen
@@ -707,22 +757,16 @@ class MainWindow(QMainWindow):
             return {}
 
     def _presets_button(self, tool):
-        box = QWidget()
-        v = QVBoxLayout(box)
-        v.setContentsMargins(4, 0, 4, 0)
-        v.setSpacing(0)
-        lbl = QLabel("Voorinstellingen:")
-        lbl.setStyleSheet("font-size: 10px;")
-        v.addWidget(lbl)
         b = QToolButton()
         b.setIcon(glyph_icon(tool.glyph, tool.available))
+        inp_h = self._opt_metrics()[1]
+        b.setFixedSize(inp_h + 14, inp_h)  # even hoog als de keuzelijsten (ruimte voor het pijltje)
         b.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
         b.setToolTip("Voorinstellingen voor dit gereedschap")
         m = QMenu(b)
         m.aboutToShow.connect(lambda: self._fill_tool_presets(m, tool))
         b.setMenu(m)
-        v.addWidget(b)
-        return box
+        return self._opt_column(QLabel("Voorinstellingen:"), b)  # label op dezelfde hoogte als 'Vorm:'
 
     def _fill_tool_presets(self, m, tool):
         import json

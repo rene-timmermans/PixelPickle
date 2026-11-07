@@ -8,8 +8,8 @@ niet hoeft te zoeken.
 
 **Werkruimte**
 - Menubalk, standaardwerkbalk en een gereedschapsbalk met uitklapgroepen.
-- Optiebalk met de instellingen van het gekozen gereedschap, netjes uitgelijnd, met eigen
-  voorinstellingen per gereedschap.
+- Optiebalk met de instellingen van het gekozen gereedschap: bij elk gereedschap even hoog en strak
+  uitgelijnd, met eigen voorinstellingen per gereedschap.
 - Paletten Materialen, Lagen en Geschiedenis, los te maken en vrij te plaatsen.
 - Meerdere afbeeldingen tegelijk, als tabbladen of als losse vensters.
 - Snelmenu's met de rechtermuisknop op de afbeelding, de tabbladen en de lagen.
@@ -83,6 +83,9 @@ Bij de eerste start is de taal Engels. Kies Nederlands via
 programmavoorkeuren*).
 
 ## Wat er nieuw is
+
+**0.8.0** Vernieuwde optiebalk: bij elk gereedschap even hoog en strak uitgelijnd, met een groot icoon
+vooraan in plaats van de naam, kleinere vinkjes in dezelfde letter als de labels, en een smallere balk.
 
 **0.7.0** Vectorlagen: lijnen van de pen en vormen blijven bewerkbaar zolang je met de afbeelding bezig
 bent. Pak ze later weer op met de pen in de modus Bewerken om knooppunten, kleur en lijn aan te passen.
