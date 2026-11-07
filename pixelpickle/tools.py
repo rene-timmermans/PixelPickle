@@ -24,7 +24,8 @@ DEFAULT_OPTS = dict(
     opacity=100, blend=0, rate=10, tolerance=20, contiguous=True, sample_merged=False,
     sel_shape=0, sel_mode=0, feather=0, antialias=True, lasso_type=0, line_width=3,
     shape_fill=True, shape_stroke=True, radius=0, sym_sides=5, sym_star=True, sym_inner=50,
-    preset=0, pen_mode=0, font="Sans Serif", font_size=48, bold=False, italic=False,
+    preset=0, pen_mode=1, pen_tracking=10, pen_connect=True, pen_nodes=True, pen_style=0, pen_join=0,
+    pen_miter=15, font="Sans Serif", font_size=48, bold=False, italic=False,
     sample_size=0, clone_aligned=True, bg_sampling=0, straighten_mode=0, straighten_crop=False, persp_grid=5, persp_crop=False, scratch_width=10, scratch_ends=0, warp_mode=0, warp_strength=50, warp_edge=0,
     mesh_cols=6, mesh_rows=6, continuous=False,
     target_mode=0, redeye_strength=80, zoom_step=0, match_mode=1, aa_where=0, lasso_range=10,
@@ -3101,37 +3102,374 @@ class PresetShapeTool(ShapeBase):
         return star_path(r.center().x(), r.center().y(), w / 2, h / 2, 16, 0.7)
 
 
-class PenTool(ShapeBase):
+class PenTool(Tool):
+    """Pen: lijnen, polylijnen, Bézier-krommen (punt tot punt) en vrije lijnen. De lijn blijft
+    bewerkbaar (knooppunten en handvatten verslepen) tot Toepassen; dan wordt hij op de laag getekend.
+    Rand: voorgrondmateriaal; gesloten paden worden gevuld met het achtergrondmateriaal."""
     cid, glyph = 0xd110, "✒"
-    tip = "Teken lijnen in de voorgrondkleur. Shift: hoeken in stappen van 45°"
-    fillable = False
+    MODES = ["Bewerken", "Lijnen en polylijnen", "Punt tot punt", "Uit de vrije hand"]
+    STYLES = ["Effen", "Streepjes", "Puntjes", "Streep-punt", "Streep-punt-punt"]
+    JOINS = ["Verstek", "Rond", "Schuin"]
+    TIPS = ["Versleep knooppunten en handvatten; Ctrl + slepen vanaf een knooppunt maakt er een kromme van. "
+            "Delete verwijdert het gekozen knooppunt.",
+            "Klik of sleep voor rechte lijnen; Shift: stappen van 45°.",
+            "Klik voor een hoekpunt, sleep voor een kromme. Klik op het eerste punt om te sluiten.",
+            "Teken met ingedrukte muisknop; Tracking bepaalt hoe glad de lijn wordt."]
+    HANDLE = 4
+
+    def __init__(self, main):
+        super().__init__(main)
+        self.paths = []      # [{"nodes": [[punt, in, uit], ...], "closed": bool}]
+        self.cur = None      # pad waaraan nu getekend wordt
+        self.doc = None
+        self.drag = None
+        self.sel = None      # (pad, knooppunt) gekozen in Bewerken
+        self.free = None
+        self.rubber = None
+
+    @property
+    def tip(self):
+        from .i18n import tr
+        return tr(self.TIPS[self.o["pen_mode"]]) + " " + tr("Enter of Toepassen: op de laag zetten; Esc: weggooien")
 
     def options(self):
         m = self.main
-        return (combo(m, "pen_mode", "Modus:", ["Lijn", "Uit de vrije hand"])
-                + spin(m, "line_width", "Breedte:", 1, 200) + check(m, "antialias", "Anti-alias"))
+        return (button("✓ Toepassen", lambda: self.apply()) + combo(m, "pen_mode", "Modus:", self.MODES)
+                + spin(m, "pen_tracking", "Tracking:", 0, 50)
+                + check(m, "pen_connect", "Segmenten verbinden") + check(m, "pen_nodes", "Knooppunten tonen")
+                + combo(m, "pen_style", "Lijnstijl:", self.STYLES) + spin(m, "line_width", "Breedte:", 0, 200)
+                + check(m, "antialias", "Anti-alias") + combo(m, "pen_join", "Verbinding:", self.JOINS)
+                + spin(m, "pen_miter", "Verstek:", 1, 50))
 
-    def press(self, cv, pt, ev):
-        super().press(cv, pt, ev)
-        self.pts = [pt]
+    # ---------------------------------------------------------------- pad
+    def _start(self, pt):
+        self.cur = {"nodes": [[QPointF(pt), None, None]], "closed": False}
+        self.paths.append(self.cur)
 
-    def constrain(self, b, ev):
+    def qpath(self, sub):
+        n = sub["nodes"]
+        path = QPainterPath(n[0][0])
+        segs = list(zip(n, n[1:])) + ([(n[-1], n[0])] if sub["closed"] and len(n) > 2 else [])
+        for a, b in segs:
+            c1 = a[2] if a[2] is not None else a[0]
+            c2 = b[1] if b[1] is not None else b[0]
+            if a[2] is None and b[1] is None:
+                path.lineTo(b[0])
+            else:
+                path.cubicTo(c1, c2, b[0])
+        if sub["closed"] and len(n) > 2:
+            path.closeSubpath()
+        return path
+
+    def _pen(self, span):
+        o = self.o
+        lw = o["line_width"]
+        if lw <= 0 or self.main.fg_none:
+            return QPen(Qt.PenStyle.NoPen)
+        br = self.main.material_brush(True, span) or QBrush(self.main.fg)
+        pen = QPen(br, lw)
+        pen.setStyle([Qt.PenStyle.SolidLine, Qt.PenStyle.DashLine, Qt.PenStyle.DotLine, Qt.PenStyle.DashDotLine,
+                      Qt.PenStyle.DashDotDotLine][o["pen_style"]])
+        pen.setJoinStyle([Qt.PenJoinStyle.MiterJoin, Qt.PenJoinStyle.RoundJoin, Qt.PenJoinStyle.BevelJoin][o["pen_join"]])
+        pen.setMiterLimit(o["pen_miter"])
+        pen.setCapStyle(Qt.PenCapStyle.RoundCap if o["pen_join"] == 1 else Qt.PenCapStyle.FlatCap)
+        return pen
+
+    def _paint_paths(self, p):
+        for sub in self.paths:
+            if len(sub["nodes"]) < 2:
+                continue
+            path = self.qpath(sub)
+            span = path.boundingRect().toAlignedRect()
+            fill = sub["closed"] and not self.main.bg_none
+            p.setBrush((self.main.material_brush(False, span) or QBrush(self.main.bg)) if fill else Qt.BrushStyle.NoBrush)
+            p.setPen(self._pen(span))
+            p.drawPath(path)
+
+    def apply(self, cv=None):
+        """Het pad op de laag tekenen en een nieuw, leeg pad beginnen."""
+        d = self.doc
+        drawn = [s_ for s_ in self.paths if len(s_["nodes"]) >= 2]
+        self.paths, self.cur, self.sel, self.drag, self.free, self.rubber = [], None, None, None, None, None
+        cv = self.main.canvas()
+        if d is None or not drawn or d.layer().kind == "group" or d.layer().adjust is not None:
+            if cv:
+                cv.update()
+            return
+        self.paths = drawn
+        d.push_undo(self.name)
+        layer = d.layer()
+        p = QPainter(layer.image)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing, self.o["antialias"])
+        if d.sel is not None:  # alleen binnen de selectie
+            clip = QImage(d.sel)
+            tmp = new_image(d.w, d.h)
+            q = QPainter(tmp)
+            q.setRenderHint(QPainter.RenderHint.Antialiasing, self.o["antialias"])
+            self._paint_paths(q)
+            q.setCompositionMode(QPainter.CompositionMode.CompositionMode_DestinationIn)
+            q.drawImage(0, 0, clip)
+            q.end()
+            p.drawImage(0, 0, tmp)
+        else:
+            self._paint_paths(p)
+        p.end()
+        self.paths = []
+        d.changed.emit(QRect())
+        d.structureChanged.emit()
+        if cv:
+            cv.update()
+
+    def _ensure_doc(self, cv):
+        if self.doc is not cv.doc:
+            if self.paths:
+                self.apply()
+            self.doc = cv.doc
+
+    # ---------------------------------------------------------------- muis
+    def _hit(self, cv, pt):
+        """Knooppunt of handvat onder de muis: (pad, knooppunt, 0 punt / 1 in / 2 uit)."""
+        tol = (self.HANDLE + 3) / cv.zoom
+        for pi, sub in enumerate(self.paths):
+            for ni, node in enumerate(sub["nodes"]):
+                for k in (1, 2, 0):
+                    q = node[k]
+                    if q is not None and abs(q.x() - pt.x()) <= tol and abs(q.y() - pt.y()) <= tol:
+                        return pi, ni, k
+        return None
+
+    def constrain(self, a, b, ev):
         if ev.modifiers() & SHIFT:
-            ang = round(math.atan2(b.y() - self.a.y(), b.x() - self.a.x()) / (math.pi / 4)) * math.pi / 4
-            ln = math.hypot(b.x() - self.a.x(), b.y() - self.a.y())
-            return QPointF(self.a.x() + ln * math.cos(ang), self.a.y() + ln * math.sin(ang))
+            ang = round(math.atan2(b.y() - a.y(), b.x() - a.x()) / (math.pi / 4)) * math.pi / 4
+            ln = math.hypot(b.x() - a.x(), b.y() - a.y())
+            return QPointF(a.x() + ln * math.cos(ang), a.y() + ln * math.sin(ang))
         return b
 
-    def path(self, a, b):
-        p = QPainterPath(a)
-        if self.o["pen_mode"] == 1:
-            self.pts.append(b)
-            for q in self.pts[1:]:
-                p.lineTo(q)
+    def press(self, cv, pt, ev):
+        if ev.button() != LB:
+            return
+        self._ensure_doc(cv)
+        mode = self.o["pen_mode"]
+        hit = self._hit(cv, pt)
+        if mode == 0 or (hit is not None and hit[2] != 0):
+            if hit is not None:
+                self.sel = (hit[0], hit[1])
+                if hit[2] == 0 and ev.modifiers() & CTRL:
+                    # Ctrl + slepen vanaf een knooppunt: handvatten eruit trekken (hoekpunt wordt kromme)
+                    node = self.paths[hit[0]]["nodes"][hit[1]]
+                    node[1] = node[2] = QPointF(node[0])
+                    self.drag = ("edit", (hit[0], hit[1], 2), QPointF(pt))
+                else:
+                    self.drag = ("edit", hit, QPointF(pt))
+            else:
+                self.sel = None
+            cv.update()
+            return
+        if mode == 2 and self.cur is not None and hit is not None and self.paths[hit[0]] is self.cur \
+                and hit[1] == 0 and len(self.cur["nodes"]) > 2:
+            self.cur["closed"] = True  # klik op het eerste punt: pad sluiten
+            self.cur = None
+            cv.update()
+            return
+        connect = self.o["pen_connect"] and self.cur is not None and not self.cur["closed"]
+        if mode == 1:
+            if not connect:
+                self._start(pt)
+            start = self.cur["nodes"][-1][0]
+            self.rubber = (start, QPointF(pt))
+            self.drag = ("line", start)
+        elif mode == 2:
+            if not connect:
+                self._start(pt)
+            else:
+                self.cur["nodes"].append([QPointF(pt), None, None])
+            self.drag = ("curve", len(self.cur["nodes"]) - 1)
         else:
-            p.lineTo(b)
-        return p
+            self.free = [QPointF(pt)]
+            self.drag = ("free",)
+        cv.update()
 
+    def move(self, cv, pt, ev):
+        if not self.drag or not (ev.buttons() & LB):
+            return
+        kind = self.drag[0]
+        if kind == "edit":
+            (pi, ni, k), start = self.drag[1], self.drag[2]
+            node = self.paths[pi]["nodes"][ni]
+            d = pt - start
+            if k == 0:  # knooppunt met handvatten mee verplaatsen
+                node[0] = node[0] + d
+                node[1] = node[1] + d if node[1] is not None else None
+                node[2] = node[2] + d if node[2] is not None else None
+            else:  # handvat: tegenover liggend handvat spiegelen (vloeiend knooppunt)
+                node[k] = node[k] + d
+                other = 2 if k == 1 else 1
+                if node[other] is not None:
+                    node[other] = node[0] * 2 - node[k]
+            self.drag = ("edit", (pi, ni, k), QPointF(pt))
+        elif kind == "line":
+            self.rubber = (self.drag[1], self.constrain(self.drag[1], pt, ev))
+        elif kind == "curve":
+            node = self.cur["nodes"][self.drag[1]]
+            node[2] = QPointF(pt)
+            node[1] = node[0] * 2 - pt
+        elif kind == "free":
+            self.free.append(QPointF(pt))
+        cv.update()
+
+    def release(self, cv, pt, ev):
+        if not self.drag:
+            return
+        kind = self.drag[0]
+        if kind == "line":
+            a, b = self.rubber
+            if math.hypot(b.x() - a.x(), b.y() - a.y()) >= 1:
+                self.cur["nodes"].append([QPointF(b), None, None])
+            elif len(self.cur["nodes"]) == 1 and not self.o["pen_connect"]:
+                pass  # alleen geklikt: beginpunt; volgende klik maakt de lijn
+            self.rubber = None
+        elif kind == "curve":
+            node = self.cur["nodes"][self.drag[1]]
+            if node[2] is not None and math.hypot(node[2].x() - node[0].x(), node[2].y() - node[0].y()) < 2:
+                node[1] = node[2] = None  # alleen geklikt: hoekpunt
+        elif kind == "free" and self.free and len(self.free) > 1:
+            pts = self._simplify(self.free, max(0.5, self.o["pen_tracking"] / 4))
+            if self.o["pen_connect"] and self.cur is not None and not self.cur["closed"]:
+                self.cur["nodes"] += [[q, None, None] for q in pts]
+            else:
+                self.cur = {"nodes": [[q, None, None] for q in pts], "closed": False}
+                self.paths.append(self.cur)
+            self.free = None
+        self.drag = None
+        cv.update()
+
+    @staticmethod
+    def _simplify(pts, tol):
+        """Ramer-Douglas-Peucker: minder punten, zelfde vorm (Tracking)."""
+        if len(pts) < 3:
+            return list(pts)
+        a, b = pts[0], pts[-1]
+        dx, dy = b.x() - a.x(), b.y() - a.y()
+        ln = math.hypot(dx, dy) or 1e-9
+        best, idx = -1.0, 0
+        for i in range(1, len(pts) - 1):
+            q = pts[i]
+            dist = abs(dy * q.x() - dx * q.y() + b.x() * a.y() - b.y() * a.x()) / ln
+            if dist > best:
+                best, idx = dist, i
+        if best <= tol:
+            return [a, b]
+        left = PenTool._simplify(pts[:idx + 1], tol)
+        return left[:-1] + PenTool._simplify(pts[idx:], tol)
+
+    def double_click(self, cv, pt, ev):
+        # lijn afsluiten: de volgende klik begint een nieuw pad
+        if self.o["pen_mode"] == 2 and self.cur is not None and len(self.cur["nodes"]) > 1:
+            last = self.cur["nodes"][-1]
+            prev = self.cur["nodes"][-2]
+            if math.hypot(last[0].x() - prev[0].x(), last[0].y() - prev[0].y()) < 2:
+                self.cur["nodes"].pop()  # dubbelklik voegde een extra punt toe
+        self.cur = None
+        cv.update()
+
+    def key(self, cv, ev):
+        k = ev.key()
+        if k in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            self.apply()
+            return True
+        if k == Qt.Key.Key_Escape and self.paths:
+            self.paths, self.cur, self.sel = [], None, None
+            cv.update()
+            return True
+        if k in (Qt.Key.Key_Delete, Qt.Key.Key_Backspace) and self.sel is not None:
+            pi, ni = self.sel
+            nodes = self.paths[pi]["nodes"]
+            del nodes[ni]
+            if len(nodes) < 2:
+                self.paths.pop(pi)
+                if self.cur is not None and self.cur not in self.paths:
+                    self.cur = None
+            self.sel = None
+            cv.update()
+            return True
+        return False
+
+    def make_smooth(self, pi, ni):
+        """Knooppunt vloeiend maken: handvatten in de richting van de buren (een derde van de afstand)."""
+        sub = self.paths[pi]
+        n = sub["nodes"]
+        node = n[ni]
+        prev = n[ni - 1] if ni > 0 or sub["closed"] else None
+        nxt = n[(ni + 1) % len(n)] if ni < len(n) - 1 or sub["closed"] else None
+        a = prev[0] if prev is not None else node[0]
+        b = nxt[0] if nxt is not None else node[0]
+        dx, dy = b.x() - a.x(), b.y() - a.y()
+        ln = math.hypot(dx, dy) or 1.0
+        ux, uy = dx / ln, dy / ln
+        lin = math.hypot(node[0].x() - a.x(), node[0].y() - a.y()) / 3 or ln / 6
+        lout = math.hypot(b.x() - node[0].x(), b.y() - node[0].y()) / 3 or ln / 6
+        node[1] = QPointF(node[0].x() - ux * lin, node[0].y() - uy * lin)
+        node[2] = QPointF(node[0].x() + ux * lout, node[0].y() + uy * lout)
+
+    def make_corner(self, pi, ni):
+        node = self.paths[pi]["nodes"][ni]
+        node[1] = node[2] = None
+
+    def context_actions(self, cv):
+        acts = [("Pad toepassen", self.apply)] if self.paths else []
+        if self.sel is not None:
+            pi, ni = self.sel
+            sub = self.paths[pi]
+            acts.append(("Vloeiend knooppunt", lambda: (self.make_smooth(pi, ni), cv.update())))
+            acts.append(("Hoekpunt", lambda: (self.make_corner(pi, ni), cv.update())))
+            acts.append(("Pad openen" if sub["closed"] else "Pad sluiten",
+                         lambda: (sub.__setitem__("closed", not sub["closed"]), cv.update())))
+        return acts
+
+    def hover_cursor(self, cv, pt):
+        return Qt.CursorShape.SizeAllCursor if self._hit(cv, pt) is not None else None
+
+    def overlay(self, cv, p):
+        if cv.doc is not self.doc and self.doc is not None:
+            return
+        p.save()
+        p.setTransform(cv.transform())
+        p.setRenderHint(QPainter.RenderHint.Antialiasing, self.o["antialias"])
+        self._paint_paths(p)  # voorbeeld zoals het op de laag komt
+        p.restore()
+        if self.rubber:
+            a, b = (cv.to_widget(q) for q in self.rubber)
+            pen = self._pen(QRect())
+            if pen.style() != Qt.PenStyle.NoPen:
+                pen.setWidthF(pen.widthF() * cv.zoom)
+            p.setPen(pen)
+            p.drawLine(a, b)
+        if self.free and len(self.free) > 1:
+            p.setPen(QPen(QColor(0, 0, 0), 1))
+            p.drawPolyline(QPolygonF([cv.to_widget(q) for q in self.free]))
+        if not self.o["pen_nodes"]:
+            return
+        h = self.HANDLE
+        for pi, sub in enumerate(self.paths):
+            for ni, (pt_, cin, cout) in enumerate(sub["nodes"]):
+                c = cv.to_widget(pt_)
+                for hnd in (cin, cout):
+                    if hnd is not None:
+                        q = cv.to_widget(hnd)
+                        p.setPen(QPen(QColor(90, 140, 255), 1))
+                        p.drawLine(c, q)
+                        p.setBrush(QColor(90, 140, 255))
+                        p.drawEllipse(q, 3, 3)
+                chosen = self.sel == (pi, ni)
+                p.setPen(QPen(QColor(0, 0, 0), 1))
+                p.setBrush(QColor(255, 80, 80) if chosen else (QColor(80, 220, 120) if ni == 0 else QColor(255, 255, 255)))
+                p.drawRect(QRectF(c.x() - h, c.y() - h, 2 * h, 2 * h))
+
+    def deactivate(self):
+        # zoals het origineel: bij het wisselen van gereedschap wordt de lijn toegepast
+        if self.paths:
+            self.apply()
+        self.drag = None
 
 
 # ================================================================ tekst

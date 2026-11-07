@@ -29,7 +29,8 @@ niet hoeft te zoeken.
   verscherpen, reliëf, verzadiging, tint en meer.
 - Kunstmedia: olieverfpenseel, krijt, pastel, kleurkrijt en kleurpotlood, elk met een eigen streek.
 - Verwringen met een penseel (duwen, uitzetten, samentrekken, draaien, gladstrijken) en met een raster.
-- Vormen (rechthoek, ovaal, symmetrische vormen, basisvormen), pen en bewerkbare tekst.
+- Pen met rechte lijnen, Bézier-krommen en vrije lijnen; knooppunten blijven bewerkbaar tot Toepassen.
+- Vormen (rechthoek, ovaal, symmetrische vormen, basisvormen) en bewerkbare tekst.
 
 **Materialen**
 - Kleur, verloop (lineair, rechthoekig, zonnestraal, radiaal; met hoek, herhalingen en middelpunt) en
@@ -81,6 +82,9 @@ Bij de eerste start is de taal Engels. Kies Nederlands via
 programmavoorkeuren*).
 
 ## Wat er nieuw is
+
+**0.6.1** De pen is vernieuwd: lijnen en polylijnen, punt tot punt met Bézier-krommen, uit de vrije hand
+en bewerken van knooppunten, met lijnstijl, verbinding en verstek. De lijn blijft bewerkbaar tot Toepassen.
 
 **0.6.0** Negen nieuwe gereedschappen: perspectiefcorrectie, krasjes verwijderen, penseel verwringen,
 maasvormig verwringen en de kunstmedia olieverfpenseel, krijt, pastel, kleurkrijt en kleurpotlood.

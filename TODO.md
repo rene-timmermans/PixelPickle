@@ -243,11 +243,14 @@ Totaal: 7 gereedschappen en 203 menu-opdrachten.
 - [ ] Materialen: verloop en patroon werken nog niet bij tekst, en zelf verlopen samenstellen (verloopbewerker) kan nog niet
 - [ ] Inhoud van de snelmenu's (rechtsklik) precies gelijk aan PSP maken
 - [ ] Gentoo installer (ebuild)
+- [ ] Vectorlagen: lijnen en vormen blijvend bewerkbaar, ook na opslaan (de Pen is nu bewerkbaar tot Toepassen)
 
 ## Afgerond
 
 Wat al gebouwd is, met de versie waarin het verscheen.
 
+- [x] Pen met modi Bewerken, Lijnen en polylijnen, Punt tot punt (Bézier) en Uit de vrije hand, met lijnstijl,
+  verbinding, verstek, tracking en knooppunten (0.6.1)
 - [x] Gereedschappen: Perspectiefcorrectie, Krasjes verwijderen, Penseel Verwringen, Maasvormig verwringen
   en de kunstmedia Olieverfpenseel, Krijt, Pastel, Kleurkrijt en Kleurpotlood; retoucheerpenselen
   (o.a. Verscherpen, Bosseleren) stapelen niet meer op, met de optie Doorlopend (0.6.0)
