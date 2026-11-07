@@ -179,6 +179,8 @@ class LayerRow(QWidget):
             kind = ("adjust", "Aanpassingslaag (wit = effect, zwart = geen effect)")
         if layer.text is not None:
             kind = ("A", "Tekstlaag: klik met het tekstgereedschap op de tekst om te bewerken")
+        elif layer.vector is not None:
+            kind = ("✒", "Vectorlaag: lijnen en vormen blijven bewerkbaar met de Pen (modus Bewerken)")
         if kind:
             k = QLabel()
             k.setPixmap(icons.label_pixmap(kind[0], 16, icons.text_color()))
@@ -433,7 +435,7 @@ class LayersPalette(QWidget):
             self.list.setCurrentItem(it)
         lagen = self.main.top_menus.get("Lagen")
         m = QMenu(self)
-        if self.doc is not None and self.doc.layer().text is not None:
+        if self.doc is not None and (self.doc.layer().text is not None or self.doc.layer().vector is not None):
             m.addAction("Omzetten in rasterlaag", self.main.convert_to_raster)
             m.addSeparator()
         if lagen is not None:

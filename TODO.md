@@ -8,7 +8,7 @@ Vul de kolom **Prioriteit** in (bijvoorbeeld *hoog*, *middel*, *laag* of *nooit*
 voor opmerkingen. Bijwerken: `QT_QPA_PLATFORM=offscreen .venv/bin/python -I tools/make_todo.py`
 (ingevulde prioriteiten en notities blijven bewaard).
 
-Totaal: 7 gereedschappen en 203 menu-opdrachten.
+Totaal: 7 gereedschappen en 202 menu-opdrachten.
 
 ## Gereedschappen
 
@@ -130,7 +130,6 @@ Totaal: 7 gereedschappen en 203 menu-opdrachten.
 |  | Watermerk lezen... | Read Watermark... | Afbeelding > Watermerken |  | `813f` |
 |  | Insteekfilters | Plugin Filters | Effecten |  | `81d8` |
 |  | Laatst gebruikt insteekfilter | Last Used Plug-in Filter | Effecten |  | `81f8` |
-|  | Nieuwe vectorlaag... | New Vector Layer... | Lagen |  | `8141` |
 |  | Nieuwe tekenmateriaallaag... | New Art Media Layer... | Lagen |  | `8289` |
 |  | Alleen huidige laag | Current Layer Only | Lagen > Beeld |  | `80ff` |
 |  | Alle lagen | All Layers | Lagen > Beeld |  | `8100` |
@@ -243,12 +242,13 @@ Totaal: 7 gereedschappen en 203 menu-opdrachten.
 - [ ] Materialen: verloop en patroon werken nog niet bij tekst, en zelf verlopen samenstellen (verloopbewerker) kan nog niet
 - [ ] Inhoud van de snelmenu's (rechtsklik) precies gelijk aan PSP maken
 - [ ] Gentoo installer (ebuild)
-- [ ] Vectorlagen: lijnen en vormen blijvend bewerkbaar, ook na opslaan (de Pen is nu bewerkbaar tot Toepassen)
+- [ ] Vectorlagen: verloop en patroon op vectorobjecten (nu effen kleuren); vectoren uit .pspimage lezen en schrijven
 
 ## Afgerond
 
 Wat al gebouwd is, met de versie waarin het verscheen.
 
+- [x] Vectorlagen: pen en vormen blijven bewerkbaar (oppakken met de Pen in Bewerken), ook in .ora (0.7.0)
 - [x] Pen met modi Bewerken, Lijnen en polylijnen, Punt tot punt (Bézier) en Uit de vrije hand, met lijnstijl,
   verbinding, verstek, tracking en knooppunten (0.6.1)
 - [x] Gereedschappen: Perspectiefcorrectie, Krasjes verwijderen, Penseel Verwringen, Maasvormig verwringen

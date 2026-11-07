@@ -96,7 +96,7 @@ w.set_material(True, None)
 w.set_color(QColor(0, 0, 0), True); w.set_color(QColor(255, 255, 255), False)
 w.set_material(False, dict(M.default_gradient(), preset="Zwart-wit", angle=90))
 doc.layers[0].image.fill(QColor(0, 200, 0))
-w.opts["line_width"] = 1
+w.opts["line_width"] = 1; w.opts["shape_vector"] = False
 drag(w.tools[0xd102], [P(50, 20), P(150, 80)])
 a, b = px(55, 50), px(145, 50)
 assert a.lightness() < 40 and b.lightness() > 215, (a.name(), b.name())

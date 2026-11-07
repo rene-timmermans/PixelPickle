@@ -213,6 +213,7 @@ class Layer:
         self.collapsed = False  # groep ingeklapt in het lagenpalet
         self.text = None        # bewerkbare tekst (zie textlayer.py); image is dan de weergave
         self.blend_ranges = None  # mengbereiken: {kanaal: (deze laag, onderliggend)}, zie BLEND_CHANNELS
+        self.vector = None      # vectorlaag: [object, ...] (zie vectorlayer.py); image is dan de weergave
 
     def clone(self):
         # QImage kopie deelt pixels tot er geschreven wordt (copy on write)
@@ -224,6 +225,8 @@ class Layer:
         from .textlayer import copy_text
         l.text = copy_text(self.text)
         l.blend_ranges = copy_ranges(self.blend_ranges)
+        from .vectorlayer import copy_vector
+        l.vector = copy_vector(self.vector)
         return l
 
 
@@ -811,13 +814,39 @@ class Document(QObject):
         from .textlayer import render
         layer.image = render(layer.text, self.w, self.h, self.px_per_pt)
 
+    def render_vector(self, layer):
+        from .vectorlayer import render
+        layer.image = render(layer.vector or [], self.w, self.h)
+
+    def new_vector_layer(self, name=None, undo=True):
+        """Nieuwe, lege vectorlaag boven de actieve laag (in dezelfde groep)."""
+        from .i18n import tr
+        n = sum(1 for l in self.layers if l.vector is not None) + 1
+        lay = Layer(name or tr("Vector {}").format(n), new_image(self.w, self.h))
+        lay.vector = []
+        if undo:
+            self.add_layer(lay, label="Nieuwe vectorlaag")
+        else:
+            act = self.layer()
+            lay.group = act if act.kind == "group" else act.group
+            idx = self.active if act.kind == "group" else self.active + 1
+            self.layers.insert(idx, lay)
+            self.active = idx
+            self.normalize()
+            self.structureChanged.emit()
+        return lay
+
     def _move_text(self, tmap: QTransform, layers=None):
-        """Tekstlagen meebewegen met een geometrische bewerking, zodat ze bewerkbaar blijven."""
+        """Tekst- en vectorlagen meebewegen met een geometrische bewerking, zodat ze bewerkbaar blijven."""
         from .textlayer import set_transform, transform
+        from . import vectorlayer
         for l in (layers if layers is not None else self.layers):
             if l.text is not None:
                 set_transform(l.text, transform(l.text) * tmap)
                 self.render_text(l)
+            elif l.vector is not None:
+                vectorlayer.transform(l.vector, tmap)
+                self.render_vector(l)
 
     def _transform_all(self, fn, sel_fn, w, h, label, tmap=None):
         self.push_undo(label)
@@ -875,7 +904,7 @@ class Document(QObject):
     def mirror_layer(self, horizontal=True):
         self.push_undo("Spiegelen" if horizontal else "Omdraaien")
         t = QTransform.fromScale(-1, 1) if horizontal else QTransform.fromScale(1, -1)
-        if self.layer().text is not None:
+        if self.layer().text is not None or self.layer().vector is not None:
             m = QTransform(-1, 0, 0, 1, self.w, 0) if horizontal else QTransform(1, 0, 0, -1, 0, self.h)
             self._move_text(m, [self.layer()])
         else:
@@ -976,7 +1005,8 @@ class Document(QObject):
             p.drawImage(0, 0, l.image)
             p.end()
             l.image = out
-            l.text = None  # tekst wordt een gewone (vervormde) rasterlaag
+            l.text = None  # tekst en vectoren worden een gewone (vervormde) rasterlaag
+            l.vector = None
         self.w, self.h = nw, nh
         self.set_selection(None)
         self.sizeChanged.emit()

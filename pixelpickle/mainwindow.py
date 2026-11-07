@@ -324,7 +324,7 @@ class MainWindow(QMainWindow):
             0x804d: lambda: adj("Solariseren", ops.adj_solarize, [("threshold", "Drempel:", 0, 255, 128)]),
             0x808c: D(lambda d: d.apply_to_layer(ops.adj_emboss, "Bosseleren")),
             # Lagen
-            0x8140: self.new_raster_layer, 0x80f7: D(lambda d: d.duplicate_layer()),
+            0x8140: self.new_raster_layer, 0x8141: self.new_vector_layer, 0x80f7: D(lambda d: d.duplicate_layer()),
             0x80f6: D(lambda d: d.delete_layer()), 0x80fe: self.layer_properties,
             0x8101: D(lambda d: d.arrange_layer("top")), 0x8104: D(lambda d: d.move_layer(1)),
             0x8102: D(lambda d: d.move_layer(-1)), 0x8103: D(lambda d: d.arrange_layer("bottom")),
@@ -1287,6 +1287,8 @@ class MainWindow(QMainWindow):
         if d.layer().text is not None:
             extra.append(("Tekst bewerken", lambda: self.edit_text_layer(cv)))
             extra.append(("Omzetten in rasterlaag", self.convert_to_raster))
+        elif d.layer().vector is not None:
+            extra.append(("Omzetten in rasterlaag", self.convert_to_raster))
         for label, fn in extra:
             m.addAction(label, lambda f=fn: self._run(f))
         if extra:
@@ -1324,13 +1326,18 @@ class MainWindow(QMainWindow):
         m.exec(bar.mapToGlobal(pos))
 
     def ensure_raster(self):
-        """Tekstlaag eerst omzetten naar een rasterlaag (met bevestiging, zoals PSP)."""
+        """Tekst- of vectorlaag eerst omzetten naar een rasterlaag (met bevestiging, zoals PSP)."""
         d = self.doc()
-        if d is None or d.layer().text is None:
+        if d is None or (d.layer().text is None and d.layer().vector is None):
             return True
-        r = QMessageBox.question(self, APP, "Dit is een tekstlaag. Om erop te schilderen of een effect toe te passen "
-                                 "moet hij eerst een rasterlaag worden; de tekst is daarna niet meer bewerkbaar.\n\n"
-                                 "Omzetten in rasterlaag?")
+        if d.layer().vector is not None:
+            msg = tr("Dit is een vectorlaag. Om erop te schilderen of een effect toe te passen moet hij eerst een "
+                     "rasterlaag worden; de lijnen en vormen zijn daarna niet meer bewerkbaar.\n\nOmzetten in rasterlaag?")
+        else:
+            msg = tr("Dit is een tekstlaag. Om erop te schilderen of een effect toe te passen "
+                     "moet hij eerst een rasterlaag worden; de tekst is daarna niet meer bewerkbaar.\n\n"
+                     "Omzetten in rasterlaag?")
+        r = QMessageBox.question(self, APP, msg)
         if r != QMessageBox.StandardButton.Yes:
             return False
         self.convert_to_raster()
@@ -1338,11 +1345,22 @@ class MainWindow(QMainWindow):
 
     def convert_to_raster(self):
         d = self.doc()
-        if d.layer().text is None:
+        if d.layer().text is None and d.layer().vector is None:
             return
+        tool = self.tool
+        if hasattr(tool, "commit_pending"):  # een lijn die nog bewerkt wordt eerst afronden
+            tool.commit_pending()
         d.push_undo("Omzetten in rasterlaag")
         d.layer().text = None
+        d.layer().vector = None
         d.structureChanged.emit()
+
+    def new_vector_layer(self):
+        d = self.doc()
+        if d is None:
+            return
+        d.new_vector_layer()
+        d.changed.emit(QRect())
 
     def run_effect(self, cid):
         d = self.doc()

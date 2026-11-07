@@ -40,7 +40,8 @@ niet hoeft te zoeken.
   stoffen en dierenprints.
 
 **Lagen**
-- 21 mengmodi, dekking, lagengroepen, maskerlagen en aanpassingslagen.
+- 21 mengmodi, dekking, lagengroepen, maskerlagen, aanpassingslagen en vectorlagen.
+- Vectorlagen: lijnen en vormen blijven bewerkbaar zolang je met de afbeelding bezig bent (en in .ora).
 - Mengbereiken: bepaal per kanaal waar een laag zichtbaar is, op basis van de laag zelf en van wat
   eronder ligt.
 - Koppelingssets, transparantie vergrendelen en lagen markeren met een kleur.
@@ -82,6 +83,9 @@ Bij de eerste start is de taal Engels. Kies Nederlands via
 programmavoorkeuren*).
 
 ## Wat er nieuw is
+
+**0.7.0** Vectorlagen: lijnen van de pen en vormen blijven bewerkbaar zolang je met de afbeelding bezig
+bent. Pak ze later weer op met de pen in de modus Bewerken om knooppunten, kleur en lijn aan te passen.
 
 **0.6.1** De pen is vernieuwd: lijnen en polylijnen, punt tot punt met Bézier-krommen, uit de vrije hand
 en bewerken van knooppunten, met lijnstijl, verbinding en verstek. De lijn blijft bewerkbaar tot Toepassen.

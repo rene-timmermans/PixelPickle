@@ -24,7 +24,7 @@ DEFAULT_OPTS = dict(
     opacity=100, blend=0, rate=10, tolerance=20, contiguous=True, sample_merged=False,
     sel_shape=0, sel_mode=0, feather=0, antialias=True, lasso_type=0, line_width=3,
     shape_fill=True, shape_stroke=True, radius=0, sym_sides=5, sym_star=True, sym_inner=50,
-    preset=0, pen_mode=1, pen_tracking=10, pen_connect=True, pen_nodes=True, pen_style=0, pen_join=0,
+    preset=0, pen_vector=True, shape_vector=True, pen_mode=1, pen_tracking=10, pen_connect=True, pen_nodes=True, pen_style=0, pen_join=0,
     pen_miter=15, font="Sans Serif", font_size=48, bold=False, italic=False,
     sample_size=0, clone_aligned=True, bg_sampling=0, straighten_mode=0, straighten_crop=False, persp_grid=5, persp_crop=False, scratch_width=10, scratch_ends=0, warp_mode=0, warp_strength=50, warp_edge=0,
     mesh_cols=6, mesh_rows=6, continuous=False,
@@ -276,7 +276,9 @@ class LayerMover:
                        if l in members or (act.link_set and l.link_set == act.link_set and l.adjust is None
                                            and l.kind != "group")]
         from .textlayer import copy_text
+        from .vectorlayer import copy_vector
         self.text_base = {id(l): copy_text(l.text) for l, _ in self.linked if l.text is not None}
+        self.vector_base = {id(l): copy_vector(l.vector) for l, _ in self.linked if l.vector is not None}
         self.sel = QImage(d.sel) if d.sel is not None else None
         self.lines = list(d.sel_lines)
         self.last = (0, 0)
@@ -323,6 +325,13 @@ class LayerMover:
                     set_transform(t, transform(t) * QTransform.fromTranslate(dx, dy))
                     layer.text = t
                     d.render_text(layer)
+                    continue
+                if id(layer) in self.vector_base:  # vectoren blijven vectoren
+                    from . import vectorlayer
+                    v = vectorlayer.copy_vector(self.vector_base[id(layer)])
+                    vectorlayer.transform(v, QTransform.fromTranslate(dx, dy))
+                    layer.vector = v
+                    d.render_vector(layer)
                     continue
                 out = new_image(d.w, d.h)
                 p = QPainter(out)
@@ -2927,9 +2936,12 @@ class ShapeBase(Tool):
         super().__init__(main)
         self.a = None
 
+    vector_ok = True
+
     def common(self):
         m = self.main
-        return spin(m, "line_width", "Lijnbreedte:", 0, 200) + check(m, "antialias", "Anti-alias")
+        return (spin(m, "line_width", "Lijnbreedte:", 0, 200) + check(m, "antialias", "Anti-alias")
+                + check(m, "shape_vector", "Op vector maken"))
 
     def options(self):
         return self.common()
@@ -2983,17 +2995,33 @@ class ShapeBase(Tool):
         p.end()
         paint_layer(d.layer(), r, local, d.sel)
         d.changed.emit(r)
+        self.last_path = path
 
     fillable = True
+    last_path = None
 
     def release(self, cv, pt, ev):
         if self.a is None:
             return
+        d = cv.doc
         if self.prev_rect.isEmpty():
-            cv.doc.drop_last_undo()
+            d.drop_last_undo()
+        elif self.last_path is not None and (d.layer().vector is not None or self.o["shape_vector"]):
+            # als bewerkbaar vectorobject: de voorbeeldpixels weghalen en een object maken
+            from . import vectorlayer as V
+            d.layer().image = self.base
+            layer = d.layer() if d.layer().vector is not None else d.new_vector_layer(undo=False)
+            lw = self.o["line_width"]
+            stroke = V.color_list(self.main.fg, (self.main.fg_none and self.fillable) or lw <= 0)
+            fill = V.color_list(self.main.bg, self.main.bg_none or not self.fillable)
+            for nodes, closed in V.path_to_nodes(self.last_path):
+                layer.vector.append(V.make_object(nodes, closed, stroke, fill, lw, 0, 0, 15, self.o["antialias"]))
+            d.render_vector(layer)
+            d.changed.emit(QRect())
         self.a = None
         self.base = None
-        cv.doc.structureChanged.emit()
+        self.last_path = None
+        d.structureChanged.emit()
 
 
 class RectangleTool(ShapeBase):
@@ -3107,13 +3135,14 @@ class PenTool(Tool):
     bewerkbaar (knooppunten en handvatten verslepen) tot Toepassen; dan wordt hij op de laag getekend.
     Rand: voorgrondmateriaal; gesloten paden worden gevuld met het achtergrondmateriaal."""
     cid, glyph = 0xd110, "✒"
-    MODES = ["Bewerken", "Lijnen en polylijnen", "Punt tot punt", "Uit de vrije hand"]
+    vector_ok = True  # mag op een vectorlaag werken zonder die eerst om te zetten
+    MODES = ["Bewerken", "Lijnen en polylijnen", "Punt tot punt (Bézier-krommen)", "Uit de vrije hand"]
     STYLES = ["Effen", "Streepjes", "Puntjes", "Streep-punt", "Streep-punt-punt"]
     JOINS = ["Verstek", "Rond", "Schuin"]
     TIPS = ["Versleep knooppunten en handvatten; Ctrl + slepen vanaf een knooppunt maakt er een kromme van. "
             "Delete verwijdert het gekozen knooppunt.",
             "Klik of sleep voor rechte lijnen; Shift: stappen van 45°.",
-            "Klik voor een hoekpunt, sleep voor een kromme. Klik op het eerste punt om te sluiten.",
+            "Bézier-krommen: klik voor een hoekpunt, houd ingedrukt en sleep voor een kromme. Klik op het eerste punt om te sluiten.",
             "Teken met ingedrukte muisknop; Tracking bepaalt hoe glad de lijn wordt."]
     HANDLE = 4
 
@@ -3126,6 +3155,8 @@ class PenTool(Tool):
         self.sel = None      # (pad, knooppunt) gekozen in Bewerken
         self.free = None
         self.rubber = None
+        self.target = None   # vectorlaag waar opgepakte objecten vandaan kwamen
+        self.picked = None   # (laag, originele objecten) om met Esc terug te zetten
 
     @property
     def tip(self):
@@ -3137,6 +3168,7 @@ class PenTool(Tool):
         return (button("✓ Toepassen", lambda: self.apply()) + combo(m, "pen_mode", "Modus:", self.MODES)
                 + spin(m, "pen_tracking", "Tracking:", 0, 50)
                 + check(m, "pen_connect", "Segmenten verbinden") + check(m, "pen_nodes", "Knooppunten tonen")
+                + check(m, "pen_vector", "Op vector maken")
                 + combo(m, "pen_style", "Lijnstijl:", self.STYLES) + spin(m, "line_width", "Breedte:", 0, 200)
                 + check(m, "antialias", "Anti-alias") + combo(m, "pen_join", "Verbinding:", self.JOINS)
                 + spin(m, "pen_miter", "Verstek:", 1, 50))
@@ -3187,42 +3219,110 @@ class PenTool(Tool):
             p.drawPath(path)
 
     def apply(self, cv=None):
-        """Het pad op de laag tekenen en een nieuw, leeg pad beginnen."""
+        """Het pad toepassen: op een vectorlaag als bewerkbaar object, anders als pixels op de laag."""
+        from . import vectorlayer as V
         d = self.doc
         drawn = [s_ for s_ in self.paths if len(s_["nodes"]) >= 2]
+        target, picked = self.target, self.picked
         self.paths, self.cur, self.sel, self.drag, self.free, self.rubber = [], None, None, None, None, None
+        self.target = self.picked = None
         cv = self.main.canvas()
-        if d is None or not drawn or d.layer().kind == "group" or d.layer().adjust is not None:
+        if d is None:
+            return
+        if not drawn and picked is None:
             if cv:
                 cv.update()
             return
-        self.paths = drawn
-        d.push_undo(self.name)
-        layer = d.layer()
-        p = QPainter(layer.image)
-        p.setRenderHint(QPainter.RenderHint.Antialiasing, self.o["antialias"])
-        if d.sel is not None:  # alleen binnen de selectie
-            clip = QImage(d.sel)
-            tmp = new_image(d.w, d.h)
-            q = QPainter(tmp)
-            q.setRenderHint(QPainter.RenderHint.Antialiasing, self.o["antialias"])
-            self._paint_paths(q)
-            q.setCompositionMode(QPainter.CompositionMode.CompositionMode_DestinationIn)
-            q.drawImage(0, 0, clip)
-            q.end()
-            p.drawImage(0, 0, tmp)
+        layer = target if target is not None and target in d.layers else d.layer()
+        if layer.kind == "group" or layer.adjust is not None:
+            if cv:
+                cv.update()
+            return
+        if picked is None:  # bij opgepakte objecten is ongedaan maken al vastgelegd
+            d.push_undo(self.name)
+        if layer.vector is None and self.o["pen_vector"]:
+            layer = d.new_vector_layer(undo=False)
+        if layer.vector is not None:
+            o = self.o
+            lw = o["line_width"]
+            for sub_ in drawn:
+                layer.vector.append(V.make_object(
+                    sub_["nodes"], sub_["closed"], V.color_list(self.main.fg, self.main.fg_none or lw <= 0),
+                    V.color_list(self.main.bg, self.main.bg_none), lw, o["pen_style"], o["pen_join"],
+                    o["pen_miter"], o["antialias"]))
+            d.render_vector(layer)
         else:
-            self._paint_paths(p)
-        p.end()
-        self.paths = []
+            self.paths = drawn
+            p = QPainter(layer.image)
+            p.setRenderHint(QPainter.RenderHint.Antialiasing, self.o["antialias"])
+            if d.sel is not None:  # alleen binnen de selectie
+                tmp = new_image(d.w, d.h)
+                q = QPainter(tmp)
+                q.setRenderHint(QPainter.RenderHint.Antialiasing, self.o["antialias"])
+                self._paint_paths(q)
+                q.setCompositionMode(QPainter.CompositionMode.CompositionMode_DestinationIn)
+                q.drawImage(0, 0, QImage(d.sel))
+                q.end()
+                p.drawImage(0, 0, tmp)
+            else:
+                self._paint_paths(p)
+            p.end()
+            self.paths = []
         d.changed.emit(QRect())
         d.structureChanged.emit()
         if cv:
             cv.update()
 
+    def commit_pending(self):
+        if self.paths or self.picked is not None:
+            self.apply()
+
+    def pick_up(self, cv, pt):
+        """Bewerken: een bestaand object op de actieve vectorlaag oppakken om het opnieuw te bewerken."""
+        from . import vectorlayer as V
+        d = cv.doc
+        layer = d.layer()
+        if layer.vector is None or self.paths:
+            return False
+        tol = 4 / cv.zoom
+        for i in range(len(layer.vector) - 1, -1, -1):  # bovenste object eerst
+            obj = layer.vector[i]
+            if V.hit(obj, pt, tol):
+                d.push_undo("Vector bewerken")
+                self.picked = (layer, [V.copy_vector(obj)])
+                del layer.vector[i]
+                d.render_vector(layer)
+                d.changed.emit(QRect())
+                self.target = layer
+                self.paths = [{"nodes": V.qt_nodes(obj), "closed": obj["closed"]}]
+                self.cur = None
+                # kleuren en lijninstellingen van het object overnemen, zodat ze aan te passen zijn
+                m = self.main
+                if obj.get("stroke") is not None:
+                    m.set_color(QColor(*obj["stroke"]), True)
+                m.set_none(True, obj.get("stroke") is None)
+                if obj.get("fill") is not None:
+                    m.set_color(QColor(*obj["fill"]), False)
+                m.set_none(False, obj.get("fill") is None)
+                m.opts.update(line_width=int(round(obj["width"])), pen_style=obj.get("style", 0),
+                              pen_join=obj.get("join", 0), pen_miter=int(obj.get("miter", 15)),
+                              antialias=obj.get("aa", True))
+                if hasattr(m, "_build_options"):
+                    m._build_options(self)  # optiebalk bijwerken (zonder het gereedschap opnieuw te kiezen)
+                return True
+        return False
+
+    def restore_picked(self):
+        """Esc na oppakken: het object ongewijzigd terugzetten."""
+        layer, objs = self.picked
+        layer.vector.extend(objs)
+        self.doc.render_vector(layer)
+        self.doc.changed.emit(QRect())
+        self.picked = self.target = None
+
     def _ensure_doc(self, cv):
         if self.doc is not cv.doc:
-            if self.paths:
+            if self.paths or self.picked is not None:
                 self.apply()
             self.doc = cv.doc
 
@@ -3251,6 +3351,9 @@ class PenTool(Tool):
         self._ensure_doc(cv)
         mode = self.o["pen_mode"]
         hit = self._hit(cv, pt)
+        if mode == 0 and hit is None and not self.paths and self.pick_up(cv, pt):
+            cv.update()
+            return
         if mode == 0 or (hit is not None and hit[2] != 0):
             if hit is not None:
                 self.sel = (hit[0], hit[1])
@@ -3377,8 +3480,19 @@ class PenTool(Tool):
         if k in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
             self.apply()
             return True
-        if k == Qt.Key.Key_Escape and self.paths:
+        if k == Qt.Key.Key_Escape and (self.paths or self.picked is not None):
             self.paths, self.cur, self.sel = [], None, None
+            if self.picked is not None:
+                self.restore_picked()
+            cv.update()
+            return True
+        if k in (Qt.Key.Key_Delete, Qt.Key.Key_Backspace) and self.sel is None and self.picked is not None:
+            # opgepakt object zonder gekozen knooppunt: het hele object verwijderen
+            layer = self.picked[0]
+            self.paths, self.cur, self.picked, self.target = [], None, None, None
+            self.doc.render_vector(layer)
+            self.doc.changed.emit(QRect())
+            self.doc.structureChanged.emit()
             cv.update()
             return True
         if k in (Qt.Key.Key_Delete, Qt.Key.Key_Backspace) and self.sel is not None:
@@ -3427,7 +3541,14 @@ class PenTool(Tool):
         return acts
 
     def hover_cursor(self, cv, pt):
-        return Qt.CursorShape.SizeAllCursor if self._hit(cv, pt) is not None else None
+        if self._hit(cv, pt) is not None:
+            return Qt.CursorShape.SizeAllCursor
+        layer = cv.doc.layer()
+        if self.o["pen_mode"] == 0 and not self.paths and layer.vector:
+            from . import vectorlayer as V
+            if any(V.hit(o, pt, 4 / cv.zoom) for o in layer.vector):
+                return Qt.CursorShape.PointingHandCursor  # klikken pakt dit object op
+        return None
 
     def overlay(self, cv, p):
         if cv.doc is not self.doc and self.doc is not None:
@@ -3467,7 +3588,7 @@ class PenTool(Tool):
 
     def deactivate(self):
         # zoals het origineel: bij het wisselen van gereedschap wordt de lijn toegepast
-        if self.paths:
+        if self.paths or self.picked is not None:
             self.apply()
         self.drag = None
 

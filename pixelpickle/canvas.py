@@ -235,7 +235,9 @@ class Canvas(QWidget):
             self._forward_press(e)
 
     def _forward_press(self, e):
-        if self.doc.layer().text is not None and getattr(self.main.tool, "edits_pixels", True):
+        lay = self.doc.layer()
+        live = lay.text is not None or (lay.vector is not None and not getattr(self.main.tool, "vector_ok", False))
+        if live and getattr(self.main.tool, "edits_pixels", True):
             if not self.main.ensure_raster():
                 return
         if self.doc.layer().kind == "group" and getattr(self.main.tool, "edits_pixels", True):

@@ -19,7 +19,7 @@ doc = Document(300, 200, QColor(255, 255, 255)); cv = w.add_document(doc).canvas
 P, LB = QPointF, Qt.MouseButton.LeftButton
 pen = w.tools[0xd110]; w.select_tool(pen)
 w.set_color(QColor(0, 0, 0), True); w.set_color(QColor(255, 0, 0), False)
-w.opts.update(line_width=4, antialias=False)
+w.opts.update(line_width=4, antialias=False, pen_vector=False)  # eerst: pixels op de laag
 
 
 def ev(t, p):
