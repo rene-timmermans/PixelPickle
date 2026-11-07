@@ -177,7 +177,7 @@ class Tool:
     def hover_cursor(self, cv, pt): return None
 
     # Automatisch scrollen bij de rand tijdens slepen (uit voor gereedschappen waar dat hindert)
-    autoscroll = True
+    autoscroll = False  # meeschuiven bij de rand: alleen waar het nodig is (puntsgewijs selecteren)
 
     # Rechtsklik zonder slepen opent het snelmenu bij gereedschappen die de rechterknop niet zelf gebruiken
     context_menu = False
@@ -764,6 +764,11 @@ class LassoTool(SelectionBase):
             "Klik punten aan; dubbelklik of rechtsklik om te sluiten.",
             "Klik punten rond een object; de lijn volgt de sterkste rand binnen het bereik. Dubbelklik of rechtsklik om te sluiten.",
             "Klik punten rond een object; de lijn zoekt de rand op. Dubbelklik of rechtsklik om te sluiten."]
+
+    @property
+    def autoscroll(self):
+        # bij punt tot punt (en slimme rand / rand zoeken) loopt de omtrek vaak buiten beeld door
+        return self.o["lasso_type"] > 0
 
     def __init__(self, main):
         super().__init__(main)
@@ -2270,7 +2275,6 @@ class PresetShapeTool(ShapeBase):
 
 
 class PenTool(ShapeBase):
-    autoscroll = False  # bij tekenen met de pen mag het beeld niet meeschuiven
     cid, glyph = 0xd110, "✒"
     tip = "Teken lijnen in de voorgrondkleur. Shift: hoeken in stappen van 45°"
     fillable = False

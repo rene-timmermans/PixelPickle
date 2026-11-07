@@ -42,9 +42,13 @@ print("3 voorbeeldlijn volgt de muis tot y =", round(last.y()) if last else None
 # afmaken en controleren dat het stopt
 lasso.double_click(cv, cv.to_doc(QPointF(400, 300)), None); move(QPointF(400, H - 5)); cv._autoscroll_tick()
 assert not cv.autoscroll.isActive(); print("4 na het sluiten van de selectie: stopt")
-# slepen met de selectie (rechthoek) naar de rechterrand
-w.select_tool(w.tools[0xd021]); cv.mousePressEvent(QMouseEvent(QEvent.Type.MouseButtonPress, QPointF(300, 300), cv.mapToGlobal(QPoint(300, 300)), Qt.MouseButton.LeftButton, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier))
-ox = cv.ox; move(QPointF(cv.width() - 3, 300), Qt.MouseButton.LeftButton); cv._autoscroll_tick()
-assert cv.ox < ox; print("5 rechthoekselectie slepen naar rechts: scrollt mee")
+# andere gereedschappen (penseel, rechthoekselectie, uit de vrije hand slepen): niet meeschuiven
+for tool, lt in ((w.tools[0xd091], 1), (w.tools[0xd021], 1), (lasso, 0)):
+    w.opts["lasso_type"] = lt; w.select_tool(tool)
+    cv.mousePressEvent(QMouseEvent(QEvent.Type.MouseButtonPress, QPointF(300, 300), cv.mapToGlobal(QPoint(300, 300)), Qt.MouseButton.LeftButton, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier))
+    ox = cv.ox; move(QPointF(cv.width() - 3, 300), Qt.MouseButton.LeftButton); cv._autoscroll_tick()
+    assert cv.ox == ox and not cv.autoscroll.isActive(), tool.name
+    cv.mouseReleaseEvent(QMouseEvent(QEvent.Type.MouseButtonRelease, QPointF(cv.width() - 3, 300), cv.mapToGlobal(QPoint(cv.width() - 3, 300)), Qt.MouseButton.LeftButton, Qt.MouseButton.NoButton, Qt.KeyboardModifier.NoModifier))
+print("5 penseel, rechthoekselectie en vrije hand slepen: schuift niet mee")
 for s in w.mdi.subWindowList(): s.canvas.doc.set_modified(False)
 print("ALLES OK")

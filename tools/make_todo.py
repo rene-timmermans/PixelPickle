@@ -109,6 +109,7 @@ Totaal: {len(rows_tools)} gereedschappen en {len(rows_menu)} menu-opdrachten.
 
 Wat al gebouwd is, met de versie waarin het verscheen.
 
+- [x] Meeschuiven bij de rand alleen bij puntsgewijs selecteren; vinkje bij Opties voor gereedschap (0.5.5)
 - [x] Selectiemodus Toevoegen/Verwijderen werkt ook bij klikken binnen de selectie (0.5.4)
 - [x] Eigen set van 45 verlopen en 43 patronen in het programma zelf (0.5.3)
 - [x] Effectvenster meldt een actieve selectie (0.5.1)

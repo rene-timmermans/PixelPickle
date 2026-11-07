@@ -377,7 +377,8 @@ class MainWindow(QMainWindow):
     # Opdrachten die ook zonder geopende afbeelding werken (o.a. voorkeuren, zoals in PSP)
     NO_DOC = {0x8012, 0xe100, 0xe101, 0xe141, 0x80e6, 0x8020, 0x8185, 0x81ae, 0x8002, 0x81ba, 0x81f9, 0xe800, 0xe801,
               0x801d, 0x82ce, 0xe132, 0xe133, 0xe134, 0x80d3, 0x8028, 0xe140, 0xe142, 0x8151}
-    CHECKABLE = {0x821f: None, 0x8185: "dock_mat", 0x81ae: "dock_layers", 0x8002: "dock_hist", 0x82ce: None, 0x8021: None, 0x811a: None}
+    CHECKABLE = {0x821f: None, 0x8185: "dock_mat", 0x81ae: "dock_layers", 0x8002: "dock_hist", 0x82ce: None, 0x8021: None,
+                 0x811a: None, 0x81ba: "opt_bar"}
 
     @staticmethod
     def _tidy_menu(menu):
@@ -454,6 +455,9 @@ class MainWindow(QMainWindow):
             if cid in a:
                 dock.visibilityChanged.connect(lambda v, act=a[cid]: act.setChecked(v))
                 a[cid].setChecked(True)
+        if 0x81ba in a:  # optiebalk: vinkje volgt de zichtbaarheid (ook na sluiten via het balkmenu)
+            self.opt_bar.visibilityChanged.connect(lambda v, act=a[0x81ba]: act.setChecked(v))
+            a[0x81ba].setChecked(True)
 
     def _build_standard_toolbar(self):
         tb = QToolBar("Standaard")

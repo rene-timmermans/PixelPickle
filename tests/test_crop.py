@@ -54,7 +54,8 @@ crop.double_click(cv, QPointF(60, 50), None); assert (doc.w, doc.h) == (100, 60)
 print("9 dubbelklik buiten: niets | binnen: bijgesneden tot", doc.w, "×", doc.h)
 # Pen: geen automatisch scrollen
 w.select_tool(w.tools[0xd110]); cv._as_buttons = L
-assert not cv._autoscroll_wanted(); w.select_tool(w.tools[0xd021]); assert cv._autoscroll_wanted()
-print("10 Pen scrollt niet mee, Selectie wel")
+assert not cv._autoscroll_wanted(); w.select_tool(w.tools[0xd021]); assert not cv._autoscroll_wanted()
+w.opts["lasso_type"] = 1; w.select_tool(w.tools[0xd022]); assert cv._autoscroll_wanted()  # alleen punt tot punt
+print("10 Pen en rechthoekselectie scrollen niet mee, punt tot punt wel")
 for s in w.mdi.subWindowList(): s.canvas.doc.set_modified(False)
 print("ALLES OK")

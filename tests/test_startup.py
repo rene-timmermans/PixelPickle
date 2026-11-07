@@ -32,4 +32,9 @@ sw = w2.add_document(Document(50, 50)); app.processEvents()
 assert w2.tool is w2.tools[0xd022], w2.tool.name
 sw.canvas.doc.set_modified(False)
 print("2 na herstart OK")
+a = w2.actions_by_id[0x81ba]  # Paletten > Opties voor gereedschap: vinkje zoals de paletten
+assert a.isCheckable() and a.isChecked()
+a.trigger(); app.processEvents(); assert not w2.opt_bar.isVisible() and not a.isChecked()
+a.trigger(); app.processEvents(); assert w2.opt_bar.isVisible() and a.isChecked()
+print("3 vinkje optiebalk OK")
 print("ALLES OK")

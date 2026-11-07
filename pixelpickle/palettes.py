@@ -23,6 +23,7 @@ class Spectrum(QWidget):
     def resizeEvent(self, e):
         w, h = self.width(), self.height()
         img = QImage(w, h, QImage.Format.Format_RGB32)
+        img.fill(self.palette().window().color())  # ook de strook tussen kleurvlak en grijsbalk vullen
         p = QPainter(img)
         gw = w - 14
         g = QLinearGradient(0, 0, gw, 0)

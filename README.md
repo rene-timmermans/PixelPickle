@@ -19,8 +19,8 @@ niet hoeft te zoeken.
 **Gereedschappen**
 - Pannen en zoomen, selecteren en verplaatsen.
 - Selecties: rechthoek, ovaal en andere vormen, uit de vrije hand (ook punt tot punt en Slimme rand)
-  en de toverstaf met overeenkomstmodi en tolerantie. Bij de rand van het venster schuift het beeld
-  vanzelf mee.
+  en de toverstaf met overeenkomstmodi en tolerantie. Bij puntsgewijs selecteren schuift het beeld
+  vanzelf mee als je bij de rand van het venster komt.
 - Bijsnijden met een aanpasbaar kader: grepen op hoeken en zijden, vaste verhoudingen, maten in te
   typen en uitlijnen op laag of afbeelding. Dubbelklik in het kader om bij te snijden.
 - Rechtzetten, rode ogen verwijderen, klonen.
@@ -79,6 +79,10 @@ Bij de eerste start is de taal Engels. Kies Nederlands via
 programmavoorkeuren*).
 
 ## Wat er nieuw is
+
+**0.5.5** Het beeld schuift alleen nog mee bij de rand tijdens puntsgewijs selecteren, niet meer bij
+penselen en andere gereedschappen. Opgeloste glitch in het kleurenpalet en een vinkje bij Opties voor
+gereedschap.
 
 **0.5.4** Een stuk uit een selectie halen of eraan toevoegen met de modus Verwijderen of Toevoegen werkt nu
 ook als je binnen de bestaande selectie klikt.
