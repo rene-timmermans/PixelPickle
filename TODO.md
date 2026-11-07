@@ -8,24 +8,15 @@ Vul de kolom **Prioriteit** in (bijvoorbeeld *hoog*, *middel*, *laag* of *nooit*
 voor opmerkingen. Bijwerken: `QT_QPA_PLATFORM=offscreen .venv/bin/python -I tools/make_todo.py`
 (ingevulde prioriteiten en notities blijven bewaard).
 
-Totaal: 16 gereedschappen en 203 menu-opdrachten.
+Totaal: 7 gereedschappen en 203 menu-opdrachten.
 
 ## Gereedschappen
 
 | Prioriteit | Functie | Engels | Plek | Notitie | ID |
 |---|---|---|---|---|---|
-| x | Perspectiefcorrectie | Perspective Correction | knop 6 |  | `d052` |
 |  | Makeover | Makeover | knop 8 |  | `d070` |
-| x | Krasjes verwijderen | Scratch Remover | knop 9 |  | `d082` |
 |  | Object verwijderen | Object Remover | knop 9 |  | `d083` |
 |  | Plaatjespenseel | Picture Tube | knop 15, sneltoets I |  | `d0e0` |
-| x | Penseel Verwringen | Warp Brush | knop 19 |  | `d121` |
-| x | Maasvormig verwringen | Mesh Warp | knop 19 |  | `d122` |
-| x | Olieverfpenseel | Oil Brush | knop 20 |  | `d131` |
-| x | Krijt | Chalk | knop 20 |  | `d132` |
-| x | Pastel | Pastel | knop 20 |  | `d133` |
-| x | Kleurkrijt | Colored Chalk | knop 20 |  | `d134` |
-| x | Kleurpotlood | Colored Pencil | knop 20 |  | `d135` |
 |  | Markering | Marker | knop 20 |  | `d136` |
 |  | Paletmes | Palette Knife | knop 20 |  | `d137` |
 |  | Uitsmeren (kunstmedia) | Smear (Art Media) | knop 20 |  | `d138` |
@@ -257,6 +248,9 @@ Totaal: 16 gereedschappen en 203 menu-opdrachten.
 
 Wat al gebouwd is, met de versie waarin het verscheen.
 
+- [x] Gereedschappen: Perspectiefcorrectie, Krasjes verwijderen, Penseel Verwringen, Maasvormig verwringen
+  en de kunstmedia Olieverfpenseel, Krijt, Pastel, Kleurkrijt en Kleurpotlood; retoucheerpenselen
+  (o.a. Verscherpen, Bosseleren) stapelen niet meer op, met de optie Doorlopend (0.6.0)
 - [x] Meeschuiven bij de rand alleen bij puntsgewijs selecteren; vinkje bij Opties voor gereedschap (0.5.5)
 - [x] Selectiemodus Toevoegen/Verwijderen werkt ook bij klikken binnen de selectie (0.5.4)
 - [x] Eigen set van 45 verlopen en 43 patronen in het programma zelf (0.5.3)

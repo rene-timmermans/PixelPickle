@@ -942,6 +942,48 @@ class Document(QObject):
         self.structureChanged.emit()
         self.changed.emit(QRect())
 
+    def perspective(self, quad, crop=False, fill: QColor | None = None):
+        """Perspectiefcorrectie: de vierhoek quad (4 punten: linksboven, rechtsboven, rechtsonder,
+        linksonder) wordt een rechthoek. Zonder bijsnijden blijft het formaat van de afbeelding gelijk
+        en wordt alles meegetrokken; met bijsnijden blijft alleen de rechtgetrokken rechthoek over."""
+        import math
+        from PySide6.QtCore import QPointF
+        from PySide6.QtGui import QPolygonF
+        tl, tr, br, bl = quad
+        dist = lambda a, b: math.hypot(a.x() - b.x(), a.y() - b.y())
+        tw = max(1.0, (dist(tl, tr) + dist(bl, br)) / 2)
+        th = max(1.0, (dist(tl, bl) + dist(tr, br)) / 2)
+        cx = sum(q.x() for q in quad) / 4
+        cy = sum(q.y() for q in quad) / 4
+        if crop:
+            x0, y0 = 0.0, 0.0
+            nw, nh = int(round(tw)), int(round(th))
+        else:
+            x0, y0 = cx - tw / 2, cy - th / 2
+            nw, nh = self.w, self.h
+        target = QPolygonF([QPointF(x0, y0), QPointF(x0 + tw, y0), QPointF(x0 + tw, y0 + th), QPointF(x0, y0 + th)])
+        t = QTransform()
+        if not QTransform.quadToQuad(QPolygonF(list(quad)), target, t):
+            return False
+        self.push_undo("Perspectiefcorrectie")
+        for i, l in enumerate(self.layers):
+            bg = fill is not None and i == 0 and l.name in BG_NAMES
+            out = new_image(nw, nh, fill if bg else None)
+            p = QPainter(out)
+            p.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+            p.setRenderHint(QPainter.RenderHint.Antialiasing)
+            p.setTransform(t)
+            p.drawImage(0, 0, l.image)
+            p.end()
+            l.image = out
+            l.text = None  # tekst wordt een gewone (vervormde) rasterlaag
+        self.w, self.h = nw, nh
+        self.set_selection(None)
+        self.sizeChanged.emit()
+        self.structureChanged.emit()
+        self.changed.emit(QRect())
+        return True
+
     def add_borders(self, left, top, right, bottom, color: QColor):
         self.canvas_size(self.w + left + right, self.h + top + bottom, left, top, color)
         self.undo_stack[-1] = ("Randen toevoegen", self.undo_stack[-1][1])

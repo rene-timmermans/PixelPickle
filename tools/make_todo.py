@@ -109,6 +109,9 @@ Totaal: {len(rows_tools)} gereedschappen en {len(rows_menu)} menu-opdrachten.
 
 Wat al gebouwd is, met de versie waarin het verscheen.
 
+- [x] Gereedschappen: Perspectiefcorrectie, Krasjes verwijderen, Penseel Verwringen, Maasvormig verwringen
+  en de kunstmedia Olieverfpenseel, Krijt, Pastel, Kleurkrijt en Kleurpotlood; retoucheerpenselen
+  (o.a. Verscherpen, Bosseleren) stapelen niet meer op, met de optie Doorlopend (0.6.0)
 - [x] Meeschuiven bij de rand alleen bij puntsgewijs selecteren; vinkje bij Opties voor gereedschap (0.5.5)
 - [x] Selectiemodus Toevoegen/Verwijderen werkt ook bij klikken binnen de selectie (0.5.4)
 - [x] Eigen set van 45 verlopen en 43 patronen in het programma zelf (0.5.3)

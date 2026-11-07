@@ -295,6 +295,120 @@ def straighten(p, fill):
         p.drawLine(P(x, 20), P(x, 18.3))
 
 
+def perspective(p, fill):
+    # schuine vierhoek met hoekgrepen en een hulplijn: rechttrekken van perspectief
+    p.drawPath(_path((7, 5), (17, 5), (21, 19), (3, 19), close=True))
+    p.drawLine(P(12, 5), P(12, 19))
+    p.setBrush(fill)
+    for x, y in ((7, 5), (17, 5), (21, 19), (3, 19)):
+        p.drawRect(QRectF(x - 1.6, y - 1.6, 3.2, 3.2))
+    p.setBrush(Qt.BrushStyle.NoBrush)
+
+
+def scratch_remover(p, fill):
+    # schuin kadertje over een kronkelige kras
+    p.save()
+    p.translate(12, 12)
+    p.rotate(-35)
+    p.drawRoundedRect(QRectF(-9.5, -3.5, 19, 7), 1.5, 1.5)
+    path = QPainterPath(P(-7, 0.8))
+    path.cubicTo(P(-4, -2), P(-2, 2.5), P(0.5, 0))
+    path.cubicTo(P(3, -2.5), P(5, 2), P(7, -0.5))
+    p.drawPath(path)
+    p.restore()
+
+
+def _stick(p, fill, length, width, tip, band=False):
+    """Schuin staand stiftje (krijt, pastel, kleurkrijt, potlood) met de punt linksonder."""
+    p.save()
+    p.translate(13, 11)
+    p.rotate(-45)
+    h = width / 2
+    body = QPainterPath(P(-length / 2, -h))
+    body.lineTo(length / 2, -h)
+    body.lineTo(length / 2, h)
+    body.lineTo(-length / 2, h)
+    if tip:
+        body.lineTo(-length / 2 - tip, 0)
+    body.closeSubpath()
+    p.drawPath(body)
+    if band:
+        p.drawLine(P(length / 6, -h), P(length / 6, h))
+        p.drawLine(P(length / 6 + 2.5, -h), P(length / 6 + 2.5, h))
+    p.restore()
+
+
+def oil(p, fill):
+    # platte kwast met een klodder verf
+    p.save()
+    p.translate(14, 10)
+    p.rotate(-45)
+    p.drawLine(P(2, 0), P(10, 0))
+    p.drawRoundedRect(QRectF(-3, -3, 5, 6), 1, 1)
+    p.setBrush(fill)
+    tuft = QPainterPath(P(-3, -3.5))
+    tuft.lineTo(-9, -3)
+    tuft.cubicTo(P(-11, -1), P(-11, 1), P(-9, 3))
+    tuft.lineTo(-3, 3.5)
+    tuft.closeSubpath()
+    p.drawPath(tuft)
+    p.restore()
+    p.setBrush(fill)
+    p.drawEllipse(P(5.5, 19.5), 2.6, 1.6)
+
+
+def chalk(p, fill):
+    _stick(p, fill, 13, 6, 0)
+    p.setPen(Qt.PenStyle.NoPen)
+    p.setBrush(fill)
+    for x, y in ((3, 21), (5.5, 20), (8, 21.5), (4.5, 18), (7, 18.5)):
+        p.drawEllipse(P(x, y), 0.9, 0.9)
+
+
+def pastel(p, fill):
+    _stick(p, fill, 10, 6.5, 1.5)
+    wave = QPainterPath(P(2.5, 21))
+    wave.cubicTo(P(5, 18), P(7, 22.5), P(10, 20))
+    p.drawPath(wave)
+
+
+def crayon_wax(p, fill):
+    _stick(p, fill, 14, 5.5, 3.5, band=True)
+
+
+def pencil(p, fill):
+    _stick(p, fill, 15, 4, 4.5)
+    p.setBrush(fill)
+    p.save()
+    p.translate(13, 11)
+    p.rotate(-45)
+    p.drawPath(_path((-7.5 - 3.2, -0.9), (-7.5 - 4.5, 0), (-7.5 - 3.2, 0.9), close=True))
+    p.restore()
+
+
+def warp(p, fill):
+    # spiraal: pixels draaien en vervormen
+    path = QPainterPath(P(12, 12))
+    for k in range(1, 60):
+        a = k * 0.3
+        r = 0.16 * k
+        path.lineTo(12 + r * math.cos(a), 12 + r * math.sin(a))
+    p.drawPath(path)
+
+
+def mesh(p, fill):
+    # gebogen raster
+    for k in (0, 1, 2):
+        y = 5 + k * 7
+        path = QPainterPath(P(3, y))
+        path.cubicTo(P(9, y - 3 + k * 2), P(15, y + 3 - k), P(21, y))
+        p.drawPath(path)
+        x = 5 + k * 7
+        path = QPainterPath(P(x, 3))
+        path.cubicTo(P(x + 3 - k * 2, 9), P(x - 3 + k, 15), P(x, 21))
+        p.drawPath(path)
+
+
 def crop(p, fill):
     p.drawPolyline(QPolygonF([P(7, 3), P(7, 17), P(21, 17)]))
     p.drawPolyline(QPolygonF([P(3, 7), P(17, 7), P(17, 21)]))
@@ -553,7 +667,7 @@ ICONS = {
     "✋": pan, "🔍": zoom, "💧": dropper, "✥": move, "➚": pick, "⬚": select_rect, "➰": lasso, "✨": wand,
     "🖌": brush, "💨": airbrush, "⌫": eraser, "◐": lighten_darken, "◯": dodge, "●": burn, "☝": smudge,
     "👉": push, "◌": soften, "◉": sharpen, "▦": emboss, "🌈": saturation, "🎨": hue, "🎯": target,
-    "🔁": replace, "🧽": scratch, "⎘": clone, "🪣": fill_tool, "🖍": crayon, "👁": eye, "📐": straighten,
+    "🔁": replace, "🧽": scratch, "⎘": clone, "🪣": fill_tool, "🖍": crayon, "👁": eye, "📐": straighten, "⏢": perspective, "〰": scratch_remover, "oil": oil, "chalk": chalk, "pastel": pastel, "crayon_wax": crayon_wax, "pencil": pencil, "warp": warp, "mesh": mesh,
     "⛶": crop, "▭": rect, "⬭": ellipse, "✶": star, "💬": bubble, "✒": pen_tool, "A": text,
     # standaardwerkbalk
     "new": new_doc, "open": open_doc, "💾": save, "save_as": save_as, "🖨": printer, "↶": undo, "↷": redo,

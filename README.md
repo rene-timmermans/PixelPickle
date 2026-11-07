@@ -23,10 +23,12 @@ niet hoeft te zoeken.
   vanzelf mee als je bij de rand van het venster komt.
 - Bijsnijden met een aanpasbaar kader: grepen op hoeken en zijden, vaste verhoudingen, maten in te
   typen en uitlijnen op laag of afbeelding. Dubbelklik in het kader om bij te snijden.
-- Rechtzetten, rode ogen verwijderen, klonen.
+- Rechtzetten, perspectiefcorrectie, rode ogen verwijderen, klonen en krasjes verwijderen.
 - Penseel, airbrush, wisser, vlakvulling en kleurwisselaar.
 - Retoucheerpenselen: lichter/donkerder, tegenhouden, doordrukken, vegen, duwen, verzachten,
   verscherpen, reliëf, verzadiging, tint en meer.
+- Kunstmedia: olieverfpenseel, krijt, pastel, kleurkrijt en kleurpotlood, elk met een eigen streek.
+- Verwringen met een penseel (duwen, uitzetten, samentrekken, draaien, gladstrijken) en met een raster.
 - Vormen (rechthoek, ovaal, symmetrische vormen, basisvormen), pen en bewerkbare tekst.
 
 **Materialen**
@@ -79,6 +81,11 @@ Bij de eerste start is de taal Engels. Kies Nederlands via
 programmavoorkeuren*).
 
 ## Wat er nieuw is
+
+**0.6.0** Negen nieuwe gereedschappen: perspectiefcorrectie, krasjes verwijderen, penseel verwringen,
+maasvormig verwringen en de kunstmedia olieverfpenseel, krijt, pastel, kleurkrijt en kleurpotlood.
+Retoucheerpenselen zoals verscherpen en bosseleren werken nu één keer per streek, met de optie Doorlopend
+om het effect op te bouwen.
 
 **0.5.5** Het beeld schuift alleen nog mee bij de rand tijdens puntsgewijs selecteren, niet meer bij
 penselen en andere gereedschappen. Opgeloste glitch in het kleurenpalet en een vinkje bij Opties voor
