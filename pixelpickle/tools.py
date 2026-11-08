@@ -3543,7 +3543,8 @@ class CropTool(Tool):
 
     def _place_bar(self, cv):
         bar = self._bar(cv)
-        if self.r is None or self.drag is not None and self.drag[0] == "new":
+        show = (getattr(cv, "view", None) or {}).get("crop_bar", True)  # voorkeuren: zwevende werkbalk tonen
+        if not show or self.r is None or self.drag is not None and self.drag[0] == "new":
             bar.hide()
             return
         hs = self._handles(cv)
@@ -3744,10 +3745,14 @@ class CropTool(Tool):
         full = QRectF(cv.to_widget(QPointF(0, 0)), cv.to_widget(QPointF(cv.doc.w, cv.doc.h)))
         hs = self._handles(cv)
         inner = QRectF(hs[0], hs[2])
-        path = QPainterPath()
-        path.addRect(full)
-        path.addRect(inner)
-        p.fillPath(path, QColor(0, 0, 0, 90))  # buiten het kader iets donkerder
+        vs = getattr(cv, "view", None) or {}
+        if vs.get("shade", True):  # buiten het kader gearceerd (kleur en dekking uit de voorkeuren)
+            path = QPainterPath()
+            path.addRect(full)
+            path.addRect(inner)
+            c = QColor(vs.get("shade_color", "#000000"))
+            c.setAlpha(round(255 * vs.get("shade_opacity", 35) / 100))
+            p.fillPath(path, c)
         p.setBrush(Qt.BrushStyle.NoBrush)
         p.setPen(QPen(QColor(0, 0, 0, 160), 3))
         p.drawRect(inner)

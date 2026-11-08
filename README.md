@@ -19,6 +19,7 @@ niet hoeft te zoeken.
 - Snelmenu's met de rechtermuisknop op de afbeelding, het lege werkvlak, de tabbladen, de lagen, de Pen en
   vectorobjecten.
 - Strakke lijniconen in de accentkleur van je eigen thema; ziet er goed uit op licht en donker.
+- Schuifbalken rond grote afbeeldingen; ruitjespatroon en arcering instelbaar in de voorkeuren.
 - In negen talen: Engels, Nederlands, Duits, Frans, Spaans, Italiaans, Russisch, Chinees en Arabisch.
 
 **Gereedschappen**
@@ -108,6 +109,11 @@ Arabisch (van rechts naar links). Bij de eerste start is de taal Engels. Kies ee
 **File > Preferences > General Program Preferences**; de gebruikershandleiding is er in elke taal.
 
 ## Wat er nieuw is
+
+**1.0.1** De sneltoetsen voor de gereedschappen werken weer, evenals Ctrl+F4 en Ctrl+W. Algemene
+programmavoorkeuren heeft nu ook Transparantie en arcering (het ruitjespatroon achter doorzichtige delen en
+de arcering bij bijsnijden) en Lettertypen, waarmee je de Microsoft-kernlettertypen met één klik downloadt
+en installeert. Rond een grote afbeelding staan schuifbalken.
 
 **1.0.0** Compleet: alle gereedschappen en menu-opdrachten zijn er. Nieuw in deze versie zijn onder meer
 tekst met opmaak per woord, verloop en patroon in tekst, tekst langs een pad en tekst in curven; het menu

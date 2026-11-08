@@ -1011,14 +1011,88 @@ class MaskFromImageDialog(QDialog):
         return ["luminance", "alpha"][self.src.currentIndex()], self.inv.isChecked()
 
 
+CHECKER_SIZES = [4, 8, 16]  # halve tegel in pixels: klein, middel, groot
+CHECKER_SCHEMES = [("Lichtgrijs", "#ffffff", "#cccccc"), ("Middengrijs", "#999999", "#666666"),
+                   ("Donkergrijs", "#444444", "#2a2a2a"), ("Zwart-wit", "#ffffff", "#000000")]
+
+
+def view_settings():
+    """Weergave-instellingen uit de voorkeuren (ruitjespatroon achter transparantie en arcering bij bijsnijden)."""
+    from PySide6.QtCore import QSettings
+    st = QSettings("PixelPickle", "PixelPickle")
+    return {"checker_size": int(st.value("checker_size", 1)), "checker_c1": st.value("checker_c1", "#ffffff"),
+            "checker_c2": st.value("checker_c2", "#cccccc"), "shade": st.value("crop_shade", "true") == "true",
+            "shade_color": st.value("crop_shade_color", "#000000"), "shade_opacity": int(st.value("crop_shade_opacity", 35)),
+            "crop_bar": st.value("crop_bar", "true") == "true"}
+
+
+def checker_brush(size_index, c1, c2):
+    from PySide6.QtGui import QBrush, QPainter, QPixmap
+    h = CHECKER_SIZES[max(0, min(2, size_index))]
+    pm = QPixmap(2 * h, 2 * h)
+    pm.fill(QColor(c1))
+    p = QPainter(pm)
+    p.fillRect(0, 0, h, h, QColor(c2))
+    p.fillRect(h, h, h, h, QColor(c2))
+    p.end()
+    return QBrush(pm)
+
+
+class _ColorButton(QWidget):
+    changed = Signal()
+
+    def __init__(self, color):
+        from PySide6.QtWidgets import QPushButton
+        super().__init__()
+        self.color = QColor(color)
+        lay = QHBoxLayout(self)
+        lay.setContentsMargins(0, 0, 0, 0)
+        self.btn = QPushButton()
+        self.btn.setFixedSize(70, 26)
+        self.btn.clicked.connect(self._pick)
+        lay.addWidget(self.btn)
+        self._paint()
+
+    def _paint(self):
+        from PySide6.QtGui import QIcon, QPixmap
+        pm = QPixmap(52, 14)
+        pm.fill(self.color)
+        self.btn.setIcon(QIcon(pm))
+
+    def set_color(self, c):
+        self.color = QColor(c)
+        self._paint()
+
+    def _pick(self):
+        from PySide6.QtWidgets import QColorDialog
+        c = QColorDialog.getColor(self.color, self, "Kleur")
+        if c.isValid():
+            self.set_color(c)
+            self.changed.emit()
+
+
 class PreferencesDialog(QDialog):
-    """Algemene programmavoorkeuren (voorlopig: taal)."""
+    """Algemene programmavoorkeuren: taal, transparantie en arcering, en lettertypen (met de mogelijkheid de
+    Microsoft-kernlettertypen te downloaden)."""
 
     def __init__(self, parent, current):
-        super().__init__(parent)
+        from PySide6.QtWidgets import QGroupBox, QListWidget, QPushButton, QProgressBar, QStackedWidget
         from .i18n import LANGUAGES
+        super().__init__(parent)
         self.setWindowTitle("Algemene programmavoorkeuren")
-        f = QFormLayout(self)
+        outer = QVBoxLayout(self)
+        body = QHBoxLayout()
+        outer.addLayout(body, 1)
+        self.pages = QListWidget()
+        self.pages.setFixedWidth(190)
+        self.stack = QStackedWidget()
+        body.addWidget(self.pages)
+        body.addWidget(self.stack, 1)
+        vs = view_settings()
+
+        # --- taal
+        page = QWidget()
+        f = QFormLayout(page)
         self.lang = QComboBox()
         self.codes = [c for c, _ in LANGUAGES]
         self.lang.addItems([name for _, name in LANGUAGES])
@@ -1026,10 +1100,174 @@ class PreferencesDialog(QDialog):
         self.lang.setCurrentIndex(self.codes.index(current) if current in self.codes else 0)
         f.addRow("Taal / Language:", self.lang)
         f.addRow(QLabel("De nieuwe taal wordt actief na het herstarten van PixelPickle."))
-        f.addRow(_buttons(self))
+        self._add_page("Taal", page)
+
+        # --- transparantie en arcering
+        page = QWidget()
+        v = QVBoxLayout(page)
+        grid = QGroupBox("Ruitjespatroon achter transparante delen")
+        gf = QFormLayout(grid)
+        self.csize = QComboBox()
+        self.csize.addItems(["Klein", "Middel", "Groot"])
+        self.csize.setCurrentIndex(vs["checker_size"])
+        self.scheme = QComboBox()
+        self.scheme.addItems([n for n, _, _ in CHECKER_SCHEMES] + ["Eigen kleuren"])
+        idx = next((k for k, (_, a, b) in enumerate(CHECKER_SCHEMES)
+                    if (a, b) == (vs["checker_c1"], vs["checker_c2"])), len(CHECKER_SCHEMES))
+        self.scheme.setCurrentIndex(idx)
+        self.c1, self.c2 = _ColorButton(vs["checker_c1"]), _ColorButton(vs["checker_c2"])
+        crow = QHBoxLayout()
+        crow.addWidget(QLabel("Kleur 1:"))
+        crow.addWidget(self.c1)
+        crow.addWidget(QLabel("Kleur 2:"))
+        crow.addWidget(self.c2)
+        crow.addStretch()
+        gf.addRow("Grootte:", self.csize)
+        gf.addRow("Schema:", self.scheme)
+        gf.addRow(crow)
+        self.preview = QLabel()
+        self.preview.setFixedSize(120, 80)
+        gf.addRow("Voorbeeld:", self.preview)
+        v.addWidget(grid)
+        shade = QGroupBox("Arcering bij bijsnijden")
+        sf = QFormLayout(shade)
+        self.shade_on = QCheckBox("Gebied buiten het bijsnijkader arceren")
+        self.shade_on.setChecked(vs["shade"])
+        self.shade_col = _ColorButton(vs["shade_color"])
+        self.shade_op = _spin(0, 100, vs["shade_opacity"], " %")
+        self.crop_bar = QCheckBox("Zwevende werkbalk bij bijsnijden tonen")
+        self.crop_bar.setChecked(vs["crop_bar"])
+        sf.addRow(self.shade_on)
+        sf.addRow("Kleur:", self.shade_col)
+        sf.addRow("Dekking:", self.shade_op)
+        sf.addRow(self.crop_bar)
+        v.addWidget(shade)
+        v.addStretch()
+        self.csize.currentIndexChanged.connect(self._preview)
+        self.scheme.currentIndexChanged.connect(self._scheme)
+        self.c1.changed.connect(self._custom)
+        self.c2.changed.connect(self._custom)
+        self._add_page("Transparantie en arcering", page)
+
+        # --- lettertypen
+        page = QWidget()
+        v = QVBoxLayout(page)
+        from . import corefonts
+        info = QLabel("De bekende Microsoft-lettertypen (Arial, Times New Roman, Courier New, Verdana, Georgia, "
+                      "Trebuchet MS, Comic Sans MS, Impact, Webdings en Andale Mono) mogen niet met PixelPickle "
+                      "worden meegeleverd. Je kunt de originele bestanden wel zelf bij de bron downloaden; "
+                      "PixelPickle zet ze dan in je eigen lettertypemap, zonder beheerdersrechten.")
+        info.setWordWrap(True)
+        v.addWidget(info)
+        self.font_state = QLabel()
+        self.font_state.setWordWrap(True)
+        v.addWidget(self.font_state)
+        self.font_btn = QPushButton("Microsoft-kernlettertypen downloaden en installeren")
+        self.font_btn.clicked.connect(self._install_fonts)
+        v.addWidget(self.font_btn)
+        self.font_bar = QProgressBar()
+        self.font_bar.setRange(0, len(corefonts.FILES) + 1)
+        self.font_bar.hide()
+        v.addWidget(self.font_bar)
+        lic = QLabel("Door te downloaden ga je akkoord met de licentie van Microsoft voor deze lettertypen "
+                     "(gratis te gebruiken, niet te verkopen).")
+        lic.setWordWrap(True)
+        lic.setStyleSheet("color: gray;")
+        v.addWidget(lic)
+        v.addStretch()
+        self._add_page("Lettertypen", page)
+        self._font_state()
+
+        self.pages.currentRowChanged.connect(self.stack.setCurrentIndex)
+        self.pages.setCurrentRow(0)
+        outer.addWidget(_buttons(self))
+        self._preview()
+        self.resize(640, 420)
+
+    def _add_page(self, title, widget):
+        self.pages.addItem(title)
+        self.stack.addWidget(widget)
+
+    def _scheme(self, i):
+        if i < len(CHECKER_SCHEMES):
+            _, a, b = CHECKER_SCHEMES[i]
+            self.c1.set_color(a)
+            self.c2.set_color(b)
+        self._preview()
+
+    def _custom(self):
+        self.scheme.blockSignals(True)
+        self.scheme.setCurrentIndex(len(CHECKER_SCHEMES))
+        self.scheme.blockSignals(False)
+        self._preview()
+
+    def _preview(self, *_):
+        from PySide6.QtGui import QPainter, QPixmap
+        pm = QPixmap(self.preview.size())
+        p = QPainter(pm)
+        p.fillRect(pm.rect(), checker_brush(self.csize.currentIndex(), self.c1.color, self.c2.color))
+        p.end()
+        self.preview.setPixmap(pm)
+
+    def _font_state(self):
+        from . import corefonts
+        from .i18n import tr
+        if corefonts.installed():
+            self.font_state.setText(tr("De Microsoft-kernlettertypen zijn geïnstalleerd."))
+            self.font_btn.setEnabled(False)
+        elif corefonts.extractor() is None:
+            self.font_state.setText(tr("Om de lettertypen uit te pakken is het programma cabextract (of 7z) nodig. "
+                                       "Installeer dat eerst met je pakketbeheerder."))
+            self.font_btn.setEnabled(False)
+        else:
+            self.font_state.setText(tr("De Microsoft-kernlettertypen zijn nog niet geïnstalleerd."))
+            self.font_btn.setEnabled(True)
+
+    def _install_fonts(self):
+        from . import corefonts
+        from .i18n import tr
+        self.font_btn.setEnabled(False)
+        self.font_bar.show()
+        self.font_bar.setValue(0)
+        self.font_state.setText(tr("Bezig met downloaden..."))
+        self.installer = corefonts.Installer()
+        self.installer.start()
+        self._font_timer = QTimer(self)
+        self._font_timer.timeout.connect(self._font_poll)
+        self._font_timer.start(200)
+
+    def _font_poll(self):
+        from . import corefonts
+        from .i18n import tr
+        inst = self.installer
+        self.font_bar.setValue(inst.step)
+        if not inst.done:
+            return
+        self._font_timer.stop()
+        self.font_bar.hide()
+        if inst.error:
+            msg = {"noextractor": "Om de lettertypen uit te pakken is het programma cabextract (of 7z) nodig.",
+                   "empty": "Er zijn geen lettertypen gevonden in de gedownloade bestanden."}.get(
+                inst.error, "Downloaden is niet gelukt (is er een internetverbinding?).")
+            self.font_state.setText(tr(msg))
+            self.font_btn.setEnabled(True)
+            return
+        n = corefonts.register(inst.result)
+        self.font_state.setText(tr("{} lettertypebestanden geïnstalleerd; ze zijn meteen te gebruiken.").format(n))
 
     def language(self):
         return self.codes[self.lang.currentIndex()]
+
+    def save_view_settings(self):
+        from PySide6.QtCore import QSettings
+        st = QSettings("PixelPickle", "PixelPickle")
+        st.setValue("checker_size", self.csize.currentIndex())
+        st.setValue("checker_c1", self.c1.color.name())
+        st.setValue("checker_c2", self.c2.color.name())
+        st.setValue("crop_shade", "true" if self.shade_on.isChecked() else "false")
+        st.setValue("crop_shade_color", self.shade_col.color.name())
+        st.setValue("crop_shade_opacity", self.shade_op.value())
+        st.setValue("crop_bar", "true" if self.crop_bar.isChecked() else "false")
 
 
 class AutosaveDialog(QDialog):

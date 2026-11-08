@@ -10,7 +10,7 @@ import tempfile
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 sys.path.insert(0, ROOT)
 os.environ.setdefault("XDG_CONFIG_HOME", tempfile.mkdtemp())
-from PySide6.QtWidgets import (QAbstractButton, QApplication, QCheckBox, QComboBox, QLabel,  # noqa: E402
+from PySide6.QtWidgets import (QAbstractButton, QApplication, QCheckBox, QComboBox, QFontComboBox, QLabel,  # noqa: E402
                                QSpinBox, QDoubleSpinBox)
 
 app = QApplication(sys.argv)
@@ -35,7 +35,9 @@ for gi, group in enumerate(TOOLBAR, 1):
                 label = x.text()
                 continue
             o = {"label": label}
-            if isinstance(x, QComboBox):
+            if isinstance(x, QFontComboBox):  # de geïnstalleerde lettertypen verschillen per computer
+                o.update(type="font")
+            elif isinstance(x, QComboBox):
                 o.update(type="choice", choices=[x.itemText(i) for i in range(x.count())])
             elif isinstance(x, (QSpinBox, QDoubleSpinBox)):
                 o.update(type="number", range=[x.minimum(), x.maximum()])

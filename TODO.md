@@ -26,6 +26,8 @@ Geen bekende beperkingen op dit moment.
 
 Wat al gebouwd is, met de versie waarin het verscheen.
 
+- [x] Sneltoetsen van de gereedschappen en Ctrl+F4/Ctrl+W hersteld; voorkeuren Transparantie en arcering en
+  Lettertypen (Microsoft-kernlettertypen downloaden); schuifbalken rond de afbeelding (1.0.1)
 - [x] Laatste menu-opdrachten: menu Selecties compleet (onder andere kleurbereik, binnen/buiten doezelen, stippen en
   gaten, selectieranden, zwevend, selectie bewerken, laden/opslaan op schijf); kleurdiepte verminderen, kanalen splitsen
   en combineren, berekeningen, fotolijst; linialen, hulplijnen, uitlijnen op raster en hulplijnen; werkbalken Effecten

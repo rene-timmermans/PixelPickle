@@ -51,8 +51,14 @@ class DocWindow(QMdiSubWindow):
     def __init__(self, main, canvas):
         super().__init__()
         self.main, self.canvas = main, canvas
-        self.setWidget(canvas)
+        from .canvas import CanvasView
+        self.setWidget(CanvasView(canvas))  # canvas met schuifbalken
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        # het ingebouwde vensterknopmenu van Qt heeft eigen sneltoetsen (Ctrl+F4, Ctrl+W ...); die botsen met de
+        # menu's (Sluiten, Aanpassen aan afbeelding) en dan werkt geen van beide: hier weghalen
+        if self.systemMenu() is not None:
+            for a in self.systemMenu().actions():
+                a.setShortcuts([])
         d = canvas.doc
         d.titleChanged.connect(self.update_title)
         d.structureChanged.connect(self.update_title)
@@ -84,11 +90,10 @@ class ToolGroupButton(QToolButton):
             self.setPopupMode(QToolButton.ToolButtonPopupMode.MenuButtonPopup)
             menu = QMenu(self)
             for t in tools:
-                a = menu.addAction(glyph_icon(t.glyph, t.available), t.name)
                 key = main.tool_key(t)
-                if key:
-                    a.setShortcut(QKeySequence(key))
-                    a.setShortcutVisibleInContextMenu(True)
+                # de letter alleen tonen (rechts in het menu), niet als tweede sneltoets: de sneltoets zit al op
+                # het gereedschap zelf, en twee acties met dezelfde toets maakt Qt "dubbelzinnig" (dan werkt geen van beide)
+                a = menu.addAction(glyph_icon(t.glyph, t.available), f"{t.name}\t{key}" if key else t.name)
                 a.triggered.connect(lambda _=False, tool=t: main.select_tool(tool))
             self.setMenu(menu)
         self.clicked.connect(lambda: main.select_tool(self.current))
@@ -1803,6 +1808,11 @@ class MainWindow(QMainWindow):
         dlg = dialogs.PreferencesDialog(self, i18n.setting() or i18n.language())
         if not dlg.exec():
             return
+        dlg.save_view_settings()
+        for sw in self.mdi.subWindowList():  # ruitjespatroon en arcering meteen bijwerken
+            sw.canvas.apply_view_settings()
+        if self.tool is not None:
+            self._build_options(self.tool)
         lang = dlg.language()
         if lang == (i18n.setting() or i18n.language()):
             return

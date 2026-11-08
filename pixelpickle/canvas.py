@@ -1,5 +1,5 @@
 """Werkvlak: toont een document met zoom, schuiven, selectierand en gereedschap."""
-from PySide6.QtCore import QPointF, QRect, QRectF, QSize, Qt, QTimer
+from PySide6.QtCore import QPointF, QRect, QRectF, QSize, Qt, QTimer, Signal
 from PySide6.QtGui import QBrush, QColor, QImage, QPainter, QPen, QPixmap, QTransform
 from PySide6.QtWidgets import QWidget
 
@@ -8,17 +8,64 @@ from .document import Document
 ZOOM_MIN, ZOOM_MAX = 0.01, 64.0
 
 
-def _checker():
-    pm = QPixmap(16, 16)
-    pm.fill(QColor(255, 255, 255))
-    p = QPainter(pm)
-    p.fillRect(0, 0, 8, 8, QColor(204, 204, 204))
-    p.fillRect(8, 8, 8, 8, QColor(204, 204, 204))
-    p.end()
-    return QBrush(pm)
+class CanvasView(QWidget):
+    """Canvas met schuifbalken: ze verschijnen alleen als de afbeelding groter is dan het venster en lopen mee
+    met pannen en zoomen; slepen aan een schuifbalk verschuift het beeld."""
+
+    def __init__(self, canvas):
+        from PySide6.QtWidgets import QGridLayout, QScrollBar
+        super().__init__()
+        self.canvas = canvas
+        g = QGridLayout(self)
+        g.setContentsMargins(0, 0, 0, 0)
+        g.setSpacing(0)
+        self.hbar = QScrollBar(Qt.Orientation.Horizontal)
+        self.vbar = QScrollBar(Qt.Orientation.Vertical)
+        g.addWidget(canvas, 0, 0)
+        g.addWidget(self.vbar, 0, 1)
+        g.addWidget(self.hbar, 1, 0)
+        self.hbar.hide()
+        self.vbar.hide()
+        self._busy = False
+        self.hbar.valueChanged.connect(lambda v: self._scrolled("h", v))
+        self.vbar.valueChanged.connect(lambda v: self._scrolled("v", v))
+        canvas.viewChanged.connect(self.sync)
+
+    def sync(self):
+        """Schuifbalken bijwerken naar de huidige zoom en plaats van het canvas."""
+        if self._busy:
+            return
+        cv = self.canvas
+        self._busy = True
+        try:
+            for bar, size, view, off in ((self.hbar, cv.doc.w * cv.zoom, cv.width(), cv.ox),
+                                         (self.vbar, cv.doc.h * cv.zoom, cv.height(), cv.oy)):
+                need = size > view + 1
+                if need != bar.isVisible():
+                    bar.setVisible(need)
+                if need:
+                    bar.setRange(0, int(size - view))
+                    bar.setPageStep(int(view))
+                    bar.setSingleStep(max(1, int(view / 20)))
+                    bar.setValue(int(max(0, min(size - view, -off))))
+        finally:
+            self._busy = False
+
+    def _scrolled(self, axis, v):
+        if self._busy:
+            return
+        cv = self.canvas
+        if axis == "h":
+            cv.ox = -v
+        else:
+            cv.oy = -v
+        cv._auto = False
+        cv.update()
 
 
 class Canvas(QWidget):
+    viewChanged = Signal()  # zoom of plaats veranderd (voor de schuifbalken)
+
     def __init__(self, doc: Document, main):
         super().__init__()
         self.doc, self.main = doc, main
@@ -29,7 +76,7 @@ class Canvas(QWidget):
         self._pan = None
         self.space = False
         self.mouse_doc = None
-        self.checker = _checker()
+        self.apply_view_settings()
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.setAttribute(Qt.WidgetAttribute.WA_OpaquePaintEvent)
@@ -162,6 +209,14 @@ class Canvas(QWidget):
             self.oy += dy
 
     # ------------------------------------------------------------ tekenen
+    def apply_view_settings(self):
+        """Ruitjespatroon en arcering volgens de voorkeuren."""
+        from .dialogs import checker_brush, view_settings
+        vs = view_settings()
+        self.view = vs
+        self.checker = checker_brush(vs["checker_size"], vs["checker_c1"], vs["checker_c2"])
+        self.update()
+
     def _ruby(self):
         """Rode laag voor Selectie bewerken: hoe minder geselecteerd, hoe roder (half doorzichtig)."""
         lay = self.doc.seledit_layer() if hasattr(self.doc, "seledit_layer") else None
@@ -223,6 +278,10 @@ class Canvas(QWidget):
         p.setRenderHint(QPainter.RenderHint.Antialiasing, False)
         paint_rulers(self, p)
         p.end()
+        key = (round(self.zoom, 5), round(self.ox), round(self.oy), self.width(), self.height(), self.doc.w, self.doc.h)
+        if key != getattr(self, "_view_key", None):
+            self._view_key = key
+            self.viewChanged.emit()
 
     # ------------------------------------------------------------ invoer
     def _panning_button(self, e):
