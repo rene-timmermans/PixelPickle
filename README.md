@@ -110,6 +110,9 @@ Arabisch (van rechts naar links). Bij de eerste start is de taal Engels. Kies ee
 
 ## Wat er nieuw is
 
+**1.0.2** Strakker materialenpalet: de knopjes onder de kleurvakken staan tegen elkaar aan en het palet kan
+smaller.
+
 **1.0.1** De sneltoetsen voor de gereedschappen werken weer, evenals Ctrl+F4 en Ctrl+W. Algemene
 programmavoorkeuren heeft nu ook Transparantie en arcering (het ruitjespatroon achter doorzichtige delen en
 de arcering bij bijsnijden) en Lettertypen, waarmee je de Microsoft-kernlettertypen met één klik downloadt
