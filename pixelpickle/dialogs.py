@@ -871,7 +871,7 @@ class AboutDialog(QDialog):
         url = "https://github.com/rene-timmermans/pixelpickle"
         txt = QLabel(
             f"<h2 style='margin:0'>PixelPickle {__version__}</h2>"
-            f"<p>{tr('Een fotobewerker voor Linux met de vertrouwde indeling van klassieke Windows fotobewerkers.')}</p>"
+            f"<p>{tr('Een eenvoudig te gebruiken fotobewerker die meteen vertrouwd aanvoelt.')}</p>"
             f"<p><b>{tr('Gemaakt door')}</b><br>René Timmermans<br>{tr('met Claude (Anthropic)')}</p>"
             f"<p><b>{tr('Licentie')}</b><br>{tr('Vrije software onder de GNU General Public License, versie 3 of later.')}</p>"
             f"<p><b>{tr('Website')}</b><br><a href='{url}'>{url}</a></p>"

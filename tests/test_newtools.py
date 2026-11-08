@@ -142,6 +142,15 @@ a = ops.qimage_to_rgba(doc6.layers[0].image)
 diff = np.abs(a[..., :3].astype(int) - orig[..., :3].astype(int)).mean()
 print("8 gladstrijken: gemiddeld verschil met het origineel", round(float(diff), 2))
 assert diff < 3, "gladstrijken zet terug"
+# samentrekken met hardheid 100, vaak heen en weer: het beeld mag nergens omvouwen (geen scheuren of strepen)
+w.opts.update(warp_mode=2, size=95, hardness=100, warp_strength=50, step=10)
+for k in range(8):
+    drag(cv6, wb, [P(40 + x, 80 + 20 * np.sin(x / 20 + k)) for x in range(0, 160, 3)])
+gx = 1 + np.diff(wb.fx, axis=1)
+gy = 1 + np.diff(wb.fy, axis=0)
+print("8b samentrekken, hardheid 100: kleinste rekfactor x", round(float(gx.min()), 2), "y", round(float(gy.min()), 2))
+assert gx.min() > 0 and gy.min() > 0, "het beeld vouwt om"
+assert wb.weights[wb.weights.shape[0] // 2, 1] < 0.05, "de werking loopt naar de rand af tot (bijna) nul"
 doc6.set_modified(False)
 
 # ---- 6. Maasvormig verwringen: knooppunt verslepen buigt de afbeelding

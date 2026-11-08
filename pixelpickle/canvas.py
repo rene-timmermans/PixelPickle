@@ -405,6 +405,11 @@ class Canvas(QWidget):
 
     ARROWS = {Qt.Key.Key_Left: (-1, 0), Qt.Key.Key_Right: (1, 0), Qt.Key.Key_Up: (0, -1), Qt.Key.Key_Down: (0, 1)}
 
+    @staticmethod
+    def nudge_speed(repeats):
+        """Stapgrootte na zoveel herhalingen: eerst rustig per pixel, daarna steeds sneller (tot 8x)."""
+        return 1 if repeats < 8 else min(8, 1 + (repeats - 8) // 6)
+
     def _nudge_key(self, e):
         """Pijltoetsen: geselecteerde pixels 1 pixel verschuiven (Shift: 10), Ctrl: alleen het selectiekader.
         Met Verplaatsen en zonder selectie schuift de hele laag. Een reeks duwtjes is één stap ongedaan maken."""
@@ -421,9 +426,11 @@ class Canvas(QWidget):
             what = "layer" if d.sel is None else ("marquee" if e.modifiers() & Qt.KeyboardModifier.ControlModifier else "pixels")
         else:
             return False
-        if what != "marquee" and not self.main.ensure_raster():
+        if what == "pixels" and not self.main.ensure_raster():  # een hele tekst- of vectorlaag blijft wat hij is
             return True
-        n = 10 if e.modifiers() & Qt.KeyboardModifier.ShiftModifier else 1
+        # versnelling: hoe langer de toets ingedrukt blijft, hoe grotere stappen
+        self._nudge_repeat = getattr(self, "_nudge_repeat", 0) + 1 if e.isAutoRepeat() else 0
+        n = (10 if e.modifiers() & Qt.KeyboardModifier.ShiftModifier else 1) * self.nudge_speed(self._nudge_repeat)
         nz = getattr(self, "_nudge", None)
         # dezelfde reeks zolang er tussendoor niets anders met de afbeelding is gebeurd
         if nz is None or nz["what"] != what or nz["layer"] is not d.layer() or nz["undo"] != len(d.undo_stack) \

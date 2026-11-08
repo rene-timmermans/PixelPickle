@@ -4,11 +4,11 @@ import math
 import random
 
 import numpy as np
-from PySide6.QtCore import QPoint, QPointF, QRect, QRectF, Qt, QTimer
+from PySide6.QtCore import QLineF, QPoint, QPointF, QRect, QRectF, Qt, QTimer
 from PySide6.QtGui import (QBrush, QColor, QFont, QImage, QPainter, QPainterPath, QPen,
                            QPolygonF, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QFontComboBox, QInputDialog, QLabel,
-                               QPushButton, QSpinBox, QToolButton)
+                               QPushButton, QSpinBox, QToolButton, QWidget)
 
 from . import imageops as ops
 from .document import BG_NAMES, CM, TOOL_BLEND_MODES, Layer, apply_region, blend_onto, new_image, paint_layer
@@ -22,6 +22,7 @@ CTRL = Qt.KeyboardModifier.ControlModifier
 DEFAULT_OPTS = dict(
     size=25, hardness=100, step=10, density=100, thickness=100, rotation=0, brush_shape=0,
     opacity=100, blend=0, rate=10, tolerance=20, contiguous=True, sample_merged=False,
+    cc_tolerance=40, cc_softness=30, cc_contiguous=False,
     sel_shape=0, sel_mode=0, feather=0, antialias=True, lasso_type=0, line_width=3,
     shape_fill=True, shape_stroke=True, radius=0, sym_sides=5, sym_star=True, sym_inner=50,
     preset=0, pen_vector=True, shape_vector=True, pen_mode=1, pen_tracking=10, pen_connect=True, pen_nodes=True, pen_style=0, pen_join=0,
@@ -47,9 +48,94 @@ def recorded_keys(tool):
     return widgets, list(dict.fromkeys(_RECORD))
 
 
+class _SpinSlider(QWidget):
+    """De strook onderaan een SliderSpinBox: tekent de balk en zet de waarde bij klikken en slepen.
+    Ligt bovenop het tekstvak, zodat de muis altijd bij de balk aankomt."""
+    BAR = 3
+
+    def __init__(self, box):
+        super().__init__(box)
+        self.box = box
+        self.setCursor(Qt.CursorShape.SizeHorCursor)
+        self._sliding = False
+
+    def _track(self):
+        return QRect(0, self.height() - self.BAR, self.width(), self.BAR)
+
+    def paintEvent(self, e):
+        b = self._track()
+        p = QPainter(self)
+        pal = self.box.palette()
+        groove = QColor(pal.mid().color())
+        groove.setAlpha(110)
+        p.fillRect(b, groove)
+        fill = QColor(pal.highlight().color())
+        if not self.box.isEnabled():
+            fill.setAlpha(90)
+        n = round(b.width() * self.box.fraction())
+        rtl = self.box.layoutDirection() == Qt.LayoutDirection.RightToLeft
+        p.fillRect(QRect(b.right() - n + 1 if rtl else b.left(), b.top(), n, b.height()), fill)
+        p.end()
+
+    def _set(self, x):
+        if self.box.layoutDirection() == Qt.LayoutDirection.RightToLeft:
+            x = self.width() - 1 - x
+        self.box.set_fraction(max(0.0, min(1.0, x / max(1, self.width() - 1))))
+
+    def mousePressEvent(self, e):
+        if e.button() == Qt.MouseButton.LeftButton and self.box.isEnabled():
+            self._sliding = True
+            self._set(e.position().x())
+
+    def mouseMoveEvent(self, e):
+        if self._sliding:
+            self._set(e.position().x())
+
+    def mouseReleaseEvent(self, e):
+        self._sliding = False
+
+
+class SliderSpinBox(QSpinBox):
+    """Invoerveld met een dunne schuifbalk aan de onderkant: de balk toont de waarde binnen het bereik,
+    en klikken of slepen op die strook zet de waarde meteen (handig voor grote veranderingen). Bij grote
+    bereiken (zoals grootte 1 tot 999) loopt de balk kwadratisch, zodat kleine waarden ook goed te kiezen
+    zijn. De balk valt binnen de rand van het veld, dus de hoogte blijft gelijk."""
+    GRAB = 6  # hoogte van de strook onderaan
+
+    def __init__(self, *a):
+        super().__init__(*a)
+        self.slider = _SpinSlider(self)
+        self.valueChanged.connect(self.slider.update)
+
+    def _curve(self):
+        return 2.0 if self.maximum() - self.minimum() > 300 else 1.0
+
+    def fraction(self):
+        span = self.maximum() - self.minimum()
+        t = (self.value() - self.minimum()) / span if span else 0
+        return max(0.0, min(1.0, t)) ** (1 / self._curve())
+
+    def set_fraction(self, t):
+        self.setValue(round(self.minimum() + (self.maximum() - self.minimum()) * t ** self._curve()))
+
+    def resizeEvent(self, e):
+        super().resizeEvent(e)
+        from PySide6.QtWidgets import QStyle, QStyleOptionSpinBox
+        opt = QStyleOptionSpinBox()
+        self.initStyleOption(opt)
+        up = self.style().subControlRect(QStyle.ComplexControl.CC_SpinBox, opt, QStyle.SubControl.SC_SpinBoxUp, self)
+        right = up.left() - 1 if up.isValid() and up.left() > self.width() // 2 else self.width() - 3
+        if self.layoutDirection() == Qt.LayoutDirection.RightToLeft and up.isValid() and up.right() < self.width() // 2:
+            left, right = up.right() + 2, self.width() - 3
+        else:
+            left = 3
+        self.slider.setGeometry(left, self.height() - self.GRAB - 2, max(4, right - left), self.GRAB)
+        self.slider.raise_()
+
+
 def spin(main, key, label, lo, hi, suffix=""):
     _rec(key)
-    w = QSpinBox()
+    w = SliderSpinBox()
     w.setRange(lo, hi)
     w.setValue(main.opts[key])
     w.setSuffix(suffix)
@@ -354,7 +440,9 @@ class LayerMover:
         if self.last == (0, 0):
             d.drop_last_undo()
         elif self.sel is not None and self.what != "layer":
-            d.set_selection(d.sel)
+            # het verschoven kader is al bekend: niet opnieuw uit het masker berekenen (scheelt veel tijd
+            # bij grote foto's, vooral bij pijltoetsen die snel achter elkaar komen)
+            d.set_selection(d.sel, d.sel_lines)
         d.structureChanged.emit()
 
 
@@ -1220,7 +1308,19 @@ class WarpBrushTool(_WarpBase, StrokeTool):
     def begin(self, cv, pt):
         self._warp_state(cv.doc)
         self.make_stamp()
+        self.weights = self.warp_weights(self.stamp_size, self.o["size"] / 2, self.o["hardness"])
         self.last_dab = QPointF(pt)
+
+    @staticmethod
+    def warp_weights(n, radius, hardness):
+        """Werking per pixel (0..1): altijd vloeiend aflopend naar de rand, ook bij hardheid 100.
+        Een harde rand zou de verschuiving abrupt laten stoppen en scheuren in het beeld geven.
+        Hardheid bepaalt alleen hoe groot het volle midden is (tot 60% van de straal)."""
+        yy, xx = np.mgrid[0:n, 0:n].astype(np.float32) + 0.5 - n / 2
+        dist = np.hypot(xx, yy) / max(radius, 0.5)
+        inner = 0.6 * hardness / 100
+        t = np.clip((dist - inner) / max(1 - inner, 1e-3), 0, 1)
+        return (0.5 + 0.5 * np.cos(t * np.pi)).astype(np.float32) * (dist < 1)
 
     def dab(self, cv, c):
         d = cv.doc
@@ -1233,32 +1333,50 @@ class WarpBrushTool(_WarpBase, StrokeTool):
         s = self.o["warp_strength"] / 100
         mode = self.o["warp_mode"]
         ys, xs = slice(r.y(), r.bottom() + 1), slice(r.x(), r.right() + 1)
-        fx, fy = self.fx[ys, xs], self.fy[ys, xs]
         yy, xx = np.mgrid[r.y():r.bottom() + 1, r.x():r.right() + 1].astype(np.float32)
         ox, oy = xx + 0.5 - c.x(), yy + 0.5 - c.y()
         k = w * s
-        if mode == 0:  # duwen: inhoud volgt de beweging
-            vx, vy = c.x() - self.last_dab.x(), c.y() - self.last_dab.y()
-            fx -= vx * k
-            fy -= vy * k
-        elif mode in (1, 2):  # uitzetten / samentrekken
-            f = -0.12 if mode == 1 else 0.12
-            fx += ox * k * f
-            fy += oy * k * f
-        elif mode in (3, 4):  # draaien
-            f = 0.08 if mode == 3 else -0.08
-            fx += -oy * k * f
-            fy += ox * k * f
-        elif mode == 5:  # ruis
-            amp = self.o["size"] * 0.05
-            fx += (np.random.rand(*k.shape).astype(np.float32) - 0.5) * k * amp
-            fy += (np.random.rand(*k.shape).astype(np.float32) - 0.5) * k * amp
-        else:  # gladstrijken: terug naar het origineel
-            fx *= 1 - k * 0.5
-            fy *= 1 - k * 0.5
+        if mode == 6:  # gladstrijken: terug naar het origineel
+            self.fx[ys, xs] *= 1 - k * 0.5
+            self.fy[ys, xs] *= 1 - k * 0.5
+        else:
+            if mode == 0:  # duwen: inhoud volgt de beweging
+                vx, vy = c.x() - self.last_dab.x(), c.y() - self.last_dab.y()
+                dx, dy = -vx * k, -vy * k
+            elif mode in (1, 2):  # uitzetten / samentrekken
+                f = -0.12 if mode == 1 else 0.12
+                dx, dy = ox * k * f, oy * k * f
+            elif mode in (3, 4):  # draaien
+                f = 0.08 if mode == 3 else -0.08
+                dx, dy = -oy * k * f, ox * k * f
+            else:  # ruis
+                amp = self.o["size"] * 0.05
+                dx = (np.random.rand(*k.shape).astype(np.float32) - 0.5) * k * amp
+                dy = (np.random.rand(*k.shape).astype(np.float32) - 0.5) * k * amp
+            # samenstellen: deze stempel werkt op het al verwrongen beeld, dus het oude veld wordt op de
+            # verschoven plek gelezen. Optellen zou bij veel stempels het beeld laten omvouwen (strepen).
+            ofx = self._sample(self.fx, xx + dx, yy + dy)
+            ofy = self._sample(self.fy, xx + dx, yy + dy)
+            self.fx[ys, xs] = dx + ofx
+            self.fy[ys, xs] = dy + ofy
         self.last_dab = QPointF(c)
         self._render(d, r)
         self.dirty = self.dirty.united(r)
+
+
+    @staticmethod
+    def _sample(f, x, y):
+        """Bilineair aflezen van een veld op (fractionele) posities, met de rand herhaald."""
+        h, w = f.shape
+        x = np.clip(x, 0, w - 1)
+        y = np.clip(y, 0, h - 1)
+        x0 = np.minimum(np.floor(x).astype(np.int64), w - 2) if w > 1 else np.zeros(x.shape, np.int64)
+        y0 = np.minimum(np.floor(y).astype(np.int64), h - 2) if h > 1 else np.zeros(y.shape, np.int64)
+        tx, ty = x - x0, y - y0
+        x1, y1 = np.minimum(x0 + 1, w - 1), np.minimum(y0 + 1, h - 1)
+        top = f[y0, x0] * (1 - tx) + f[y0, x1] * tx
+        bot = f[y1, x0] * (1 - tx) + f[y1, x1] * tx
+        return (top * (1 - ty) + bot * ty).astype(np.float32)
 
 
 class MeshWarpTool(_WarpBase, Tool):
@@ -1516,7 +1634,9 @@ class ArtMediaTool(PaintBrushTool):
         m.setdefault(k + "_grain", 60)
         return _AliasOpts(m, {"size": k + "_size", "opacity": k + "_opacity", "grain": k + "_grain"},
                           {"hardness": self.hardness, "step": self.step, "density": 100, "brush_shape": 0,
-                           "thickness": 100, "rotation": 0, "blend": 0})
+                           "thickness": 100, "rotation": 0, "blend": self.blend_mode})
+
+    blend_mode = 0  # index in TOOL_BLEND_MODES (Markering: vermenigvuldigen)
 
     def options(self):
         k = f"am{self.cid:04x}"
@@ -1690,6 +1810,62 @@ class OilBrushTool(ArtMediaTool):
         self.paint = max(0.0, self.paint - (1 - self.load) * 0.008)
         fresh = np.array([self.color.red(), self.color.green(), self.color.blue()], np.float32)
         return self.carried * (1 - self.paint) + fresh * self.paint
+
+
+def _blend_index(name):
+    return next(i for i, m in enumerate(TOOL_BLEND_MODES) if m[0] == name)
+
+
+class MarkerTool(ArtMediaTool):
+    """Markering (viltstift): doorschijnende inkt met een vrij harde rand. Binnen één streek bouwt de kleur
+    niet op; waar een nieuwe streek over een oude gaat, wordt het donkerder (zoals echte stiftinkt)."""
+    cid, glyph = 0xd136, "marker"
+    tip = "Markering: doorschijnende stiftinkt; waar streken elkaar overlappen wordt de kleur donkerder"
+    grain, flow, hardness, default_size, step = None, 0.55, 85, 14, 8
+    blend_mode = _blend_index("Vermenigvuldigen")
+
+
+class PaletteKnifeTool(OilBrushTool):
+    """Paletmes: dikke verf met een plat mes. Het mes staat dwars op de streekrichting, laat ribbels
+    achter en smeert de verf die er al ligt mee (net als het olieverfpenseel, maar platter en voller)."""
+    cid, glyph = 0xd137, "knife"
+    tip = "Paletmes: dikke verf met een plat mes; smeert de verf die er al ligt mee"
+    grain, flow, hardness, default_size, step = None, 0.97, 95, 30, 5
+    color_mix = 0.85
+
+    def _bristle_mask(self):
+        """Plat mes dwars op de streekrichting, met ribbels in de lengte van de streek."""
+        key = int(round(self.direction / 15)) % 24
+        cache = self.__dict__.setdefault("_bcache", {})
+        if key not in cache:
+            s = self.stamp_size
+            yy, xx = np.mgrid[0:s, 0:s].astype(np.float32) + 0.5 - s / 2
+            a = math.radians(key * 15)
+            along = xx * math.cos(a) + yy * math.sin(a)       # langs de streek
+            across = -xx * math.sin(a) + yy * math.cos(a)     # dwars op de streek (breedte van het mes)
+            blade = np.clip(s * 0.16 - np.abs(along) + 0.5, 0, 1) * np.clip(s * 0.5 - np.abs(across), 0, 1)
+            # ribbels in de verf: afwisselend iets lichter en donkerder (licht valt op de richels)
+            ridges = 0.88 + 0.2 * np.sin(across * 2 * math.pi / max(3.0, s / 5)) ** 2
+            cache[key] = (blade.astype(np.float32), ridges.astype(np.float32))
+        return cache[key]
+
+    def dab_alpha(self, r, full):
+        # geen ronde penseelvorm: het mes zelf bepaalt de vorm; de verf is dekkend
+        blade, ridges = self._bristle_mask()
+        sl = (slice(r.y() - full.y(), r.y() - full.y() + r.height()), slice(r.x() - full.x(), r.x() - full.x() + r.width()))
+        self._ridges = ridges[sl]
+        return blade[sl] * self.flow * (0.85 + 0.15 * self.paint)
+
+    def dab_color(self, cv, r):
+        col = super().dab_color(cv, r)
+        return np.clip(col[None, None, :] * self._ridges[..., None], 0, 255)
+
+    def extra_options(self):
+        # een mes draagt meer verf dan een penseel en neemt minder op van wat er ligt
+        k = f"am{self.cid:04x}"
+        self.main.opts.setdefault(k + "_load", 90)
+        self.main.opts.setdefault(k + "_visc", 35)
+        return super().extra_options()
 
 
 class AirbrushTool(PaintBrushTool):
@@ -2264,41 +2440,70 @@ class FillTool(Tool):
 
 
 class ColorChangerTool(FillTool):
+    """Klik op een kleur: alle gelijkende kleuren in de laag (of de selectie) krijgen de voorgrondkleur, met
+    behoud van licht en schaduw. Lichtheid telt bij het vergelijken maar half mee, zodat ook de
+    schaduwkanten van hetzelfde voorwerp meegaan; Randzachtheid laat de verandering geleidelijk uitlopen."""
     cid, glyph = 0xd0d2, "🖍"
-    tip = "Klik op een kleur om die te veranderen in de voorgrondkleur met behoud van schaduw (rechts: achtergrondkleur)"
+    tip = "Klik op een kleur om die overal in de laag te veranderen in de voorgrondkleur, met behoud van schaduw (rechts: achtergrondkleur)"
 
     def options(self):
         m = self.main
-        return (spin(m, "tolerance", "Tolerantie:", 0, 200) + check(m, "contiguous", "Aaneengesloten")
-                + spin(m, "opacity", "Dekking:", 1, 100))
+        return (spin(m, "cc_tolerance", "Tolerantie:", 0, 200) + spin(m, "cc_softness", "Randzachtheid:", 0, 100)
+                + check(m, "cc_contiguous", "Aaneengesloten") + spin(m, "opacity", "Dekking:", 1, 100))
 
-    contiguous_opt = True
+    @staticmethod
+    def weights(a, ref, tol, soft):
+        """Gewicht 0..1 per pixel: hoe sterk lijkt de kleur op ref. Er wordt vooral naar de kleurtint gekeken
+        (rgb gedeeld door de som, los van de helderheid); lichtheid telt maar licht mee, zodat licht en schaduw
+        van hetzelfde voorwerp samen veranderen."""
+        def chroma(c):
+            c = c[..., :3] + 10.0  # bijna zwart: tint niet laten verspringen door ruis
+            return c / c.sum(axis=-1, keepdims=True)
+        def luma(c):
+            return c[..., 0] * 0.299 + c[..., 1] * 0.587 + c[..., 2] * 0.114
+        dc = np.abs(chroma(a) - chroma(ref)).sum(axis=-1) * 255
+        dist = dc + np.abs(luma(a) - luma(ref)) * 0.15
+        t = tol * 0.4
+        s = 1.0 + soft * 0.01 * max(t, 15.0)
+        return np.clip(1 - (dist - t) / s, 0, 1).astype(np.float32)
 
     def press(self, cv, pt, ev):
-        save = self.o["sample_merged"]
-        self.o["sample_merged"] = False
-        try:
-            m8, r = self.region(cv, pt)
-        finally:
-            self.o["sample_merged"] = save
-        if m8 is None:
-            return
         d = cv.doc
-        layer = d.layer()
-        t = self.main.fg if ev.button() == LB else self.main.bg
-        a = ops.qimage_to_rgba(layer.image.copy(r)).astype(np.float32)
         x, y = ipt(pt)
-        ref = a[y - r.y(), x - r.x(), :3]
+        if not d.rect().contains(x, y) or (d.sel is not None and d.sel.pixelColor(x, y).alpha() == 0):
+            return
+        if not self.main.ensure_raster():
+            return
+        layer = d.layer()
+        a = ops.qimage_to_rgba(layer.image).astype(np.float32)
+        ref = a[y, x, :3].copy()
+        w = self.weights(a, ref, self.o["cc_tolerance"], self.o["cc_softness"])
+        if self.o["cc_contiguous"]:
+            w = w * ops.connected(w > 0, x, y)
+        if d.sel is not None:
+            w = w * (ops.qimage_to_mask(d.sel).astype(np.float32) / 255)
+        r = ops.mask_bbox(w > 0)
+        if r.isEmpty():
+            return
+        sl = (slice(r.y(), r.y() + r.height()), slice(r.x(), r.x() + r.width()))
+        a, w = a[sl], w[sl]
+        t = self.main.fg if ev.button() == LB else self.main.bg
         _, _, l0 = ops.rgb_to_hsl(ref[None, None, :])
         th, ts, tl = max(0, t.hslHueF()), t.hslSaturationF(), t.lightnessF()
-        h, s, l = ops.rgb_to_hsl(a[..., :3])
+        _, _, l = ops.rgb_to_hsl(a[..., :3])
         l2 = np.clip(l + (tl - float(l0[0, 0])), 0, 1)
         out = a.copy()
         out[..., :3] = ops.hsl_to_rgb(np.full_like(l, th), np.full_like(l, ts), l2)
-        res = a + (out - a) * (self.o["opacity"] / 100)
+        k = (w * (self.o["opacity"] / 100))[..., None]
+        res = a + (out - a) * k
         res[..., 3] = a[..., 3]
         d.push_undo("Kleurwisselaar")
-        paint_layer(layer, r, ops.rgba_to_qimage(np.clip(res, 0, 255)), ops.mask_to_qimage(m8))
+        img = QImage(layer.image)
+        p = QPainter(img)
+        p.setCompositionMode(CM.CompositionMode_Source)
+        p.drawImage(r.topLeft(), ops.rgba_to_qimage(np.clip(res, 0, 255)))
+        p.end()
+        layer.image = img
         d.changed.emit(r)
         d.structureChanged.emit()
 
@@ -2343,6 +2548,335 @@ class RedEyeTool(Tool):
             p.setBrush(Qt.BrushStyle.NoBrush)
             p.setPen(QPen(QColor(255, 255, 255, 200), 0, Qt.PenStyle.DashLine))
             p.drawEllipse(c, r, r)
+
+
+class MakeoverTool(PixelBrush):
+    """Makeover: snelle portretretouche met vijf modi.
+    Vlekken verwijderen: vult een puistje of vlekje op vanuit de huid eromheen.
+    Tandenborstel: maakt tanden witter (alleen lichte, niet rode pixels, dus niet het tandvlees of de lippen).
+    Oogdruppel: haalt rode adertjes uit het oogwit en maakt het iets helderder.
+    Zonnebruin: geeft de huid een gebruinde tint met behoud van licht en schaduw.
+    Slanker maken: klik midden op een persoon; de afbeelding wordt rond dat punt horizontaal iets smaller."""
+    cid, glyph = 0xd070, "makeover"
+    tip = "Makeover: vlekken verwijderen, tanden witter, oogwit helderder, zonnebruin of slanker maken"
+    snapshot = True
+    MODES = ["Vlekken verwijderen", "Tandenborstel", "Oogdruppel", "Zonnebruin", "Slanker maken"]
+
+    @property
+    def o(self):
+        m = self.main.opts
+        m.setdefault("mk_mode", 0)
+        m.setdefault("mk_size", 20)
+        m.setdefault("mk_strength", 50)
+        return _AliasOpts(m, {"size": "mk_size", "opacity": "mk_strength"},
+                          {"hardness": 50 if m["mk_mode"] else 70, "step": 15, "density": 100, "brush_shape": 0,
+                           "thickness": 100, "rotation": 0, "continuous": False})
+
+    def options(self):
+        self.o
+        m = self.main
+        return (combo(m, "mk_mode", "Modus:", self.MODES) + spin(m, "mk_size", "Grootte:", 1, 500)
+                + spin(m, "mk_strength", "Sterkte:", 1, 100))
+
+    def press(self, cv, pt, ev):
+        if self.o["mk_mode"] == 4:
+            if ev.button() == LB:
+                self.thinify(cv.doc, pt)
+            return
+        super().press(cv, pt, ev)
+
+    def op(self, a, r, full, c):
+        mode = self.o["mk_mode"]
+        rgb = a[..., :3]
+        if mode == 0:
+            return self._blemish(a, r, c)
+        h, s, l = ops.rgb_to_hsl(rgb)
+        if mode in (1, 2):
+            # rood = tint dicht bij rood/roze (lippen, tandvlees, adertjes), niet geel (tanden)
+            hd = np.minimum(h, 1 - h) * 360
+            redness = np.clip((30 - hd) / 15, 0, 1) * np.clip(s * 3, 0, 1)
+            if mode == 1:  # tanden: licht en niet rood (lippen en tandvlees blijven)
+                k = np.clip((l - 0.35) / 0.2, 0, 1) * (1 - redness)
+                s2, l2 = s * (1 - 0.85 * k), np.clip(l + 0.12 * k * (1 - l) * 2, 0, 1)
+            else:  # oogwit: rode adertjes weg en iets helderder, de iris (donker) blijft
+                k = np.clip((l - 0.3) / 0.25, 0, 1)
+                s2, l2 = s * (1 - 0.8 * k * np.maximum(redness, 0.4)), np.clip(l + 0.06 * k, 0, 1)
+            out = a.copy()
+            out[..., :3] = ops.hsl_to_rgb(h, s2, l2)
+            return out
+        # zonnebruin: warme bruine tint, lichtheid iets lager, schaduw blijft
+        tan_h, tan_s = 25 / 360, 0.45
+        out = a.copy()
+        out[..., :3] = ops.hsl_to_rgb(np.full_like(h, tan_h), np.maximum(s, tan_s) * 0.9 + s * 0.1,
+                                      np.clip(l * 0.88, 0, 1))
+        return out
+
+    def _blemish(self, a, r, c):
+        """Elke pixel in de cirkel krijgt de mix van twee tegenoverliggende punten op de rand eromheen,
+        gewogen naar de afstand: zo verdwijnt het vlekje en lopen de huidtinten vloeiend door."""
+        from .effects.common import remap
+        R = max(self.o["size"] / 2, 1.5)
+        snap = self.snap if self.snap is not None else a
+        yy, xx = np.mgrid[r.y():r.y() + r.height(), r.x():r.x() + r.width()].astype(np.float32) + 0.5
+        dx, dy = xx - c.x(), yy - c.y()
+        rho = np.hypot(dx, dy)
+        ux, uy = dx / np.maximum(rho, 1e-6), dy / np.maximum(rho, 1e-6)
+        ring = R * 1.15 + 1
+        A = remap(snap, c.x() + ux * ring - 0.5, c.y() + uy * ring - 0.5).astype(np.float32)
+        B = remap(snap, c.x() - ux * ring - 0.5, c.y() - uy * ring - 0.5).astype(np.float32)
+        t = np.clip((ring - rho) / (2 * ring), 0, 1)[..., None]  # dicht bij A: meer A
+        fillc = A * (1 - t) + B * t
+        out = a.copy()
+        out[..., :3] = fillc[..., :3]
+        return out
+
+    def thinify(self, d, pt):
+        """Horizontaal samendrukken rond het aangeklikte punt; de randen van de afbeelding blijven staan."""
+        from .effects.common import remap
+        layer = d.layer()
+        if layer.kind == "group" or layer.adjust is not None or not self.main.ensure_raster():
+            return
+        a = ops.qimage_to_rgba(layer.image)
+        h, w = a.shape[:2]
+        cx = pt.x()
+        k = self.o["mk_strength"] / 100 * 0.12   # hoogstens 12% smaller in het midden
+        xs = np.arange(w, dtype=np.float32) + 0.5
+        # doelpositie -> bronpositie: in het midden verder weg kijken (samendrukken), naar de randen toe
+        # vloeiend terug naar 0, zodat de randen van het beeld op hun plek blijven
+        span = np.where(xs < cx, max(cx, 1.0), max(w - cx, 1.0))
+        u = (xs - cx) / span                       # -1 .. 1
+        src = cx + (xs - cx) * (1 + k * (1 - np.abs(u)) ** 2 * 2)
+        src = np.clip(src - 0.5, 0, w - 1)
+        mx = np.broadcast_to(src[None, :], (h, w))
+        my = np.broadcast_to(np.arange(h, dtype=np.float32)[:, None], (h, w))
+        out = remap(a, mx, my)
+        d.push_undo(self.name)
+        paint_layer(layer, d.rect(), ops.rgba_to_qimage(np.clip(np.rint(out), 0, 255)), d.sel)
+        d.changed.emit(d.rect())
+        d.structureChanged.emit()
+
+    def overlay(self, cv, p):
+        if self.o["mk_mode"] == 4:
+            if cv.mouse_doc is not None:
+                x = cv.to_widget(cv.mouse_doc).x()
+                p.setPen(QPen(QColor(255, 255, 255, 200), 0, Qt.PenStyle.DashLine))
+                p.drawLine(QPointF(x, 0), QPointF(x, cv.height()))
+            return
+        super().overlay(cv, p)
+
+
+class ObjectRemoverTool(Tool):
+    """Object verwijderen: trek een lijn om het object (modus Selecteren), verschuif daarna het bronkader
+    naar een plek met passende achtergrond (modus Bron) en klik op Toepassen of druk op Enter. Het
+    object wordt vervangen door de bron; kleur en helderheid worden aan de omgeving aangepast, zodat
+    er geen zichtbare naad ontstaat."""
+    cid, glyph = 0xd083, "object_remover"
+    tip = "Trek een lijn om het object, verschuif het bronkader naar passende achtergrond en klik op Toepassen"
+    wants_cursor_overlay = True
+
+    def __init__(self, main):
+        super().__init__(main)
+        self.poly = []      # omtrek van het object (documentcoördinaten)
+        self.src = None     # bronkader (QRectF)
+        self.drag = None    # ("lasso",) | ("move", start, rect) | ("size", hoek, rect)
+        self.cv = None
+
+    def options(self):
+        m = self.main
+        m.opts.setdefault("or_mode", 0)
+        m.opts.setdefault("or_blend", 10)
+        return (combo(m, "or_mode", "Modus:", ["Object selecteren", "Bron"]) + spin(m, "or_blend", "Overgang:", 0, 50)
+                + button("Toepassen", self.apply))
+
+    def _corner(self, cv, pt):
+        if self.src is None:
+            return None
+        tol = 6 / cv.zoom
+        r = self.src
+        for name, q in (("tl", r.topLeft()), ("tr", r.topRight()), ("bl", r.bottomLeft()), ("br", r.bottomRight())):
+            if abs(q.x() - pt.x()) <= tol and abs(q.y() - pt.y()) <= tol:
+                return name
+        return None
+
+    def press(self, cv, pt, ev):
+        if ev.button() != LB:
+            return
+        self.cv = cv
+        if self.o["or_mode"] == 1 and self.src is not None:
+            corner = self._corner(cv, pt)
+            if corner:
+                self.drag = ("size", corner, QRectF(self.src))
+            elif self.src.contains(pt):
+                self.drag = ("move", QPointF(pt), QRectF(self.src))
+            return
+        self.poly = [QPointF(pt)]
+        self.src = None
+        self.drag = ("lasso",)
+        cv.update()
+
+    def move(self, cv, pt, ev):
+        if not self.drag or not (ev.buttons() & LB):
+            return
+        if self.drag[0] == "lasso":
+            if not self.poly or QLineF(self.poly[-1], pt).length() >= 1.5 / max(cv.zoom, 0.01):
+                self.poly.append(QPointF(pt))
+        elif self.drag[0] == "move":
+            _, start, r0 = self.drag
+            self.src = r0.translated(pt.x() - start.x(), pt.y() - start.y())
+        else:
+            _, corner, r0 = self.drag
+            r = QRectF(r0)
+            if "l" in corner:
+                r.setLeft(min(pt.x(), r.right() - 4))
+            else:
+                r.setRight(max(pt.x(), r.left() + 4))
+            if "t" in corner:
+                r.setTop(min(pt.y(), r.bottom() - 4))
+            else:
+                r.setBottom(max(pt.y(), r.top() + 4))
+            self.src = r
+        cv.update()
+
+    def release(self, cv, pt, ev):
+        if not self.drag:
+            return
+        kind = self.drag[0]
+        self.drag = None
+        if kind == "lasso":
+            if len(self.poly) < 3 or QPolygonF(self.poly).boundingRect().width() * \
+                    QPolygonF(self.poly).boundingRect().height() < 4:
+                self.poly = []
+            else:
+                self.src = self._default_source(cv.doc)
+                self.main.opts["or_mode"] = 1
+                self.main._build_options(self)  # optiebalk bijwerken (modus Bron)
+        cv.update()
+
+    def _default_source(self, d):
+        """Bronkader even groot als het object, ernaast (links, rechts, boven of onder: wat binnen het beeld
+        valt en het dichtst bij ligt)."""
+        b = QPolygonF(self.poly).boundingRect()
+        gap = 2 * (int(self.o["or_blend"]) + 3) + 4  # de overgangsrand van de bron mag het object niet raken
+        for dx, dy in ((-(b.width() + gap), 0), (b.width() + gap, 0), (0, -(b.height() + gap)), (0, b.height() + gap)):
+            r = b.translated(dx, dy)
+            if QRectF(d.rect()).contains(r):
+                return r
+        return b.translated(-(b.width() + gap), 0)
+
+    def key(self, cv, ev):
+        if ev.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter) and self.poly and self.src is not None:
+            self.apply()
+            return True
+        if ev.key() == Qt.Key.Key_Escape and (self.poly or self.src is not None):
+            self.poly, self.src = [], None
+            cv.update()
+            return True
+        return False
+
+    def apply(self, cv=None):
+        if not hasattr(cv, "doc"):  # vanaf de knop (die geeft een bool mee) of zonder canvas
+            cv = self.cv or self.main.canvas()
+        if cv is None or len(self.poly) < 3 or self.src is None:
+            return
+        d = cv.doc
+        layer = d.layer()
+        if layer.kind == "group" or layer.adjust is not None or not self.main.ensure_raster():
+            return
+        layer = d.layer()
+        feather = int(self.o["or_blend"])
+        poly = QPolygonF(self.poly)
+        tb = poly.boundingRect()
+        pad = feather + 3
+        T = tb.toAlignedRect().adjusted(-pad, -pad, pad, pad)  # doelgebied met rand
+        Tc = T.intersected(d.rect())
+        if Tc.isEmpty():
+            return
+        # masker van het object (zacht aflopend over 'Overgang' pixels naar buiten)
+        m = QImage(Tc.width(), Tc.height(), QImage.Format.Format_Alpha8)
+        m.fill(QColor(0, 0, 0, 0))
+        p = QPainter(m)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        p.translate(-Tc.x(), -Tc.y())
+        p.setPen(QPen(QColor(0, 0, 0, 255), 2))
+        p.setBrush(QColor(0, 0, 0, 255))
+        p.drawPolygon(poly)
+        p.end()
+        core = ops.qimage_to_mask(m).astype(np.float32) / 255
+        if feather > 0:
+            grown = ops.box_blur(core, max(1, feather // 2), passes=2)
+            mask = np.clip(np.maximum(core, grown * 2), 0, 1)
+        else:
+            mask = core
+        # bron: het bronkader geschaald naar het objectkader, met dezelfde rand eromheen
+        from .effects.common import remap
+        full = ops.qimage_to_rgba(layer.image)
+        sx = self.src.width() / max(tb.width(), 1e-6)
+        sy = self.src.height() / max(tb.height(), 1e-6)
+        yy, xx = np.mgrid[Tc.y():Tc.y() + Tc.height(), Tc.x():Tc.x() + Tc.width()].astype(np.float32) + 0.5
+        mx = self.src.x() + (xx - tb.x()) * sx - 0.5
+        my = self.src.y() + (yy - tb.y()) * sy - 0.5
+        S = remap(full, mx, my).astype(np.float32)
+        cur = full[Tc.y():Tc.y() + Tc.height(), Tc.x():Tc.x() + Tc.width()].astype(np.float32)
+        # kleuraanpassing: het verschil tussen omgeving en bron op een ring net buiten het masker,
+        # vloeiend naar binnen doorgetrokken (genormaliseerde vervaging)
+        outer = ops.box_blur((mask > 0.01).astype(np.float32), 2, passes=1)
+        ring = ((outer > 0.01) & (mask <= 0.01)).astype(np.float32)
+        if ring.sum() >= 4:
+            dim = max(tb.width(), tb.height())
+            delta = (cur[..., :3] - S[..., :3]) * ring[..., None]
+
+            def spread(rad):
+                wsum = ops.box_blur(ring, rad, passes=3)
+                return np.dstack([ops.box_blur(delta[..., c], rad, passes=3) for c in range(3)]) / \
+                    (wsum[..., None] + 1e-6), wsum
+
+            # grof (reikt tot in het midden) en fijn (volgt de rand nauwkeurig), vloeiend samengevoegd
+            coarse, _ = spread(max(2, int(dim / 2)))
+            fine, wf = spread(max(2, int(dim / 10)))
+            k = np.clip(wf * 6, 0, 1)[..., None]
+            S[..., :3] += coarse * (1 - k) + fine * k
+        out = cur + (S - cur) * mask[..., None]
+        out[..., 3] = np.maximum(cur[..., 3], S[..., 3] * mask)
+        d.push_undo(self.name)
+        paint_layer(layer, Tc, ops.rgba_to_qimage(np.clip(np.rint(out), 0, 255)), d.sel)
+        self.poly, self.src = [], None
+        self.main.opts["or_mode"] = 0
+        self.main._build_options(self)
+        d.changed.emit(Tc)
+        d.structureChanged.emit()
+        cv.update()
+
+    def overlay(self, cv, p):
+        p.setBrush(Qt.BrushStyle.NoBrush)
+        if len(self.poly) >= 2:
+            pts = [cv.to_widget(q) for q in self.poly]
+            poly = QPolygonF(pts + ([pts[0]] if self.drag is None else []))
+            for col, wd, st in ((QColor(0, 0, 0), 3, Qt.PenStyle.SolidLine), (QColor(255, 255, 255), 1, Qt.PenStyle.DashLine)):
+                p.setPen(QPen(col, wd, st))
+                p.drawPolyline(poly)
+        if self.src is not None:
+            r = QRectF(cv.to_widget(self.src.topLeft()), cv.to_widget(self.src.bottomRight()))
+            for col, wd in ((QColor(0, 0, 0), 3), (QColor(80, 200, 255), 1)):
+                p.setPen(QPen(col, wd))
+                p.drawRect(r)
+            p.setBrush(QColor(80, 200, 255))
+            p.setPen(QPen(QColor(0, 0, 0), 1))
+            for q in (r.topLeft(), r.topRight(), r.bottomLeft(), r.bottomRight()):
+                p.drawRect(QRectF(q.x() - 3.5, q.y() - 3.5, 7, 7))
+
+    def hover_cursor(self, cv, pt):
+        if self.o.get("or_mode") == 1 and self.src is not None:
+            c = self._corner(cv, pt)
+            if c in ("tl", "br"):
+                return Qt.CursorShape.SizeFDiagCursor
+            if c in ("tr", "bl"):
+                return Qt.CursorShape.SizeBDiagCursor
+            if self.src.contains(pt):
+                return Qt.CursorShape.SizeAllCursor
+        return None
+
+    def deactivate(self):
+        self.drag = None
 
 
 class StraightenTool(Tool):
@@ -3788,15 +4322,14 @@ class TextTool(Tool):
 
 # ================================================================ register
 IMPLEMENTED = [PanTool, ZoomTool, PickTool, MoveTool, SelectTool, LassoTool, WandTool, DropperTool,
-               CropTool, StraightenTool, PerspectiveTool, RedEyeTool, CloneTool, ScratchRemoverTool, PaintBrushTool, AirbrushTool,
-               OilBrushTool, ChalkTool, PastelTool, CrayonTool, ColoredPencilTool, WarpBrushTool, MeshWarpTool,
+               CropTool, StraightenTool, PerspectiveTool, RedEyeTool, MakeoverTool, CloneTool, ScratchRemoverTool,
+               ObjectRemoverTool, PaintBrushTool, AirbrushTool, OilBrushTool, MarkerTool, PaletteKnifeTool, ChalkTool, PastelTool, CrayonTool, ColoredPencilTool, WarpBrushTool, MeshWarpTool,
                LightenDarkenTool, DodgeTool, BurnTool, SmudgeTool, PushTool, SoftenTool, SharpenTool,
                EmbossTool, SaturationTool, HueTool, ChangeToTargetTool, ColorReplacerTool, EraserTool,
                BackgroundEraserTool, FillTool, ColorChangerTool, TextTool, PresetShapeTool, RectangleTool,
                EllipseTool, SymmetricShapeTool, PenTool]
 
-PLACEHOLDER_GLYPHS = {0xd070: "💄", 0xd083: "⌧", 0xd0e0: "🌸",
-                      0xd136: "🖊", 0xd137: "🔪", 0xd138: "☝", 0xd139: "⌫"}
+PLACEHOLDER_GLYPHS = {0xd0e0: "🌸", 0xd138: "☝", 0xd139: "⌫"}
 
 
 def create_tools(main):

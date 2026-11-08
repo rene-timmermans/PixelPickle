@@ -386,6 +386,42 @@
    ]
   },
   {
+   "id": "d070",
+   "name": "Makeover",
+   "group": 8,
+   "glyph": "makeover",
+   "key": "",
+   "options": [
+    {
+     "label": "Modus:",
+     "type": "choice",
+     "choices": [
+      "Vlekken verwijderen",
+      "Tandenborstel",
+      "Oogdruppel",
+      "Zonnebruin",
+      "Slanker maken"
+     ]
+    },
+    {
+     "label": "Grootte:",
+     "type": "number",
+     "range": [
+      1,
+      500
+     ]
+    },
+    {
+     "label": "Sterkte:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    }
+   ]
+  },
+  {
    "id": "d081",
    "name": "Klonen",
    "group": 9,
@@ -488,6 +524,35 @@
       "Recht",
       "Puntig"
      ]
+    }
+   ]
+  },
+  {
+   "id": "d083",
+   "name": "Object verwijderen",
+   "group": 9,
+   "glyph": "object_remover",
+   "key": "",
+   "options": [
+    {
+     "label": "Modus:",
+     "type": "choice",
+     "choices": [
+      "Object selecteren",
+      "Bron"
+     ]
+    },
+    {
+     "label": "Overgang:",
+     "type": "number",
+     "range": [
+      0,
+      50
+     ]
+    },
+    {
+     "label": "Toepassen",
+     "type": "button"
     }
    ]
   },
@@ -1880,6 +1945,14 @@
      ]
     },
     {
+     "label": "Randzachtheid:",
+     "type": "number",
+     "range": [
+      0,
+      100
+     ]
+    },
+    {
      "label": "Aaneengesloten",
      "type": "check"
     },
@@ -3041,6 +3114,72 @@
     },
     {
      "label": "Korrel:",
+     "type": "number",
+     "range": [
+      0,
+      100
+     ]
+    }
+   ]
+  },
+  {
+   "id": "d136",
+   "name": "Markering",
+   "group": 20,
+   "glyph": "marker",
+   "key": "",
+   "options": [
+    {
+     "label": "Grootte:",
+     "type": "number",
+     "range": [
+      1,
+      500
+     ]
+    },
+    {
+     "label": "Dekking:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    }
+   ]
+  },
+  {
+   "id": "d137",
+   "name": "Paletmes",
+   "group": 20,
+   "glyph": "knife",
+   "key": "",
+   "options": [
+    {
+     "label": "Grootte:",
+     "type": "number",
+     "range": [
+      1,
+      500
+     ]
+    },
+    {
+     "label": "Dekking:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Lading:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Viscositeit:",
      "type": "number",
      "range": [
       0,
@@ -8898,6 +9037,11 @@
     {
      "id": "8028",
      "text": "Toetsenbordlayout...",
+     "path": []
+    },
+    {
+     "id": "8125",
+     "text": "Op updates controleren...",
      "path": []
     },
     {

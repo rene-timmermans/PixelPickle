@@ -9,7 +9,8 @@ niet hoeft te zoeken.
 **Werkruimte**
 - Menubalk, standaardwerkbalk en een gereedschapsbalk met uitklapgroepen.
 - Optiebalk met de instellingen van het gekozen gereedschap: bij elk gereedschap even hoog en strak
-  uitgelijnd, met eigen voorinstellingen per gereedschap.
+  uitgelijnd, met eigen voorinstellingen per gereedschap. Elk invoerveld heeft een schuifbalk om snel
+  grote stappen te maken.
 - Paletten Materialen, Lagen en Geschiedenis, los te maken en vrij te plaatsen.
 - Meerdere afbeeldingen tegelijk, als tabbladen of als losse vensters.
 - Snelmenu's met de rechtermuisknop op de afbeelding, de tabbladen en de lagen.
@@ -21,14 +22,17 @@ niet hoeft te zoeken.
 - Selecties: rechthoek, ovaal en andere vormen, uit de vrije hand (ook punt tot punt en Slimme rand)
   en de toverstaf met overeenkomstmodi en tolerantie. Bij puntsgewijs selecteren schuift het beeld
   vanzelf mee als je bij de rand van het venster komt. Met de pijltoetsen schuif je een selectie per pixel
-  (Shift: 10 pixels, Ctrl: alleen het kader).
+  (Shift: 10 pixels, Ctrl: alleen het kader); houd je de toets vast, dan gaat het steeds sneller.
 - Bijsnijden met een aanpasbaar kader: grepen op hoeken en zijden, vaste verhoudingen, maten in te
   typen en uitlijnen op laag of afbeelding. Dubbelklik in het kader om bij te snijden.
 - Rechtzetten, perspectiefcorrectie, rode ogen verwijderen, klonen en krasjes verwijderen.
+- Makeover voor portretten (vlekken verwijderen, tanden witter, oogwit helderder, zonnebruin, slanker
+  maken) en Object verwijderen: trek een lijn om iets, kies een bron en het verdwijnt naadloos.
 - Penseel, airbrush, wisser, vlakvulling en kleurwisselaar.
 - Retoucheerpenselen: lichter/donkerder, tegenhouden, doordrukken, vegen, duwen, verzachten,
   verscherpen, reliëf, verzadiging, tint en meer.
-- Kunstmedia: olieverfpenseel, krijt, pastel, kleurkrijt en kleurpotlood, elk met een eigen streek.
+- Kunstmedia: olieverfpenseel, paletmes, krijt, pastel, kleurkrijt, kleurpotlood en markering, elk met een
+  eigen streek.
 - Verwringen met een penseel (duwen, uitzetten, samentrekken, draaien, gladstrijken) en met een raster.
 - Pen met rechte lijnen, Bézier-krommen en vrije lijnen; knooppunten blijven bewerkbaar tot Toepassen.
 - Vormen (rechthoek, ovaal, symmetrische vormen, basisvormen) en bewerkbare tekst.
@@ -86,6 +90,12 @@ Arabisch (van rechts naar links). Bij de eerste start is de taal Engels. Kies ee
 **File > Preferences > General Program Preferences**; de gebruikershandleiding is er in elke taal.
 
 ## Wat er nieuw is
+
+**0.10.0** Alle gereedschappen zijn er: Makeover (vlekken verwijderen, tanden witter, oogwit helderder,
+zonnebruin en slanker maken), Object verwijderen, Markering en Paletmes. De Kleurwisselaar verandert alle
+gelijkende kleuren met behoud van schaduw. Invoervelden in de optiebalk hebben een schuifbalk, pijltoetsen
+versnellen als je ze vasthoudt, spiegelen met een selectie gebeurt op dezelfde plek en Penseel Verwringen
+loopt vloeiend af naar de rand.
 
 **0.9.0** Negen talen (Engels, Nederlands, Duits, Frans, Spaans, Italiaans, Russisch, Chinees, Arabisch) en een
 uitgebreide handleiding met elk gereedschap, menu en effect. Selecties verschuiven met de pijltoetsen,

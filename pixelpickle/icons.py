@@ -386,6 +386,83 @@ def pencil(p, fill):
     p.restore()
 
 
+def makeover(p, fill):
+    # lippenstift met een glinstering
+    p.save()
+    p.translate(11, 13)
+    p.rotate(-30)
+    p.drawRect(QRectF(-3.5, 1, 7, 8))
+    p.drawLine(P(-3.5, 3.5), P(3.5, 3.5))
+    tip = QPainterPath(P(-2.5, 1))
+    tip.lineTo(-2.5, -5)
+    tip.lineTo(2.5, -8)
+    tip.lineTo(2.5, 1)
+    p.setBrush(fill)
+    p.drawPath(tip)
+    p.restore()
+    p.setBrush(Qt.BrushStyle.NoBrush)
+    for cx, cy, r in ((18.5, 6, 2.6), (20.5, 12.5, 1.6)):
+        p.drawLine(P(cx - r, cy), P(cx + r, cy))
+        p.drawLine(P(cx, cy - r), P(cx, cy + r))
+
+
+def object_remover(p, fill):
+    # gestippelde lijn om een vorm, met een bronkader ernaast
+    pen = p.pen()
+    dashed = QPen(pen)
+    dashed.setStyle(Qt.PenStyle.DashLine)
+    dashed.setDashPattern([2, 1.6])
+    p.setPen(dashed)
+    blob = QPainterPath(P(9, 4))
+    blob.cubicTo(P(15, 3.5), P(16, 10), P(14, 13))
+    blob.cubicTo(P(12, 17), P(4, 17), P(3.5, 11))
+    blob.cubicTo(P(3, 7), P(5, 4.5), P(9, 4))
+    p.drawPath(blob)
+    p.setPen(pen)
+    p.drawRect(QRectF(13.5, 13.5, 7.5, 7.5))
+    _arrowhead(p, (13.5, 13.5), -135, 3)
+    p.drawLine(P(13.5, 13.5), P(10.5, 10.5))
+
+
+def marker(p, fill):
+    # viltstift met schuine punt en een doorschijnende streep
+    p.save()
+    p.translate(13.5, 10.5)
+    p.rotate(-45)
+    p.drawRoundedRect(QRectF(-4, -3.5, 13, 7), 1.5, 1.5)
+    p.drawLine(P(4, -3.5), P(4, 3.5))
+    nib = QPainterPath(P(-4, -2.5))
+    nib.lineTo(-8, -1.5)
+    nib.lineTo(-8, 1.8)
+    nib.lineTo(-4, 2.5)
+    p.setBrush(fill)
+    p.drawPath(nib)
+    p.restore()
+    c = QColor(fill.color() if isinstance(fill, QBrush) else fill)
+    c.setAlpha(110)
+    p.setPen(Qt.PenStyle.NoPen)
+    p.setBrush(c)
+    p.drawRoundedRect(QRectF(2, 18.5, 11, 3.5), 1.5, 1.5)
+
+
+def knife(p, fill):
+    # paletmes: handvat, geknikte steel en een plat, rond blad
+    p.drawLine(P(20.5, 3.5), P(15.5, 8.5))
+    p.save()
+    p.translate(19, 5)
+    p.rotate(-45)
+    p.drawRoundedRect(QRectF(-1.5, -2, 7, 4), 1.5, 1.5)
+    p.restore()
+    p.drawLine(P(15.5, 8.5), P(13, 9.5))
+    blade = QPainterPath(P(13, 9.5))
+    blade.lineTo(5, 17.5)
+    blade.cubicTo(P(3, 19.5), P(3.5, 21), P(5.5, 20.5))
+    blade.lineTo(14.5, 12)
+    blade.closeSubpath()
+    p.setBrush(fill)
+    p.drawPath(blade)
+
+
 def warp(p, fill):
     # spiraal: pixels draaien en vervormen
     path = QPainterPath(P(12, 12))
@@ -667,7 +744,7 @@ ICONS = {
     "✋": pan, "🔍": zoom, "💧": dropper, "✥": move, "➚": pick, "⬚": select_rect, "➰": lasso, "✨": wand,
     "🖌": brush, "💨": airbrush, "⌫": eraser, "◐": lighten_darken, "◯": dodge, "●": burn, "☝": smudge,
     "👉": push, "◌": soften, "◉": sharpen, "▦": emboss, "🌈": saturation, "🎨": hue, "🎯": target,
-    "🔁": replace, "🧽": scratch, "⎘": clone, "🪣": fill_tool, "🖍": crayon, "👁": eye, "📐": straighten, "⏢": perspective, "〰": scratch_remover, "oil": oil, "chalk": chalk, "pastel": pastel, "crayon_wax": crayon_wax, "pencil": pencil, "warp": warp, "mesh": mesh,
+    "🔁": replace, "🧽": scratch, "⎘": clone, "🪣": fill_tool, "🖍": crayon, "👁": eye, "📐": straighten, "⏢": perspective, "〰": scratch_remover, "oil": oil, "chalk": chalk, "pastel": pastel, "crayon_wax": crayon_wax, "pencil": pencil, "warp": warp, "mesh": mesh, "makeover": makeover, "object_remover": object_remover, "marker": marker, "knife": knife,
     "⛶": crop, "▭": rect, "⬭": ellipse, "✶": star, "💬": bubble, "✒": pen_tool, "A": text,
     # standaardwerkbalk
     "new": new_doc, "open": open_doc, "💾": save, "save_as": save_as, "🖨": printer, "↶": undo, "↷": redo,

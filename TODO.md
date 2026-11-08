@@ -8,19 +8,11 @@ Vul de kolom **Prioriteit** in (bijvoorbeeld *hoog*, *middel*, *laag* of *nooit*
 voor opmerkingen. Bijwerken: `QT_QPA_PLATFORM=offscreen .venv/bin/python -I tools/make_todo.py`
 (ingevulde prioriteiten en notities blijven bewaard).
 
-Totaal: 7 gereedschappen en 202 menu-opdrachten.
+Totaal: 0 gereedschappen en 184 menu-opdrachten.
 
 ## Gereedschappen
 
-| Prioriteit | Functie | Engels | Plek | Notitie | ID |
-|---|---|---|---|---|---|
-|  | Makeover | Makeover | knop 8 |  | `d070` |
-|  | Object verwijderen | Object Remover | knop 9 |  | `d083` |
-|  | Plaatjespenseel | Picture Tube | knop 15, sneltoets I |  | `d0e0` |
-|  | Markering | Marker | knop 20 |  | `d136` |
-|  | Paletmes | Palette Knife | knop 20 |  | `d137` |
-|  | Uitsmeren (kunstmedia) | Smear (Art Media) | knop 20 |  | `d138` |
-|  | Tekeningwisser | Drawing Eraser | knop 20 |  | `d139` |
+Alle gereedschappen zijn gebouwd.
 
 ## Menu-opdrachten
 
@@ -36,16 +28,11 @@ Totaal: 7 gereedschappen en 202 menu-opdrachten.
 |  | Instellingen... | Setup... | Bestand > Importeren > Schermopname |  | `80e0` |
 |  | Starten | Start | Bestand > Importeren > Schermopname |  | `80e1` |
 |  | Aangepast penseel | Custom Brush | Bestand > Importeren |  | `8203` |
-|  | Van scanner of camera... | From Scanner or Camera... | Bestand > Importeren |  | `81e9` |
-|  | Ophalen van TWAIN... | Acquire from TWAIN... | Bestand > Importeren |  | `80d7` |
-|  | TWAIN-bron... | TWAIN Source... | Bestand > Importeren |  | `80d8` |
 |  | Insteekfilters | Plugin Filters | Bestand > Importeren |  | `81d9` |
-|  | FotoUitwisseling | PhotoExchange | Bestand > Exporteren |  | `61c8` |
 |  | PNG-optimalisatie... | PNG Optimizer... | Bestand > Exporteren |  | `815b` |
 |  | Afbeelding met hyperlinks... | Image Map... | Bestand > Exporteren |  | `8174` |
 |  | Segmentering... | Slicer... | Bestand > Exporteren |  | `8173` |
 |  | Aangepast penseel... | Custom Brush... | Bestand > Exporteren |  | `8201` |
-|  | Plaatjespenseel... | Picture Tube... | Bestand > Exporteren |  | `8124` |
 |  | Fotolijst... | Picture Frame... | Bestand > Exporteren |  | `822c` |
 |  | Vorm... | Shape... | Bestand > Exporteren |  | `815c` |
 |  | Insteekfilters | Plugin Filters | Bestand > Exporteren |  | `81da` |
@@ -53,15 +40,10 @@ Totaal: 7 gereedschappen en 202 menu-opdrachten.
 |  | Bewerken... | Edit... | Bestand > Script |  | `8011` |
 |  | Stoppen... | Stop... | Bestand > Script |  | `8200` |
 |  | Uitvoervenster wissen | Clear Output Window | Bestand > Script |  | `823e` |
-|  | Opname starten | Start Recording | Bestand > Script |  | `8026` |
-|  | Opname pauzeren | Pause Recording | Bestand > Script |  | `8025` |
-|  | Opname annuleren | Cancel Recording | Bestand > Script |  | `801c` |
-|  | Opname opslaan... | Save Recording... | Bestand > Script |  | `8024` |
 |  | Een stap | Single Step | Bestand > Script |  | `82bc` |
 |  | Recent script | Recent Script | Bestand > Script |  | `8217` |
 |  | Batchverwerking... | Batch Process... | Bestand |  | `801b` |
 |  | Namen in batch wijzigen... | Batch Rename... | Bestand |  | `81ad` |
-|  | Lexar actief geheugensysteem... | Lexar Active Memory System... | Bestand |  | `82fa` |
 |  | Voorkeuren bestandsindelingen... | File Format Preferences... | Bestand > Voorkeuren |  | `8014` |
 |  | Koppelingen met bestandsindelingen... | File Format Associations... | Bestand > Voorkeuren |  | `80fb` |
 |  | Bestandslocaties... | File Locations... | Bestand > Voorkeuren |  | `8152` |
@@ -76,7 +58,6 @@ Totaal: 7 gereedschappen en 202 menu-opdrachten.
 |  | Plakken als transparante selectie | Paste As Transparent Selection | Bewerken |  | `80f0` |
 |  | Plakken als nieuwe vectorselectie | Paste As New Vector Selection | Bewerken |  | `8023` |
 |  | Schermvullend voorbeeld | Full Screen Preview | Beeld |  | `80ef` |
-|  | Voorbeeld in webbrowser... | Preview in Web Browser... | Beeld |  | `8157` |
 |  | Linialen | Rulers | Beeld |  | `810a` |
 |  | Hulplijnen | Guides | Beeld |  | `817c` |
 |  | Uitlijnen op raster | Snap to Grid | Beeld |  | `817a` |
@@ -84,17 +65,12 @@ Totaal: 7 gereedschappen en 202 menu-opdrachten.
 |  | Eigenschappen Raster, Hulplijn en Uitlijnen wijzigen... | Change Grid, Guide and Snap Properties... | Beeld |  | `8155` |
 |  | Effecten | Effects | Beeld > Werkbalken |  | `821d` |
 |  | Foto | Photo | Beeld > Werkbalken |  | `821c` |
-|  | Script | Script | Beeld > Werkbalken |  | `8027` |
-|  | Web | Web | Beeld > Werkbalken |  | `821b` |
 |  | <Custom Toolbars> | <Custom Toolbars> | Beeld > Werkbalken |  | `8006` |
 |  | Penseelvariantie | Brush Variance | Beeld > Paletten |  | `822d` |
 |  | Histogram | Histogram | Beeld > Paletten |  | `8022` |
-|  | Studiecentrum | Learning Center | Beeld > Paletten |  | `8029` |
-|  | Menger | Mixer | Beeld > Paletten |  | `82cc` |
 |  | Overzicht | Overview | Beeld > Paletten |  | `8159` |
 |  | Ordenen | Organizer | Beeld > Paletten |  | `3aca` |
 |  | Fotolade | Photo Tray | Beeld > Paletten |  | `3acc` |
-|  | Scriptuitvoer | Script Output | Beeld > Paletten |  | `800a` |
 |  | Documentmodus | Document Mode | Beeld > Modus Ordenen |  | `627b` |
 |  | Paletmodus | Palette Mode | Beeld > Modus Ordenen |  | `627c` |
 |  | Vergrootglas | Magnifier | Beeld |  | `8216` |
@@ -222,32 +198,29 @@ Totaal: 7 gereedschappen en 202 menu-opdrachten.
 |  | Zwevend | Float | Selecties |  | `80e4` |
 |  | Niet-zwevend | Defloat | Selecties |  | `80e5` |
 |  | Schermvullend maken | Full Screen | Venster |  | `8202` |
-|  | Studiecentrum | Learning Center | Help |  | `8029` |
 |  | Contactinformatie... | Contact Information... | Help |  | `82c5` |
 |  | On line ondersteuning en bronnen... | Online Support and Resources... | Help |  | `8122` |
 |  | Gratis inhoud downloaden... | Download Free Content... | Help |  | `82f8` |
 |  | Berichtinstellingen... | Message Settings... | Help |  | `831f` |
-|  | Op updates controleren... | Check for Updates... | Help |  | `8125` |
 
 ## Bekende beperkingen van wat er al is
 
 - [ ] Tekstlagen: één opmaak per tekst (geen losse woorden vet of in een andere kleur)
-- [ ] Tekst en vectorvormen blijven bij opslaan als .pspimage geen tekst/vector (worden een rasterlaag)
-- [ ] Vectorvormen uit .pspimage (rechthoek, pijl, pen) worden nog niet ingelezen
 - [ ] .pspimage: alleen Curven als PSP aanpassingslaag; andere aanpassingslagen worden bij opslaan weggelaten
 - [ ] Effect Lampen: 2 lampen in plaats van 5
 - [ ] Textuur en Sculptuur: eigen patronen in plaats van de PSP patroonbestanden
 - [ ] Rode ogen verwijderen (menu): herkent geen ogen, maakt alle sterk rode vlakken donkerder
-- [ ] Zwakke effecten: Wind (te subtiel), Fijn leer, Contour overtrekken
 - [ ] Materialen: verloop en patroon werken nog niet bij tekst, en zelf verlopen samenstellen (verloopbewerker) kan nog niet
 - [ ] Inhoud van de snelmenu's (rechtsklik) precies gelijk aan PSP maken
-- [ ] Gentoo installer (ebuild)
-- [ ] Vectorlagen: verloop en patroon op vectorobjecten (nu effen kleuren); vectoren uit .pspimage lezen en schrijven
 
 ## Afgerond
 
 Wat al gebouwd is, met de versie waarin het verscheen.
 
+- [x] Laatste gereedschappen: Makeover (vlekken, tanden, oogwit, zonnebruin, slanker maken), Object verwijderen,
+  Markering en Paletmes; Kleurwisselaar werkt op alle gelijkende kleuren; pijltoetsen met versnelling;
+  spiegelen en omdraaien met een selectie op dezelfde plek; schuifbalk onder de invoervelden
+  van de optiebalk; Penseel Verwringen zonder scheuren (0.10.0)
 - [x] Zeven extra talen (Duits, Frans, Spaans, Italiaans, Russisch, Chinees, Arabisch), handleiding in elke taal;
   .ora als standaardformaat met lagen; broncirkel bij Klonen; uitgebreide handleiding in alle talen;
   selectie verschuiven met de pijltoetsen; Vervagen/Verzachten, Gemiddelde en Filmkorrel verbeterd (0.9.0)

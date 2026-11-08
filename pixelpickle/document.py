@@ -902,6 +902,9 @@ class Document(QObject):
                             QImage.trueMatrix(t, self.w, self.h))
 
     def mirror_layer(self, horizontal=True):
+        if self.sel is not None and self.layer().text is None and self.layer().vector is None \
+                and self.layer().kind != "group":
+            return self._mirror_selection(horizontal)
         self.push_undo("Spiegelen" if horizontal else "Omdraaien")
         t = QTransform.fromScale(-1, 1) if horizontal else QTransform.fromScale(1, -1)
         if self.layer().text is not None or self.layer().vector is not None:
@@ -910,6 +913,41 @@ class Document(QObject):
         else:
             self.layer().image = self.layer().image.transformed(t)
         self.changed.emit(QRect())
+        self.structureChanged.emit()
+
+    def _mirror_selection(self, horizontal):
+        """Spiegelen/omdraaien met een selectie: de geselecteerde pixels draaien op hun eigen plek om,
+        binnen het kader van de selectie, en het selectiekader draait mee."""
+        r = self.selection_bbox()
+        if r.isEmpty():
+            return
+        self.push_undo("Spiegelen" if horizontal else "Omdraaien")
+        layer = self.layer()
+        src = layer.image
+        piece = QImage(src)
+        p = QPainter(piece)
+        p.setCompositionMode(QPainter.CompositionMode.CompositionMode_DestinationIn)
+        p.drawImage(0, 0, self.sel)
+        p.end()
+        out = QImage(src)
+        p = QPainter(out)
+        p.setCompositionMode(QPainter.CompositionMode.CompositionMode_DestinationOut)
+        p.drawImage(0, 0, self.sel)
+        p.setCompositionMode(QPainter.CompositionMode.CompositionMode_SourceOver)
+        flip = (lambda im: im.flipped(Qt.Orientation.Horizontal if horizontal else Qt.Orientation.Vertical)) \
+            if hasattr(QImage, "flipped") else (lambda im: im.mirrored(horizontal, not horizontal))
+        p.drawImage(r.topLeft(), flip(piece.copy(r)))
+        p.end()
+        layer.image = out
+        m = QImage(self.w, self.h, QImage.Format.Format_Alpha8)
+        m.fill(QColor(0, 0, 0, 0))
+        p = QPainter(m)
+        p.drawImage(r.topLeft(), flip(self.sel.copy(r)))
+        p.end()
+        t = QTransform(-1, 0, 0, 1, 2 * r.x() + r.width(), 0) if horizontal \
+            else QTransform(1, 0, 0, -1, 0, 2 * r.y() + r.height())
+        self.set_selection(m, [t.map(l) for l in self.sel_lines])
+        self.changed.emit(r)
         self.structureChanged.emit()
 
     # ------------------------------------------------------------ pixelfilters

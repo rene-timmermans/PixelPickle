@@ -36,11 +36,20 @@ if os.path.exists(OUT):
             cells = [c.strip() for c in m.group(2).split("|")]
             keep[m.group(3)] = (m.group(1), cells[-1] if cells else "")
 
+# bewust niet bouwen: deze komen niet meer op de lijst
+NOT_PLANNED = {0xd0e0, 0xd138, 0xd139,  # Plaatjespenseel, Uitsmeren (kunstmedia), Tekeningwisser
+               0x81e9, 0x80d7, 0x80d8,  # scanner/camera en TWAIN
+               0x61c8, 0x8124,  # FotoUitwisseling, Plaatjespenseel exporteren
+               0x8026, 0x8025, 0x801c, 0x8024,  # scriptopname starten, pauzeren, annuleren, opslaan
+               0x82fa, 0x8157,  # Lexar actief geheugensysteem, Voorbeeld in webbrowser
+               0x8027, 0x821b,  # werkbalken Script en Web
+               0x8029, 0x82cc, 0x800a}  # Studiecentrum, Menger, Scriptuitvoer
+
 rows_tools = []
 for i, group in enumerate(TOOLBAR, 1):
     for cid in group:
         t = w.tools.get(cid)
-        if t is not None and not t.available:
+        if t is not None and not t.available and cid not in NOT_PLANNED:
             key = w.tool_key(t)
             nl = TOOL_NAMES[cid]
             rows_tools.append((f"knop {i}" + (f", sneltoets {key}" if key else ""), nl, english(nl), f"{cid:04x}"))
@@ -55,7 +64,7 @@ def walk(items, path):
         name = it["text"].replace("&", "")
         if it["items"]:
             walk(it["items"], path + [name])
-        elif it["id"] and it["id"] not in handlers and it["id"] != 0xe110:
+        elif it["id"] and it["id"] not in handlers and it["id"] != 0xe110 and it["id"] not in NOT_PLANNED:
             where = " > ".join(path)
             rows_menu.append((where, name, english(it["text"]), f"{it['id']:04x}"))
 
@@ -85,7 +94,7 @@ Totaal: {len(rows_tools)} gereedschappen en {len(rows_menu)} menu-opdrachten.
 
 ## Gereedschappen
 
-{table(rows_tools)}
+{table(rows_tools) if rows_tools else "Alle gereedschappen zijn gebouwd."}
 
 ## Menu-opdrachten
 
@@ -94,22 +103,21 @@ Totaal: {len(rows_tools)} gereedschappen en {len(rows_menu)} menu-opdrachten.
 ## Bekende beperkingen van wat er al is
 
 - [ ] Tekstlagen: één opmaak per tekst (geen losse woorden vet of in een andere kleur)
-- [ ] Tekst en vectorvormen blijven bij opslaan als .pspimage geen tekst/vector (worden een rasterlaag)
-- [ ] Vectorvormen uit .pspimage (rechthoek, pijl, pen) worden nog niet ingelezen
 - [ ] .pspimage: alleen Curven als PSP aanpassingslaag; andere aanpassingslagen worden bij opslaan weggelaten
 - [ ] Effect Lampen: 2 lampen in plaats van 5
 - [ ] Textuur en Sculptuur: eigen patronen in plaats van de PSP patroonbestanden
 - [ ] Rode ogen verwijderen (menu): herkent geen ogen, maakt alle sterk rode vlakken donkerder
-- [ ] Zwakke effecten: Wind (te subtiel), Fijn leer, Contour overtrekken
 - [ ] Materialen: verloop en patroon werken nog niet bij tekst, en zelf verlopen samenstellen (verloopbewerker) kan nog niet
 - [ ] Inhoud van de snelmenu's (rechtsklik) precies gelijk aan PSP maken
-- [ ] Gentoo installer (ebuild)
-- [ ] Vectorlagen: verloop en patroon op vectorobjecten (nu effen kleuren); vectoren uit .pspimage lezen en schrijven
 
 ## Afgerond
 
 Wat al gebouwd is, met de versie waarin het verscheen.
 
+- [x] Laatste gereedschappen: Makeover (vlekken, tanden, oogwit, zonnebruin, slanker maken), Object verwijderen,
+  Markering en Paletmes; Kleurwisselaar werkt op alle gelijkende kleuren; pijltoetsen met versnelling;
+  spiegelen en omdraaien met een selectie op dezelfde plek; schuifbalk onder de invoervelden
+  van de optiebalk; Penseel Verwringen zonder scheuren (0.10.0)
 - [x] Zeven extra talen (Duits, Frans, Spaans, Italiaans, Russisch, Chinees, Arabisch), handleiding in elke taal;
   .ora als standaardformaat met lagen; broncirkel bij Klonen; uitgebreide handleiding in alle talen;
   selectie verschuiven met de pijltoetsen; Vervagen/Verzachten, Gemiddelde en Filmkorrel verbeterd (0.9.0)

@@ -3,7 +3,7 @@ import os
 import traceback
 
 import numpy as np
-from PySide6.QtCore import QPointF, QRect, QSettings, QSize, Qt, QTimer
+from PySide6.QtCore import QEvent, QPointF, QRect, QSettings, QSize, Qt, QTimer
 from PySide6.QtGui import QAction, QColor, QFont, QIcon, QImage, QKeySequence, QPainter, QPixmap
 from PySide6.QtWidgets import (QAbstractButton, QApplication, QCheckBox, QDockWidget, QFileDialog, QHBoxLayout,
                                QInputDialog, QLabel,
@@ -133,6 +133,7 @@ class MainWindow(QMainWindow):
         self.setStatusBar(TrStatusBar())
         self.setWindowTitle(APP)
         self.settings = QSettings("PixelPickle", "PixelPickle")
+        QApplication.instance().installEventFilter(self)
         self.fg = QColor(0, 0, 0)
         self.bg = QColor(255, 255, 255)
         self.fg_none = self.bg_none = False
@@ -278,6 +279,7 @@ class MainWindow(QMainWindow):
             0x8185: lambda: self.toggle_dock(self.dock_mat), 0x81ae: lambda: self.toggle_dock(self.dock_layers),
             0x8002: lambda: self.toggle_dock(self.dock_hist), 0x81ba: lambda: self.opt_bar.setVisible(not self.opt_bar.isVisible()),
             0x81f9: lambda: self.tools_toolbar.setVisible(not self.tools_toolbar.isVisible()),
+            0x8125: self.check_updates,
             0xe800: lambda: self.std_toolbar.setVisible(not self.std_toolbar.isVisible()),
             0xe801: lambda: self.statusBar().setVisible(not self.statusBar().isVisible()),
             # Afbeelding
@@ -374,7 +376,7 @@ class MainWindow(QMainWindow):
         return H
 
     # Opdrachten die ook zonder geopende afbeelding werken (o.a. voorkeuren, zoals in PSP)
-    NO_DOC = {0x8012, 0xe100, 0xe101, 0xe141, 0x80e6, 0x8020, 0x8185, 0x81ae, 0x8002, 0x81ba, 0x81f9, 0xe800, 0xe801,
+    NO_DOC = {0x8012, 0x8125, 0xe100, 0xe101, 0xe141, 0x80e6, 0x8020, 0x8185, 0x81ae, 0x8002, 0x81ba, 0x81f9, 0xe800, 0xe801,
               0x801d, 0x82ce, 0xe132, 0xe133, 0xe134, 0x80d3, 0x8028, 0xe140, 0xe142, 0x8151}
     CHECKABLE = {0x821f: None, 0x8185: "dock_mat", 0x81ae: "dock_layers", 0x8002: "dock_hist", 0x82ce: None, 0x8021: None,
                  0x811a: None, 0x81ba: "opt_bar"}
@@ -484,6 +486,12 @@ class MainWindow(QMainWindow):
                 for cid in (PHOTO_MENU if item == "Foto verbeteren" else PALETTES_MENU):
                     if cid is None:
                         m.addSeparator()
+                    elif cid == 0x81ba and hasattr(self, "tools_toolbar"):
+                        # ook de gereedschapsbalk aan- en uitzetten, net als via het balkmenu
+                        act = self.tools_toolbar.toggleViewAction()
+                        act.setText(tr("Gereedschappen"))
+                        m.addAction(act)
+                        m.addAction(self.actions_by_id[cid])
                     elif cid in self.actions_by_id:
                         m.addAction(self.actions_by_id[cid])
                 btn.setMenu(m)
@@ -522,6 +530,18 @@ class MainWindow(QMainWindow):
     def repeat_last(self):
         if self.last_command:
             self.last_command()
+
+    def eventFilter(self, obj, e):
+        """Pijltoetsen verschuiven de selectie of de laag ook als de focus net op een palet of werkbalk
+        staat (bijvoorbeeld na het aanklikken van een laag). Invoervelden houden hun pijltoetsen."""
+        if e.type() == QEvent.Type.KeyPress and e.key() in Canvas.ARROWS and isinstance(obj, QWidget) \
+                and obj is QApplication.focusWidget() and obj.window() is self and not isinstance(obj, Canvas):
+            from PySide6.QtWidgets import QAbstractSpinBox, QComboBox, QLineEdit, QPlainTextEdit, QSlider, QTextEdit
+            if not isinstance(obj, (QLineEdit, QAbstractSpinBox, QComboBox, QTextEdit, QPlainTextEdit, QSlider)):
+                cv = self.canvas()
+                if cv is not None and cv._nudge_key(e):
+                    return True
+        return super().eventFilter(obj, e)
 
     def canvas(self) -> Canvas | None:
         sw = self.mdi.activeSubWindow()
@@ -1547,6 +1567,14 @@ class MainWindow(QMainWindow):
             sw.resize(int(cv.doc.w * cv.zoom) + (sw.width() - cv.width()) + 4,
                       int(cv.doc.h * cv.zoom) + (sw.height() - cv.height()) + 4)
             cv.center()
+
+    PROJECT_URL = "https://github.com/rene-timmermans/pixelpickle"
+
+    def check_updates(self):
+        """Op updates controleren: de projectpagina openen (daar staan de nieuwste versies)."""
+        from PySide6.QtCore import QUrl
+        from PySide6.QtGui import QDesktopServices
+        QDesktopServices.openUrl(QUrl(self.PROJECT_URL))
 
     def show_shortcuts(self):
         rows = []
