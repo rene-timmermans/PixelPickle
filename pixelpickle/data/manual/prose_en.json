@@ -1,0 +1,1847 @@
+{
+ "intro": "<p>PixelPickle is a photo editor for Linux with the familiar layout of classic Windows photo editors: menus, tools and shortcuts are where you expect them. You can retouch photos, paint, work with layers, masks and adjustment layers, draw editable vector shapes and apply dozens of adjustments and effects.</p><p>This manual first explains the workspace and the main concepts, then describes every tool, effect and menu command. Shortcuts are written as you type them, for example Ctrl+Z. A complete list is under <i>Help &gt; Keyboard Map</i>.</p>",
+ "sections": {
+  "workspace": "<ul>\n<li><b>Menu bar and standard toolbar</b> at the top: files, editing, view, image, effects, layers, selections, windows and help. Commands that need an image are greyed out until you open one.</li>\n<li><b>Tool options bar</b> below it: the settings of the current tool, such as size, hardness and opacity. The tool's icon is at the front (hover over it to see its name). Use the <i>Presets</i> button to save and load your own settings. Toggle the bar with F4.</li>\n<li><b>Tools toolbar</b> on the left. A button with a small arrow holds more tools: click the arrow to choose. Without an open image the toolbar is greyed out; with the first image the last used tool is active again.</li>\n<li><b>Palettes</b> on the right: <i>Materials</i> (F6), <i>Layers</i> (F8) and <i>History</i> (F3). Show or hide them via <i>View &gt; Palettes</i>.</li>\n<li><b>Status bar</b> at the bottom, which you can hide via <i>View &gt; Toolbars &gt; Status</i>.</li>\n<li><b>Right-click</b> the image, a tab or a layer for a context menu with the most useful commands. The menu key or Shift+F10 always opens the image menu, even with tools that use the right mouse button themselves.</li>\n<li>Icons and buttons follow the accent color of your theme, on light and dark themes alike.</li>\n<li>PixelPickle is available in 9 languages: English, Dutch, German, French, Spanish, Italian, Russian, Chinese and Arabic.</li>\n</ul>",
+  "files": "<ul>\n<li><i>File &gt; New</i> (Ctrl+N) creates an empty image. Choose a preset size or type width and height, and pick white, black, transparent, the background color or the foreground color as the background.</li>\n<li><i>File &gt; Open</i> (Ctrl+O) opens one or more files. Besides common formats PixelPickle reads .ora, .pspimage, .psd, TGA, PCX, ICO, JPEG 2000 and more. <i>File &gt; Recent Files</i> lists the last ten files you opened or saved.</li>\n<li><b>.ora</b> (OpenRaster) is an open standard and the default format for images with layers. It keeps all layers, groups, masks, adjustment layers and editable vector layers.</li>\n<li><b>.pspimage</b> files from other photo editors can be opened and, if you like, saved in that format as well. If something cannot be stored exactly, PixelPickle tells you what was adapted.</li>\n<li>PNG, JPEG, TIFF, WebP, GIF, BMP and Targa save a merged image; PixelPickle warns you first, and your layers stay in the open document. For JPEG and WebP you choose the quality.</li>\n<li><i>File &gt; Export &gt; GIF Optimizer</i> and <i>JPEG Optimizer</i> give you full control over transparency, colors, quality and subsampling, with a preview.</li>\n<li><b>Autosave</b> stores changed images in a recovery folder at an adjustable interval (5 minutes by default). Your own files are never overwritten.</li>\n</ul>",
+  "navigation": "<ul>\n<li><b>Zoom</b> with the mouse wheel (it zooms around the mouse pointer), with the + and - keys on the numeric keypad, or with the Zoom tool. Ctrl+Alt+N shows the image at 100%.</li>\n<li><b>Pan</b> by holding the space bar and dragging, or by dragging with the middle mouse button. Shift+wheel scrolls horizontally and Ctrl+wheel vertically. The Pan tool works too.</li>\n<li><i>Window &gt; Fit to Window</i> shows the whole image in its window; <i>Window &gt; Fit to Image</i> (Ctrl+W) makes a floating window the size of the image.</li>\n<li>Several images can be open at once. By default they are shown as <b>tabs</b>; turn off <i>Window &gt; Tabbed Documents</i> to use floating windows that you can cascade or tile.</li>\n<li>Switch between images with Ctrl+Tab, by clicking a tab, or via the numbered list at the bottom of the <i>Window</i> menu.</li>\n<li><i>Window &gt; New Window</i> opens a second view of the same image, for example one zoomed in and one showing the whole picture.</li>\n<li><i>View &gt; Full Screen Edit</i> (Shift+A) uses the whole screen, and <i>View &gt; Grid</i> (Ctrl+Alt+G) shows a grid over the image.</li>\n</ul>",
+  "selections": "<p>A selection limits painting, effects and edits to part of the image. The selection tools are the <b>Selection</b> tool (rectangle, ellipse and other shapes), the <b>Freehand</b> selection (freehand, point to point, smart edge and edge seeker) and the <b>Magic Wand</b> (selects by color or brightness).</p>\n<ul>\n<li><b>Modes</b>: <i>Replace</i> makes a new selection, <i>Add</i> extends it and <i>Remove</i> cuts a piece out, even when you click inside the selection. Hold Shift to add or Ctrl to remove for a single action.</li>\n<li><b>Feather</b> softens the edge by the given number of pixels; <b>Anti-alias</b> smooths jagged edges.</li>\n<li><b>Moving</b>: drag inside a selection to move the selected pixels. Drag with the right mouse button to move only the marquee.</li>\n<li><b>Arrow keys</b> move the selected pixels 1 pixel, Shift+arrow 10 pixels, and Ctrl+arrow moves only the marquee. With the Move tool and no selection the arrows move the whole layer.</li>\n<li>The <i>Selections</i> menu offers Select All (Ctrl+A), Select None (Ctrl+D), Invert (Ctrl+Shift+I), Expand, Contract, Feather (Ctrl+H), From Mask and Promote Selection to Layer (Ctrl+Shift+P).</li>\n<li>Ctrl+Shift+M hides the marquee while keeping the selection, so you can judge the result.</li>\n</ul>",
+  "layers": "<ul>\n<li><b>Raster layers</b> hold pixels; <b>vector layers</b> hold editable lines and shapes; <b>layer groups</b> keep layers together; <b>mask layers</b> control where the layers in their group are visible (white shows, black hides); <b>adjustment layers</b> change everything below them without touching the pixels.</li>\n<li>Create them via the <i>Layers</i> menu or the buttons in the <i>Layers</i> palette. Drag layers in the palette or use <i>Layers &gt; Arrange</i> to change the order.</li>\n<li>Set <b>opacity</b> and <b>blend mode</b> per layer, for example Multiply, Screen, Overlay, Soft Light, Difference, Dodge, Burn and Dissolve.</li>\n<li>Double-click a layer (or use <i>Layers &gt; Properties</i>) for its properties: name, visibility, opacity, blend mode, <b>link set</b> (layers with the same number move together), <b>lock transparency</b> (paint only where the layer already has pixels) and a <b>highlight color</b> for the layer in the palette.</li>\n<li>On the <b>Blend Ranges</b> tab you decide per channel where the layer is visible, based on the layer itself and on what lies beneath it.</li>\n<li>For an adjustment layer, Properties reopens its settings so you can change them at any time.</li>\n<li>A new image starts with a background layer, which cannot be transparent. <i>Promote Background Layer</i> turns it into a normal layer.</li>\n</ul>",
+  "materials": "<ul>\n<li>The <i>Materials</i> palette has two boxes. The top box is the <b>foreground</b> (also the outline of shapes), the bottom box the <b>background</b> (also the fill). The left mouse button paints with the foreground, the right button with the background.</li>\n<li>Click a box to open <b>Material Properties</b>. There you choose a <b>color</b> (color wheel, swatches, RGB, HSL and HTML code), a <b>gradient</b> (linear, rectangular, sunburst or radial, with angle, repeats, center point and invert) or a <b>pattern</b> (with angle and scale; an open image or your own file works too).</li>\n<li>Dozens of gradients and patterns are included.</li>\n<li>The small buttons under a box switch quickly between color, gradient and pattern. The transparent button (⊘) turns the material off: no outline or no fill for shapes and text.</li>\n<li>The swap button (⇅) exchanges foreground and background.</li>\n<li>Gradients and patterns work with the flood fill, brushes, shapes and text.</li>\n</ul>",
+  "vector": "<ul>\n<li>A <b>vector layer</b> holds objects (lines, curves, shapes) that stay sharp and editable. Create one via <i>Layers &gt; New Vector Layer</i>.</li>\n<li>With <b>Create on vector</b> turned on in the options bar of the Pen and the shape tools, what you draw becomes an editable object. If the active layer is not a vector layer, PixelPickle makes one for you.</li>\n<li>To change an object later, choose the <b>Pen in Edit mode</b> and click the line or shape. Drag nodes and handles; Ctrl+drag from a node turns it into a curve. You can also change its colors, line width and line style; Delete removes the object.</li>\n<li>A line you are drawing stays editable until you press <b>Apply</b> or Enter; Esc discards it.</li>\n<li>Vector layers stay vector when you move, mirror, rotate or resize them, and when you save as .ora.</li>\n<li>To paint on a vector layer or apply an effect to it, it must first become a raster layer. PixelPickle asks you to confirm, or you choose <i>Layers &gt; Convert to Raster Layer</i> yourself. After that the objects are ordinary pixels.</li>\n</ul>",
+  "adjust_effects": "<ul>\n<li>Most adjustments and effects open a dialog with a <b>before and after preview</b>. You can zoom and pan the preview to look at details.</li>\n<li>Turn on <b>Preview on image</b> to see the result directly in the image window while you change the settings.</li>\n<li>Save settings as a <b>preset</b> to recall them quickly later.</li>\n<li>When a selection is active, the effect only works inside it, and the dialog tells you so.</li>\n<li>Effects work on the active raster layer. On a text or vector layer PixelPickle first offers to convert it to a raster layer; on an adjustment layer effects do not work.</li>\n<li><i>Effects &gt; Effect Browser</i> shows the effects side by side with a small preview of your image, so you can pick one by looking.</li>\n<li><b>Adjustment layers</b> (<i>Layers &gt; New Adjustment Layer</i>) apply Brightness/Contrast, Curves, Levels, Hue/Saturation/Lightness and more without changing the pixels. You can change or remove them at any time, and paint on them in black and white to limit where they work.</li>\n<li><i>Edit &gt; Repeat</i> (Ctrl+Y) applies the last command again.</li>\n</ul>",
+  "undo": "<p>Almost everything you do can be undone.</p>\n<ul>\n<li>Ctrl+Z (or Alt+Backspace) undoes the last step.</li>\n<li>Ctrl+Alt+Z (or Alt+Shift+Backspace) redoes a step you undid.</li>\n<li>The <b>History</b> palette (F3) lists every step with its name. Click an earlier step to go back to that point; click a later step to go forward again.</li>\n<li>When you do something new after going back, the steps after that point are replaced.</li>\n<li>Undo and redo are also on the standard toolbar and in the context menu of the image.</li>\n<li>Saving does not clear the history, so you can still undo steps after saving. The history is per image and is lost when you close it.</li>\n</ul>",
+  "preferences": "<ul>\n<li><i>File &gt; Preferences &gt; General Program Preferences</i>: the language. PixelPickle is available in English, Dutch, German, French, Spanish, Italian, Russian, Chinese and Arabic. The new language becomes active after a restart, which PixelPickle can do for you right away.</li>\n<li><i>File &gt; Preferences &gt; Autosave Settings</i>: turn autosave on or off and set the interval in minutes. Changed images are kept in a recovery folder (in ~/.local/share/PixelPickle/autosave). Your own files are never overwritten, and the recovery copy disappears when you save or close the image normally.</li>\n<li>PixelPickle also remembers your tool settings, palette layout, tab mode, last folder and JPEG quality between sessions.</li>\n</ul>",
+  "tips": "<ul>\n<li>Hold the space bar and drag to pan, whatever tool is active.</li>\n<li>The right mouse button paints with the background color; use it to switch colors without clicking the palette.</li>\n<li>Save work in progress as .ora so layers, masks and vector objects stay editable; export a PNG or JPEG when you are done.</li>\n<li>Use an adjustment layer instead of a direct adjustment when you may want to change it later.</li>\n<li>Ctrl+Shift+M hides the marching ants so you can judge a feathered selection.</li>\n<li>Ctrl+Y repeats the last command, handy for applying the same effect to several layers.</li>\n<li>Ctrl+Shift+C copies what you see (all layers merged) instead of only the active layer.</li>\n<li>Ctrl+V pastes the clipboard as a new image, Ctrl+L as a new layer.</li>\n<li><i>Help &gt; Keyboard Map</i> lists every shortcut.</li>\n</ul>"
+ },
+ "menus": {
+  "e100": "Creates a new, empty image (Ctrl+N). You choose the size, from a preset or your own values, and the background: white, black, transparent, or the current background or foreground color.",
+  "e101": "Opens one or more existing image files (Ctrl+O). If a file is already open, PixelPickle switches to it instead of opening it twice.",
+  "e102": "Closes the active image (Ctrl+F4). If it has unsaved changes, you are asked whether to save them first.",
+  "e103": "Saves the active image under its current name (Ctrl+S). An image that was never saved, or is in a format PixelPickle cannot write, asks for a name first.",
+  "e104": "Saves the image under a new name or in another format (F12). Choose .ora to keep layers; a format without layers saves a merged image after a warning.",
+  "e10b": "Saves a copy of the image under another name or format (Ctrl+F12) while the open document keeps its own name and stays marked as changed.",
+  "814b": "Exports a merged JPEG with full control over quality, chroma subsampling and progressive loading. Transparent areas become white.",
+  "812d": "Exports a GIF with control over transparency (existing transparency, the selection or a chosen color), partly transparent pixels, the number of colors, dithering and interlacing, with a live preview.",
+  "8012": "Opens the general preferences, where you choose the language of PixelPickle. The new language takes effect after a restart.",
+  "8151": "Turns autosave on or off and sets the interval in minutes. Changed images are kept in a recovery folder, never over your own files.",
+  "e141": "Closes PixelPickle. For every image with unsaved changes you are asked whether to save it.",
+  "e12b": "Undoes the last step (Ctrl+Z or Alt+Backspace). Use the History palette to go back several steps at once.",
+  "e12c": "Redoes the step you last undid (Ctrl+Alt+Z or Alt+Shift+Backspace).",
+  "e128": "Repeats the last command you used (Ctrl+Y), for example to apply the same effect again or to another layer.",
+  "e123": "Copies the selection (or the whole layer) of the active layer to the clipboard and then clears it (Ctrl+X or Shift+Del).",
+  "e122": "Copies the selected part of the active layer to the clipboard (Ctrl+C). Without a selection the whole layer is copied.",
+  "8105": "Copies the selected area as you see it, with all visible layers merged (Ctrl+Shift+C).",
+  "80e6": "Pastes the clipboard image as a new image in its own window (Ctrl+V or Shift+Ins).",
+  "810d": "Pastes the clipboard image as a new layer, centered on the active image (Ctrl+L).",
+  "801e": "Pastes the clipboard image centered on a new layer and selects it (Ctrl+E), so you can drag it into place right away.",
+  "801f": "Pastes the clipboard image into the current selection, stretched to fit its bounding box (Ctrl+Shift+L). Requires an active selection.",
+  "e120": "Clears the selection, or the whole layer without a selection (Del). On a background layer the area becomes the background color; on other layers it becomes transparent.",
+  "8020": "Empties the system clipboard, for example to free memory after copying a large image.",
+  "8007": "Shows the image at its actual size, one image pixel per screen pixel (Ctrl+Alt+N).",
+  "8132": "Zooms in one step (+ on the numeric keypad). You can also zoom with the mouse wheel.",
+  "8136": "Zooms out one step (- on the numeric keypad).",
+  "801d": "Switches full screen mode on or off (Shift+A), giving you more room for the image.",
+  "8021": "Shows or hides a grid over the active image (Ctrl+Alt+G), handy for aligning things.",
+  "e800": "Shows or hides the standard toolbar with buttons for common commands.",
+  "e801": "Shows or hides the status bar at the bottom of the window.",
+  "81f9": "Shows or hides the Tools toolbar on the left.",
+  "8002": "Shows or hides the History palette (F3), which lists every step you can go back to.",
+  "81ae": "Shows or hides the Layers palette (F8).",
+  "8185": "Shows or hides the Materials palette (F6) with the foreground and background materials.",
+  "81ba": "Shows or hides the tool options bar (F4) with the settings of the current tool.",
+  "8242": "Rotates the whole image 90 degrees clockwise.",
+  "8243": "Rotates the whole image 90 degrees counterclockwise.",
+  "800e": "Rotates the whole image by 90, 180 or 270 degrees or by a free angle, clockwise or counterclockwise (Ctrl+R). Corners that become empty get the background color on the background layer.",
+  "80d1": "Changes the size of the image in pixels or as a percentage, optionally keeping the aspect ratio (Shift+S). Choose smooth (bicubic) resampling for photos or pixel repeat for pixel art.",
+  "80d2": "Changes the canvas size without scaling the image, so you can add room or cut away edges. Choose where the image is placed; new area on the background layer gets the background color.",
+  "807a": "Adds a colored border around the image, the same on all sides or set per side. An image with layers is merged first.",
+  "80cf": "Crops the image to the bounding rectangle of the current selection (Shift+R).",
+  "800d": "Mirrors the active layer horizontally, left to right (Ctrl+M). Vector and text layers stay editable.",
+  "800c": "Flips the active layer vertically, top to bottom (Ctrl+I).",
+  "80ed": "Shows information about the image (Shift+I): file path, dimensions, megapixels, number of layers, file size and memory use.",
+  "823f": "Counts the number of unique colors in the image as you see it, with all visible layers merged.",
+  "807b": "Opens the Effect Browser, which shows the effects side by side with a preview of your image. Pick one to open it with its settings.",
+  "8140": "Adds a new, empty raster layer above the active layer. A dialog lets you set its name, opacity, blend mode and other properties first.",
+  "8141": "Adds a new vector layer for editable lines and shapes drawn with the Pen and shape tools.",
+  "8191": "Puts the active layer in a new layer group, so you can move, hide or mask several layers together.",
+  "8107": "Adds a mask that hides the whole layer (Shift+Y). Paint white on the mask to reveal parts again.",
+  "8108": "Adds a mask that shows the whole layer. Paint black on the mask to hide parts.",
+  "8106": "Adds a mask that hides the selected area and shows the rest.",
+  "80e9": "Adds a mask that shows only the selected area and hides the rest.",
+  "80e8": "Adds a mask made from the image, based on its brightness (luminance) or on the transparency of the layer, optionally inverted.",
+  "8144": "Adds a Brightness/Contrast adjustment layer that changes everything below it without touching the pixels.",
+  "8147": "Adds a Channel Mixer adjustment layer, for example for custom black and white conversions.",
+  "8145": "Adds a Color Balance adjustment layer to shift the colors of shadows, midtones and highlights.",
+  "8143": "Adds a Curves adjustment layer for precise control over tones and contrast.",
+  "8146": "Adds a Hue/Saturation/Lightness adjustment layer to change colors, saturation and lightness.",
+  "8148": "Adds an Invert adjustment layer that turns everything below it into a negative.",
+  "8142": "Adds a Levels adjustment layer to set the black point, white point and midtones.",
+  "814a": "Adds a Posterize adjustment layer that reduces the number of brightness levels per channel.",
+  "8149": "Adds a Threshold adjustment layer that turns everything below it into pure black and white.",
+  "80f7": "Makes a copy of the active layer directly above it.",
+  "80f6": "Deletes the active layer.",
+  "8205": "Removes the layer group that contains the active layer; its layers stay in place.",
+  "80fe": "Opens the properties of the active layer: name, visibility, opacity, blend mode, link set, lock transparency, highlight color and the Blend Ranges tab. For an adjustment layer it reopens its settings.",
+  "8101": "Moves the active layer to the top of the stack.",
+  "8104": "Moves the active layer one position up.",
+  "8102": "Moves the active layer one position down.",
+  "8103": "Moves the active layer to the bottom of the stack.",
+  "81d6": "Moves the active layer into the layer group directly next to it.",
+  "81d7": "Moves the active layer out of its group.",
+  "81d4": "Merges the active layer with the layer below it.",
+  "80f8": "Merges all layers into one background layer. Transparent areas become white.",
+  "8120": "Merges all visible layers into one layer; hidden layers are kept as they are.",
+  "81d5": "Merges all layers of the active group into a single layer.",
+  "80ec": "Inverts the active mask or adjustment layer (Shift+K), so that hidden areas become visible and vice versa.",
+  "821f": "Shows the active mask as a colored overlay on the image (Ctrl+Alt+V), so you can see exactly which areas it hides.",
+  "80ea": "Loads an image file from disk as a new mask; it is scaled to the size of the image.",
+  "80eb": "Saves the active mask layer to disk as a PNG file, so you can reuse it later.",
+  "80fa": "Turns a vector or text layer into an ordinary raster layer, so you can paint on it or apply effects. The objects or text are no longer editable afterwards.",
+  "815d": "Turns the background layer into a normal layer that can be transparent and moved in the stack.",
+  "8051": "Counts the number of unique colors in the active layer only.",
+  "80dc": "Selects the whole image (Ctrl+A).",
+  "80e2": "Removes the selection (Ctrl+D), so that commands work on the whole layer again.",
+  "80f5": "Makes a selection from the active mask or adjustment layer (Ctrl+Shift+S): white becomes selected, black unselected and grey partly selected.",
+  "80dd": "Inverts the selection (Ctrl+Shift+I): what was selected becomes unselected and vice versa.",
+  "811b": "Makes the selection larger by the given number of pixels.",
+  "811c": "Makes the selection smaller by the given number of pixels.",
+  "80e3": "Softens the edge of the selection by the given number of pixels (Ctrl+H), for smooth transitions.",
+  "811a": "Hides or shows the selection marquee (Ctrl+Shift+M). The selection itself stays active.",
+  "8109": "Copies the selected part of the active layer to a new layer (Ctrl+Shift+P).",
+  "e130": "Opens a second window on the same image (Shift+W), for example to see it zoomed in and as a whole at the same time.",
+  "82ce": "Switches between tabbed documents and floating windows.",
+  "e132": "Arranges the floating image windows in an overlapping cascade.",
+  "e133": "Arranges the image windows one below the other.",
+  "e134": "Arranges the image windows side by side.",
+  "80d3": "Closes all open images, asking to save any unsaved changes.",
+  "80d4": "Opens a copy of the active image with all its layers as a new, unsaved document (Shift+D).",
+  "80d5": "Resizes the floating window to fit the image at the current zoom (Ctrl+W). Not available with tabs.",
+  "81d0": "Zooms the image so it fits entirely in its window.",
+  "e142": "Opens this user manual.",
+  "8028": "Shows a list of all keyboard shortcuts for tools and menu commands.",
+  "e140": "Shows information about PixelPickle, such as the version."
+ },
+ "tools": {
+  "d001": {
+   "about": "<p>The Pan tool moves your view of the image without changing it. It is useful when you are zoomed in and the image is larger than the window.</p>",
+   "use": "<p>Drag with the left mouse button to shift the view. A right-click without dragging opens the context menu with common commands.</p><p>You can pan with any tool: hold the <b>Space</b> bar and drag with the left button, or drag with the middle mouse button.</p>",
+   "options": {},
+   "tips": "<p>Because Space and the middle button pan temporarily, you rarely need to switch to this tool while editing.</p>"
+  },
+  "d002": {
+   "about": "<p>The Zoom tool enlarges or reduces the view of the image. The image itself is not changed.</p>",
+   "use": "<p>Click with the left mouse button to zoom in one step, centered on the point you click. Click with the right mouse button to zoom out one step.</p>",
+   "options": {
+    "100%": "Shows the image at its actual size, where one image pixel is one screen pixel.",
+    "Passend": "Fit: zooms so the whole image fits in the window."
+   },
+   "tips": "<p>Use 100% to judge sharpness and detail accurately, and Fit to see the whole composition.</p>"
+  },
+  "d011": {
+   "about": "<p>The Pick tool scales, rotates and moves the contents of the active layer freely. A box with handles appears around the non-transparent pixels of the layer.</p>",
+   "use": "<ul><li>Drag a <b>corner handle</b> to scale in both directions. Hold <b>Shift</b> to keep the proportions.</li><li>Drag a <b>side handle</b> to stretch or squash in one direction only.</li><li>Drag the <b>round rotation handle</b> (on the line sticking out of the right side) to rotate around the center. Hold <b>Shift</b> to rotate in steps of 15 degrees.</li><li>Drag inside the box to move the layer contents.</li></ul><p>The status bar shows the scale percentages or the angle while you drag. Each drag is one undo step. Text layers stay editable text when you transform them. A right-click opens the context menu.</p>",
+   "options": {},
+   "tips": "<p>Every new drag starts from the current pixels, so many small scaling steps can soften the image. Try to reach the size you want in one drag.</p>"
+  },
+  "d012": {
+   "about": "<p>The Move tool shifts the whole active layer, or only the selection marquee, to another position.</p>",
+   "use": "<p>Drag with the left mouse button to move the active layer. If the active layer is a group, all layers in it move; linked layers move along. Text and vector layers stay editable.</p><p>If there is a selection, drag with the right mouse button to move only the selection marquee, without the pixels. A right-click without dragging opens the context menu.</p><p>Arrow keys: without a selection the arrows move the whole layer by 1 pixel. With a selection they move the selected pixels by 1 pixel; hold <b>Shift</b> for 10 pixels, or <b>Ctrl</b> to move only the marquee. A series of arrow presses counts as one undo step.</p>",
+   "options": {},
+   "tips": "<p>To move just the selected pixels with the mouse, use one of the selection tools and drag inside the selection.</p>"
+  },
+  "d021": {
+   "about": "<p>The Selection tool selects an area with a geometric shape, such as a rectangle, ellipse, triangle, star or arrow. Later edits then only affect the selected area.</p>",
+   "use": "<p>Drag with the left mouse button from one corner of the shape to the opposite corner. Press <b>Esc</b> while dragging to cancel. Click without dragging (in Replace mode) to remove the current selection.</p><p>Hold <b>Shift</b> when you start dragging to add to the selection, or <b>Ctrl</b> to remove from it.</p><p>In Replace mode, dragging inside an existing selection moves the selected pixels; dragging inside it with the right mouse button moves only the marquee. A right-click without dragging opens the context menu.</p><p>Arrow keys move the selected pixels by 1 pixel, with <b>Shift</b> by 10 pixels; with <b>Ctrl</b> only the marquee moves.</p>",
+   "options": {
+    "Selectietype:": "The shape of the selection. Rectangle, Rounded Rectangle and Ellipse follow the dragged box exactly; Square, Rounded Square and Circle always keep equal width and height. Triangle, Star 1 (five points), Star 2 (eight points) and Right Arrow fill the dragged box with that shape.",
+    "Modus:": "Replace makes a new selection that replaces the current one, Add adds the new area to the existing selection and Remove subtracts it. Holding Shift (add) or Ctrl (remove) while you start overrides this setting for that one action.",
+    "Doezelen:": "Softens the edge of the new selection over this many pixels. At 0 the edge is sharp; higher values give a gradual transition, so edits blend smoothly into the surroundings.",
+    "Anti-alias": "Smooths the jagged edge of curved and diagonal selection borders with partially selected pixels."
+   },
+   "tips": "<p>Use a little feathering when you plan to brighten or recolor a part of a photo, so the edit has no visible edge.</p>"
+  },
+  "d022": {
+   "about": "<p>The Freehand Selection tool selects irregular areas by drawing their outline, either freely, point by point, or with help that snaps the line to edges in the image.</p>",
+   "use": "<p><b>Freehand</b>: hold the left mouse button and draw around the area; the selection is made when you release the button.</p><p><b>Point to point, Smart Edge, Edge Seeker</b>: click to place points around the area. A line follows the mouse to show the next segment. Finish by double-clicking, right-clicking or pressing <b>Enter</b>. <b>Backspace</b> removes the last point and <b>Esc</b> cancels. The view scrolls automatically when you move near the edge of the window while placing points.</p><p>Hold <b>Shift</b> when you start to add to the selection, or <b>Ctrl</b> to remove from it. In Replace mode, dragging inside an existing selection moves the selected pixels (right button: only the marquee). Arrow keys nudge the selection as with the Selection tool.</p>",
+   "options": {
+    "Selectietype:": "Freehand follows the mouse exactly while you drag. Point to point connects your clicks with straight lines. Smart Edge snaps each point and segment to the strongest edge nearby. Edge Seeker does the same but searches in a wider area (twice the Range) and more thoroughly, for edges that are less distinct.",
+    "Modus:": "Replace makes a new selection that replaces the current one, Add adds the new area to the existing selection and Remove subtracts it. Holding Shift (add) or Ctrl (remove) while you start overrides this setting for that one action.",
+    "Doezelen:": "Softens the edge of the new selection over this many pixels. At 0 the edge is sharp; higher values give a gradual transition, so edits blend smoothly into the surroundings.",
+    "Bereik:": "For Smart Edge and Edge Seeker: how many pixels away from your clicked line the tool searches for an edge. Higher values find edges further away but may jump to the wrong edge.",
+    "Vloeiend:": "Smooths the outline before the selection is made. At 0 the outline is used as drawn; higher values round off corners and remove small jitters.",
+    "Anti-alias": "Smooths the jagged edge of curved and diagonal selection borders with partially selected pixels.",
+    "Alle lagen gebruiken": "For Smart Edge and Edge Seeker: when on, the tool looks at the combined image of all visible layers; when off, it only looks at the active layer."
+   },
+   "tips": "<p>With Smart Edge, place points close together along soft or low contrast edges, and further apart along clear edges.</p>"
+  },
+  "d023": {
+   "about": "<p>The Magic Wand selects pixels that resemble the pixel you click, based on color, brightness or opacity. It is ideal for selecting a sky, a plain background or an evenly colored object.</p>",
+   "use": "<p>Click on the area you want to select. Hold <b>Shift</b> while clicking to add to the selection, or <b>Ctrl</b> to remove from it.</p><p>In Replace mode, clicking and dragging inside an existing selection moves the selected pixels; with the right mouse button only the marquee moves. A right-click without dragging opens the context menu. Arrow keys nudge the selection as with the Selection tool.</p>",
+   "options": {
+    "Modus:": "Replace makes a new selection that replaces the current one, Add adds the new area to the existing selection and Remove subtracts it. Holding Shift (add) or Ctrl (remove) while you start overrides this setting for that one action.",
+    "Overeenkomstmodus:": "How pixels are compared with the clicked pixel. None selects everything (limited by Contiguous). RGB Value compares the red, green and blue values. Color looks mainly at the hue and colorfulness and less at brightness. Brightness compares only lightness. Perceptual compares colors the way the eye sees differences. Traditional uses the largest difference in any one color channel. Fully opaque selects all non-transparent pixels. Opacity compares only transparency.",
+    "Tolerantie:": "How different a pixel may be from the clicked pixel and still be selected. 0 selects only exactly matching pixels; higher values select a wider range, and 200 selects everything.",
+    "Alle lagen gebruiken": "When on, the tool looks at the combined image of all visible layers; when off, it only looks at the active layer.",
+    "Aaneengesloten": "When on, only matching pixels connected to the clicked point are selected. When off, all matching pixels in the whole image are selected, also separate areas.",
+    "Doezelen:": "Softens the edge of the new selection over this many pixels. At 0 the edge is sharp; higher values give a gradual transition, so edits blend smoothly into the surroundings.",
+    "Anti-alias": "Gives the selection a smooth edge instead of a hard, stepped one. The list next to it chooses whether the soft edge lies Outside or Inside the matched area."
+   },
+   "tips": "<p>If the wand selects too little, raise the tolerance or Shift-click additional spots. If it leaks into the background, lower the tolerance.</p>"
+  },
+  "d030": {
+   "about": "<p>The Dropper picks a color from the image and makes it the foreground or background color.</p>",
+   "use": "<p>Click with the left mouse button to set the foreground color, or with the right mouse button to set the background color. Keep the button pressed and drag to update the color continuously as you move over the image.</p>",
+   "options": {
+    "Proefgrootte:": "The size of the area that is sampled. 1 × 1 takes exactly the clicked pixel; larger sizes take the average color of a square around it, which avoids picking up noise or a single stray pixel.",
+    "Alle lagen gebruiken": "When on, the color is taken from the combined image of all visible layers, as you see it. When off, it is taken from the active layer only."
+   },
+   "tips": "<p>The picked color is always fully opaque. Use a sample size of 3 × 3 or 5 × 5 on photos for a more representative color.</p>"
+  },
+  "d040": {
+   "about": "<p>The Crop tool cuts the image down to a rectangle you choose, removing everything outside it. All layers are cropped.</p>",
+   "use": "<p>Drag a rectangle over the image. The area outside it is darkened. Drag the handles on the corners and sides to resize it, and drag inside it to move it.</p><p>A small floating bar appears near the rectangle with a check mark to apply, a button to swap the rectangle between landscape and portrait, and a list of fixed proportions (Free form, 1 × 1, 4 × 3, 3 × 2, 16 × 9, 5 × 4, 7 × 5, A4).</p><p>Apply the crop by double-clicking inside the rectangle, pressing <b>Enter</b>, clicking the check mark or choosing Apply crop in the right-click menu. Press <b>Esc</b> (or choose Clear crop rectangle) to remove the rectangle without cropping. The status bar shows the size while you drag.</p>",
+   "options": {
+    "Breedte:": "The width of the crop rectangle in pixels. Type a value to set it exactly.",
+    "Hoogte:": "The height of the crop rectangle in pixels.",
+    "Links:": "The position of the left edge of the rectangle, in pixels from the left of the image.",
+    "Boven:": "The position of the top edge, in pixels from the top of the image.",
+    "Rechts:": "The position of the right edge, in pixels from the left of the image.",
+    "Onder:": "The position of the bottom edge, in pixels from the top of the image.",
+    "Verhouding behouden": "Locks the current width to height ratio of the rectangle, so resizing it (with the mouse or by typing a width or height) keeps the same proportions.",
+    "⬚": "Snaps the crop rectangle to the whole current image.",
+    "▣": "Snaps the crop rectangle tightly around the non-transparent parts of the active layer.",
+    "◼": "Snaps the crop rectangle tightly around the non-transparent parts of all layers combined."
+   },
+   "tips": "<p>Choose a fixed proportion such as 3 × 2 or 4 × 3 in the floating bar when you crop for prints in a standard size.</p>"
+  },
+  "d051": {
+   "about": "<p>The Straighten tool rotates the whole image so that a crooked line, such as a horizon or a wall, becomes perfectly horizontal or vertical.</p>",
+   "use": "<p>Drag a line along an edge that should be straight. You can then drag either end point to adjust it, or drag a new line elsewhere. Apply by double-clicking, pressing <b>Enter</b>, clicking <b>Apply</b> or choosing Apply straighten in the right-click menu. <b>Esc</b> removes the line.</p><p>All layers are rotated. Corners that become empty on the background layer are filled with the background color.</p>",
+   "options": {
+    "Modus:": "Automatic makes the line horizontal if it runs mostly sideways and vertical if it runs mostly up and down. Make horizontal and Make vertical force one of the two.",
+    "Afbeelding bijsnijden": "When on, the rotated image is cropped to the largest rectangle without empty corners. When off, the canvas grows to hold the whole rotated image.",
+    "Toepassen": "Rotates the image according to the drawn line."
+   },
+   "tips": "<p>Draw the line as long as possible along the reference edge; a longer line gives a more accurate angle.</p>"
+  },
+  "d052": {
+   "about": "<p>The Perspective Correction tool straightens objects photographed at an angle, such as converging walls of a building or a document shot from the side.</p>",
+   "use": "<p>A frame with four corner handles appears on the image. Drag each corner onto the corresponding corner of the object that should be rectangular. Drag inside the frame to move it as a whole.</p><p>Apply by double-clicking inside the frame, pressing <b>Enter</b>, clicking <b>Apply</b> or choosing Apply perspective correction in the right-click menu. <b>Esc</b>, <b>Reset</b> or Reset frame in the right-click menu puts the frame back in its starting position.</p>",
+   "options": {
+    "Rasterlijnen:": "The number of grid lines drawn inside the frame in each direction. The grid helps you line the frame up with lines in the image; 0 shows no grid.",
+    "Afbeelding bijsnijden": "When on, only the straightened rectangle remains and the image gets its size. When off, the image keeps its size and everything is corrected along with it; uncovered areas of the background layer are filled with the background color.",
+    "Toepassen": "Performs the perspective correction.",
+    "Herstellen": "Resets the frame to its starting position."
+   },
+   "tips": "<p>Raise the grid lines to check that vertical and horizontal features in the image run parallel to the grid before you apply.</p>"
+  },
+  "d060": {
+   "about": "<p>The Red Eye tool removes the red glow from eyes in flash photos.</p>",
+   "use": "<p>Point the dashed circle at the red pupil and click. Only reddish pixels inside the circle are corrected; the effect is strongest in the middle and fades towards the edge. Each click is one undo step. If there is a selection, only the selected area is changed.</p>",
+   "options": {
+    "Grootte:": "The diameter of the circle in pixels. Make it just a bit larger than the red pupil.",
+    "Sterkte:": "How strongly the red is removed. Lower values leave some red; 100 neutralizes it as much as possible."
+   },
+   "tips": "<p>Zoom in first, so you can match the circle to the pupil precisely. Click again if some red remains.</p>"
+  },
+  "d081": {
+   "about": "<p>The Clone brush copies pixels from one part of the image to another. It is used to remove blemishes, dust and unwanted objects by painting over them with nearby texture.</p>",
+   "use": "<p>First right-click on the spot you want to copy from (the source). Then paint with the left mouse button where you want the copy. A circle with a cross shows which source area is being copied, and it follows along while you paint. Hold Shift while you click to draw a straight line from the end of the previous stroke to the clicked point. If there is a selection, only the selected area is changed.</p>",
+   "options": {
+    "Vorm:": "The shape of the brush tip. Round gives a circular tip (with a soft edge when Hardness is below 100), Square gives a square tip with hard edges.",
+    "Grootte:": "The diameter of the brush in pixels. The outline under the mouse pointer shows the current size.",
+    "Hardheid:": "How sharp the edge of a round brush is. At 100 the edge is crisp; lower values let the effect fade out gradually towards the edge.",
+    "Stap:": "The distance between successive brush dabs along the stroke, as a percentage of the brush size. Low values give a smooth, continuous stroke; high values leave separate dots.",
+    "Dichtheid:": "The percentage of pixels inside each dab that is affected. At 100 the whole tip works; lower values give a speckled, grainy result.",
+    "Dikte:": "Squashes the brush tip vertically, as a percentage. At 100 the tip is round or square; lower values give a flat ellipse or rectangle, like a calligraphy pen.",
+    "Rotatie:": "Rotates the brush tip in degrees. This is visible when Thickness is below 100 or with a square tip.",
+    "Dekking:": "How strongly each dab works, from 1 (very faint) to 100 (full strength).",
+    "Uitgelijnde modus": "When on, the distance between the source and the brush stays the same for all following strokes, as if the whole image is shifted. When off, every new stroke starts copying from the original source point again.",
+    "Alle lagen gebruiken": "When on, the source is taken from the combined image of all visible layers, so you can clone onto a new empty layer. When off, only the active layer is used."
+   },
+   "tips": "<p>Pick a source with similar texture and lighting close to the defect, and set a new source often to avoid repeating patterns. Cloning on a separate empty layer with Use all layers on keeps your original intact.</p>"
+  },
+  "d082": {
+   "about": "<p>The Scratch Remover removes thin defects such as scratches, hairs and dust lines from photos.</p>",
+   "use": "<p>Drag a narrow frame along the scratch, so it covers the scratch completely. When you release the mouse button, the frame is filled with a smooth transition between the pixels on either side of it. If there is a selection, only the selected area is changed. The tool works on normal raster layers.</p>",
+   "options": {
+    "Breedte:": "The width of the frame in pixels. Make it just wide enough to cover the scratch; a wider frame blurs more surrounding detail.",
+    "Uiteinden:": "Square gives the frame straight ends. Pointed makes the frame taper to a point at both ends, which suits scratches that fade out."
+   },
+   "tips": "<p>For a curved scratch, remove it in several short straight pieces.</p>"
+  },
+  "d091": {
+   "about": "<p>The Paint Brush paints strokes on the active layer with the foreground color, or with a gradient or pattern if one is set as the material.</p>",
+   "use": "<p>Drag with the left mouse button to paint with the foreground material, or with the right mouse button to paint with the background material. Hold Shift while you click to draw a straight line from the end of the previous stroke to the clicked point. If there is a selection, only the selected area is changed. Each stroke is one undo step.</p>",
+   "options": {
+    "Vorm:": "The shape of the brush tip. Round gives a circular tip (with a soft edge when Hardness is below 100), Square gives a square tip with hard edges.",
+    "Grootte:": "The diameter of the brush in pixels. The outline under the mouse pointer shows the current size.",
+    "Hardheid:": "How sharp the edge of a round brush is. At 100 the edge is crisp; lower values let the effect fade out gradually towards the edge.",
+    "Stap:": "The distance between successive brush dabs along the stroke, as a percentage of the brush size. Low values give a smooth, continuous stroke; high values leave separate dots.",
+    "Dichtheid:": "The percentage of pixels inside each dab that is affected. At 100 the whole tip works; lower values give a speckled, grainy result.",
+    "Dikte:": "Squashes the brush tip vertically, as a percentage. At 100 the tip is round or square; lower values give a flat ellipse or rectangle, like a calligraphy pen.",
+    "Rotatie:": "Rotates the brush tip in degrees. This is visible when Thickness is below 100 or with a square tip.",
+    "Dekking:": "How strongly each dab works, from 1 (very faint) to 100 (full strength).",
+    "Mengmodus:": "How the paint combines with the existing pixels. Normal simply paints over them; Darken and Lighten only change pixels that become darker or lighter; Hue, Saturation, Color and Luminance transfer only that property of the paint (the Legacy variants use an older calculation); Multiply darkens, Screen lightens; Dissolve scatters the paint as random pixels; Overlay, Hard Light and Soft Light increase contrast in different ways; Difference and Exclusion invert based on the paint color; Dodge brightens and Burn darkens; Behind paints only where the layer is transparent, as if behind the existing pixels."
+   },
+   "tips": "<p>Lower the opacity and paint several strokes to build up color gradually. A low hardness gives soft, natural edges.</p>"
+  },
+  "d092": {
+   "about": "<p>The Airbrush sprays paint like a spray can: the longer you stay in one place, the more paint builds up.</p>",
+   "use": "<p>Drag with the left mouse button to spray the foreground material, or with the right mouse button for the background material. Keep the button pressed without moving to let paint build up. Each dab is applied with reduced strength, so color accumulates with overlapping dabs. Hold Shift while you click to draw a straight line from the end of the previous stroke to the clicked point. If there is a selection, only the selected area is changed.</p>",
+   "options": {
+    "Vorm:": "The shape of the brush tip. Round gives a circular tip (with a soft edge when Hardness is below 100), Square gives a square tip with hard edges.",
+    "Grootte:": "The diameter of the brush in pixels. The outline under the mouse pointer shows the current size.",
+    "Hardheid:": "How sharp the edge of a round brush is. At 100 the edge is crisp; lower values let the effect fade out gradually towards the edge.",
+    "Stap:": "The distance between successive brush dabs along the stroke, as a percentage of the brush size. Low values give a smooth, continuous stroke; high values leave separate dots.",
+    "Dichtheid:": "The percentage of pixels inside each dab that is affected. At 100 the whole tip works; lower values give a speckled, grainy result.",
+    "Dikte:": "Squashes the brush tip vertically, as a percentage. At 100 the tip is round or square; lower values give a flat ellipse or rectangle, like a calligraphy pen.",
+    "Rotatie:": "Rotates the brush tip in degrees. This is visible when Thickness is below 100 or with a square tip.",
+    "Dekking:": "How strongly each dab works, from 1 (very faint) to 100 (full strength).",
+    "Mengmodus:": "How the paint combines with the existing pixels. Normal simply paints over them; Darken and Lighten only change pixels that become darker or lighter; Hue, Saturation, Color and Luminance transfer only that property of the paint (the Legacy variants use an older calculation); Multiply darkens, Screen lightens; Dissolve scatters the paint as random pixels; Overlay, Hard Light and Soft Light increase contrast in different ways; Difference and Exclusion invert based on the paint color; Dodge brightens and Burn darkens; Behind paints only where the layer is transparent, as if behind the existing pixels.",
+    "Snelheid:": "How often paint is added while you hold the mouse still. Higher values build up paint faster; at 0 nothing is added while the mouse is not moving."
+   },
+   "tips": "<p>Use a large, soft airbrush with low opacity for subtle shading and color tints.</p>"
+  },
+  "d0a1": {
+   "about": "<p>The Lighten/Darken brush makes areas lighter or darker by changing their lightness, without changing their hue.</p>",
+   "use": "<p>Drag with the left mouse button to lighten, or with the right mouse button to darken. Hold Shift while you click to draw a straight line from the end of the previous stroke to the clicked point. If there is a selection, only the selected area is changed. The transparency of the pixels is left unchanged.</p>",
+   "options": {
+    "Vorm:": "The shape of the brush tip. Round gives a circular tip (with a soft edge when Hardness is below 100), Square gives a square tip with hard edges.",
+    "Grootte:": "The diameter of the brush in pixels. The outline under the mouse pointer shows the current size.",
+    "Hardheid:": "How sharp the edge of a round brush is. At 100 the edge is crisp; lower values let the effect fade out gradually towards the edge.",
+    "Stap:": "The distance between successive brush dabs along the stroke, as a percentage of the brush size. Low values give a smooth, continuous stroke; high values leave separate dots.",
+    "Dichtheid:": "The percentage of pixels inside each dab that is affected. At 100 the whole tip works; lower values give a speckled, grainy result.",
+    "Dikte:": "Squashes the brush tip vertically, as a percentage. At 100 the tip is round or square; lower values give a flat ellipse or rectangle, like a calligraphy pen.",
+    "Rotatie:": "Rotates the brush tip in degrees. This is visible when Thickness is below 100 or with a square tip.",
+    "Dekking:": "How strongly each dab works, from 1 (very faint) to 100 (full strength).",
+    "Doorlopend": "When off, the effect is applied only once per stroke: going back and forth over the same spot does not make it stronger. When on, the effect builds up gradually with every dab, so repeated passes keep intensifying it."
+   },
+   "tips": "<p>Keep Continuous off for an even result; turn it on and use a low opacity when you want to build up the effect step by step.</p>"
+  },
+  "d0a2": {
+   "about": "<p>The Dodge brush brings out details in darker areas by brightening them, in the way photographers hold back light in the darkroom.</p>",
+   "use": "<p>Drag with the left mouse button to dodge (lighten). Drag with the right mouse button to burn (darken) instead. Hold Shift while you click to draw a straight line from the end of the previous stroke to the clicked point. If there is a selection, only the selected area is changed. The transparency of the pixels is left unchanged.</p>",
+   "options": {
+    "Vorm:": "The shape of the brush tip. Round gives a circular tip (with a soft edge when Hardness is below 100), Square gives a square tip with hard edges.",
+    "Grootte:": "The diameter of the brush in pixels. The outline under the mouse pointer shows the current size.",
+    "Hardheid:": "How sharp the edge of a round brush is. At 100 the edge is crisp; lower values let the effect fade out gradually towards the edge.",
+    "Stap:": "The distance between successive brush dabs along the stroke, as a percentage of the brush size. Low values give a smooth, continuous stroke; high values leave separate dots.",
+    "Dichtheid:": "The percentage of pixels inside each dab that is affected. At 100 the whole tip works; lower values give a speckled, grainy result.",
+    "Dikte:": "Squashes the brush tip vertically, as a percentage. At 100 the tip is round or square; lower values give a flat ellipse or rectangle, like a calligraphy pen.",
+    "Rotatie:": "Rotates the brush tip in degrees. This is visible when Thickness is below 100 or with a square tip.",
+    "Dekking:": "How strongly each dab works, from 1 (very faint) to 100 (full strength).",
+    "Doorlopend": "When off, the effect is applied only once per stroke: going back and forth over the same spot does not make it stronger. When on, the effect builds up gradually with every dab, so repeated passes keep intensifying it."
+   },
+   "tips": "<p>Dodging mainly lifts the dark and mid tones while bright areas change less, which makes it suitable for opening up shadows.</p>"
+  },
+  "d0a3": {
+   "about": "<p>The Burn brush darkens areas, for example to deepen shadows or tone down bright spots.</p>",
+   "use": "<p>Drag with the left mouse button to burn (darken). Drag with the right mouse button to dodge (lighten) instead. Hold Shift while you click to draw a straight line from the end of the previous stroke to the clicked point. If there is a selection, only the selected area is changed. The transparency of the pixels is left unchanged.</p>",
+   "options": {
+    "Vorm:": "The shape of the brush tip. Round gives a circular tip (with a soft edge when Hardness is below 100), Square gives a square tip with hard edges.",
+    "Grootte:": "The diameter of the brush in pixels. The outline under the mouse pointer shows the current size.",
+    "Hardheid:": "How sharp the edge of a round brush is. At 100 the edge is crisp; lower values let the effect fade out gradually towards the edge.",
+    "Stap:": "The distance between successive brush dabs along the stroke, as a percentage of the brush size. Low values give a smooth, continuous stroke; high values leave separate dots.",
+    "Dichtheid:": "The percentage of pixels inside each dab that is affected. At 100 the whole tip works; lower values give a speckled, grainy result.",
+    "Dikte:": "Squashes the brush tip vertically, as a percentage. At 100 the tip is round or square; lower values give a flat ellipse or rectangle, like a calligraphy pen.",
+    "Rotatie:": "Rotates the brush tip in degrees. This is visible when Thickness is below 100 or with a square tip.",
+    "Dekking:": "How strongly each dab works, from 1 (very faint) to 100 (full strength).",
+    "Doorlopend": "When off, the effect is applied only once per stroke: going back and forth over the same spot does not make it stronger. When on, the effect builds up gradually with every dab, so repeated passes keep intensifying it."
+   },
+   "tips": "<p>Use a large, soft brush with low opacity to darken the edges of a photo and draw attention to the subject.</p>"
+  },
+  "d0a4": {
+   "about": "<p>The Smudge brush smears colors as if you drag a finger through wet paint: it picks up colors as it goes and carries them along.</p>",
+   "use": "<p>Drag with the left mouse button to smudge; new colors are continuously picked up and mixed in. Drag with the right mouse button to push instead (spread the colors from the start of the stroke without picking up new ones). Hold Shift while you click to draw a straight line from the end of the previous stroke to the clicked point. If there is a selection, only the selected area is changed. The transparency of the pixels is left unchanged.</p>",
+   "options": {
+    "Vorm:": "The shape of the brush tip. Round gives a circular tip (with a soft edge when Hardness is below 100), Square gives a square tip with hard edges.",
+    "Grootte:": "The diameter of the brush in pixels. The outline under the mouse pointer shows the current size.",
+    "Hardheid:": "How sharp the edge of a round brush is. At 100 the edge is crisp; lower values let the effect fade out gradually towards the edge.",
+    "Stap:": "The distance between successive brush dabs along the stroke, as a percentage of the brush size. Low values give a smooth, continuous stroke; high values leave separate dots.",
+    "Dichtheid:": "The percentage of pixels inside each dab that is affected. At 100 the whole tip works; lower values give a speckled, grainy result.",
+    "Dikte:": "Squashes the brush tip vertically, as a percentage. At 100 the tip is round or square; lower values give a flat ellipse or rectangle, like a calligraphy pen.",
+    "Rotatie:": "Rotates the brush tip in degrees. This is visible when Thickness is below 100 or with a square tip.",
+    "Dekking:": "How strongly each dab works, from 1 (very faint) to 100 (full strength)."
+   },
+   "tips": "<p>Use short strokes with a small step for a controlled, smooth smear.</p>"
+  },
+  "d0a5": {
+   "about": "<p>The Push brush spreads the colors under the start of the stroke along your drag, without picking up new colors on the way.</p>",
+   "use": "<p>Drag with the left mouse button to push the colors along. Drag with the right mouse button to smudge instead (picking up and mixing in new colors). Hold Shift while you click to draw a straight line from the end of the previous stroke to the clicked point. If there is a selection, only the selected area is changed. The transparency of the pixels is left unchanged.</p>",
+   "options": {
+    "Vorm:": "The shape of the brush tip. Round gives a circular tip (with a soft edge when Hardness is below 100), Square gives a square tip with hard edges.",
+    "Grootte:": "The diameter of the brush in pixels. The outline under the mouse pointer shows the current size.",
+    "Hardheid:": "How sharp the edge of a round brush is. At 100 the edge is crisp; lower values let the effect fade out gradually towards the edge.",
+    "Stap:": "The distance between successive brush dabs along the stroke, as a percentage of the brush size. Low values give a smooth, continuous stroke; high values leave separate dots.",
+    "Dichtheid:": "The percentage of pixels inside each dab that is affected. At 100 the whole tip works; lower values give a speckled, grainy result.",
+    "Dikte:": "Squashes the brush tip vertically, as a percentage. At 100 the tip is round or square; lower values give a flat ellipse or rectangle, like a calligraphy pen.",
+    "Rotatie:": "Rotates the brush tip in degrees. This is visible when Thickness is below 100 or with a square tip.",
+    "Dekking:": "How strongly each dab works, from 1 (very faint) to 100 (full strength)."
+   },
+   "tips": ""
+  },
+  "d0a6": {
+   "about": "<p>The Soften brush blurs details locally, for example to smooth skin or reduce noise and harsh edges in a small area.</p>",
+   "use": "<p>Drag with the left mouse button to soften. Drag with the right mouse button to sharpen instead. Hold Shift while you click to draw a straight line from the end of the previous stroke to the clicked point. If there is a selection, only the selected area is changed. The transparency of the pixels is left unchanged.</p>",
+   "options": {
+    "Vorm:": "The shape of the brush tip. Round gives a circular tip (with a soft edge when Hardness is below 100), Square gives a square tip with hard edges.",
+    "Grootte:": "The diameter of the brush in pixels. The outline under the mouse pointer shows the current size.",
+    "Hardheid:": "How sharp the edge of a round brush is. At 100 the edge is crisp; lower values let the effect fade out gradually towards the edge.",
+    "Stap:": "The distance between successive brush dabs along the stroke, as a percentage of the brush size. Low values give a smooth, continuous stroke; high values leave separate dots.",
+    "Dichtheid:": "The percentage of pixels inside each dab that is affected. At 100 the whole tip works; lower values give a speckled, grainy result.",
+    "Dikte:": "Squashes the brush tip vertically, as a percentage. At 100 the tip is round or square; lower values give a flat ellipse or rectangle, like a calligraphy pen.",
+    "Rotatie:": "Rotates the brush tip in degrees. This is visible when Thickness is below 100 or with a square tip.",
+    "Dekking:": "How strongly each dab works, from 1 (very faint) to 100 (full strength).",
+    "Doorlopend": "When off, the effect is applied only once per stroke: going back and forth over the same spot does not make it stronger. When on, the effect builds up gradually with every dab, so repeated passes keep intensifying it."
+   },
+   "tips": "<p>Turn on Continuous and pass over an area several times for a stronger blur.</p>"
+  },
+  "d0a7": {
+   "about": "<p>The Sharpen brush increases local contrast along edges, making details crisper in the area you paint.</p>",
+   "use": "<p>Drag with the left mouse button to sharpen. Drag with the right mouse button to soften instead. Hold Shift while you click to draw a straight line from the end of the previous stroke to the clicked point. If there is a selection, only the selected area is changed. The transparency of the pixels is left unchanged.</p>",
+   "options": {
+    "Vorm:": "The shape of the brush tip. Round gives a circular tip (with a soft edge when Hardness is below 100), Square gives a square tip with hard edges.",
+    "Grootte:": "The diameter of the brush in pixels. The outline under the mouse pointer shows the current size.",
+    "Hardheid:": "How sharp the edge of a round brush is. At 100 the edge is crisp; lower values let the effect fade out gradually towards the edge.",
+    "Stap:": "The distance between successive brush dabs along the stroke, as a percentage of the brush size. Low values give a smooth, continuous stroke; high values leave separate dots.",
+    "Dichtheid:": "The percentage of pixels inside each dab that is affected. At 100 the whole tip works; lower values give a speckled, grainy result.",
+    "Dikte:": "Squashes the brush tip vertically, as a percentage. At 100 the tip is round or square; lower values give a flat ellipse or rectangle, like a calligraphy pen.",
+    "Rotatie:": "Rotates the brush tip in degrees. This is visible when Thickness is below 100 or with a square tip.",
+    "Dekking:": "How strongly each dab works, from 1 (very faint) to 100 (full strength).",
+    "Doorlopend": "When off, the effect is applied only once per stroke: going back and forth over the same spot does not make it stronger. When on, the effect builds up gradually with every dab, so repeated passes keep intensifying it."
+   },
+   "tips": "<p>Sharpen sparingly, for example only the eyes in a portrait; too much sharpening creates halos and noise.</p>"
+  },
+  "d0a8": {
+   "about": "<p>The Emboss brush turns the area you paint over into a relief, as if it were pressed into metal or paper. The painted pixels become mostly gray, with light and dark edges where the image has contrast and colored fringes where the color channels differ.</p>",
+   "use": "<p>Drag over the image with the left or right mouse button; both buttons give the same effect. Hold <b>Shift</b> and click to apply the effect along a straight line from the end of the previous stroke. Without Continuous, the effect works once per stroke, so release the mouse button and paint again to emboss an area further.</p>",
+   "options": {
+    "Vorm:": "The shape of the brush tip. Round gives a circular tip; Square gives a square tip with hard edges (Hardness has no effect on a square tip).",
+    "Grootte:": "The diameter of the brush in pixels. Larger values affect a wider area with each dab.",
+    "Hardheid:": "How sharp the edge of the brush is. At 100 the effect is equally strong up to the edge; lower values fade the effect out softly towards the edge.",
+    "Stap:": "The distance between dabs along a stroke, as a percentage of the brush size. Low values give a smooth, continuous stroke; high values leave separate dabs with gaps between them.",
+    "Dichtheid:": "The percentage of pixels inside the brush that is affected by each dab. At 100 the whole tip works; lower values give a speckled, spray-like result.",
+    "Dikte:": "Squashes the brush tip vertically. At 100 the tip is as tall as it is wide; lower values make it flatter, like a calligraphy nib.",
+    "Rotatie:": "Rotates the brush tip in degrees. This only makes a visible difference when Thickness is below 100 or the shape is Square.",
+    "Dekking:": "The strength of the effect. At 100 it works at full strength; lower values blend the result with the original pixels.",
+    "Doorlopend": "When off, the effect is applied only once per stroke: going back and forth over the same spot in one stroke does not make it stronger. When on, every dab adds a little more, so the effect builds up as long as you keep brushing."
+   },
+   "tips": "<p>Use a soft brush (low Hardness) with a lower Opacity to blend the relief subtly into the original picture. The transparency of the layer is kept.</p>"
+  },
+  "d0a9": {
+   "about": "<p>The Saturation Up/Down brush makes colors more vivid or more muted only where you paint, leaving the rest of the image untouched.</p>",
+   "use": "<p>Drag with the <b>left</b> mouse button to increase saturation (more vivid colors). Drag with the <b>right</b> mouse button to decrease saturation (duller, grayer colors). Hold <b>Shift</b> and click to apply the effect along a straight line from the end of the previous stroke. Without Continuous, each stroke changes the saturation by a fixed step, so paint a new stroke to go further.</p>",
+   "options": {
+    "Vorm:": "The shape of the brush tip. Round gives a circular tip; Square gives a square tip with hard edges (Hardness has no effect on a square tip).",
+    "Grootte:": "The diameter of the brush in pixels. Larger values affect a wider area with each dab.",
+    "Hardheid:": "How sharp the edge of the brush is. At 100 the effect is equally strong up to the edge; lower values fade the effect out softly towards the edge.",
+    "Stap:": "The distance between dabs along a stroke, as a percentage of the brush size. Low values give a smooth, continuous stroke; high values leave separate dabs with gaps between them.",
+    "Dichtheid:": "The percentage of pixels inside the brush that is affected by each dab. At 100 the whole tip works; lower values give a speckled, spray-like result.",
+    "Dikte:": "Squashes the brush tip vertically. At 100 the tip is as tall as it is wide; lower values make it flatter, like a calligraphy nib.",
+    "Rotatie:": "Rotates the brush tip in degrees. This only makes a visible difference when Thickness is below 100 or the shape is Square.",
+    "Dekking:": "The strength of the effect. At 100 it works at full strength; lower values blend the result with the original pixels.",
+    "Doorlopend": "When off, the effect is applied only once per stroke: going back and forth over the same spot in one stroke does not make it stronger. When on, every dab adds a little more, so the effect builds up as long as you keep brushing."
+   },
+   "tips": "<p>Painting several times with the right mouse button over the same area removes nearly all color, which is handy for selective black and white effects.</p>"
+  },
+  "d0aa": {
+   "about": "<p>The Hue Up/Down brush shifts the hue of the colors you paint over around the color wheel, for example turning red into orange or blue into purple, while keeping saturation and lightness.</p>",
+   "use": "<p>Drag with the <b>left</b> mouse button to shift the hue up, or with the <b>right</b> mouse button to shift it down. Each stroke moves the hue a small step. Hold <b>Shift</b> and click to apply the effect along a straight line from the end of the previous stroke. Without Continuous, the shift is applied once per stroke, so paint again to shift further.</p>",
+   "options": {
+    "Vorm:": "The shape of the brush tip. Round gives a circular tip; Square gives a square tip with hard edges (Hardness has no effect on a square tip).",
+    "Grootte:": "The diameter of the brush in pixels. Larger values affect a wider area with each dab.",
+    "Hardheid:": "How sharp the edge of the brush is. At 100 the effect is equally strong up to the edge; lower values fade the effect out softly towards the edge.",
+    "Stap:": "The distance between dabs along a stroke, as a percentage of the brush size. Low values give a smooth, continuous stroke; high values leave separate dabs with gaps between them.",
+    "Dichtheid:": "The percentage of pixels inside the brush that is affected by each dab. At 100 the whole tip works; lower values give a speckled, spray-like result.",
+    "Dikte:": "Squashes the brush tip vertically. At 100 the tip is as tall as it is wide; lower values make it flatter, like a calligraphy nib.",
+    "Rotatie:": "Rotates the brush tip in degrees. This only makes a visible difference when Thickness is below 100 or the shape is Square.",
+    "Dekking:": "The strength of the effect. At 100 it works at full strength; lower values blend the result with the original pixels.",
+    "Doorlopend": "When off, the effect is applied only once per stroke: going back and forth over the same spot in one stroke does not make it stronger. When on, every dab adds a little more, so the effect builds up as long as you keep brushing."
+   },
+   "tips": "<p>Gray, white and black pixels have no hue, so they do not change with this brush.</p>"
+  },
+  "d0ab": {
+   "about": "<p>The Change to Target brush moves the colors you paint over towards a target color while keeping the detail and shading of the image. You choose whether the color as a whole, only the hue, only the saturation or only the lightness is changed.</p>",
+   "use": "<p>Drag with the <b>left</b> mouse button to change pixels towards the foreground color, or with the <b>right</b> mouse button towards the background color. Each stroke moves the pixels halfway towards the target. Hold <b>Shift</b> and click to apply along a straight line from the end of the previous stroke. Without Continuous, the effect works once per stroke, so paint again to get closer to the target.</p>",
+   "options": {
+    "Vorm:": "The shape of the brush tip. Round gives a circular tip; Square gives a square tip with hard edges (Hardness has no effect on a square tip).",
+    "Grootte:": "The diameter of the brush in pixels. Larger values affect a wider area with each dab.",
+    "Hardheid:": "How sharp the edge of the brush is. At 100 the effect is equally strong up to the edge; lower values fade the effect out softly towards the edge.",
+    "Stap:": "The distance between dabs along a stroke, as a percentage of the brush size. Low values give a smooth, continuous stroke; high values leave separate dabs with gaps between them.",
+    "Dichtheid:": "The percentage of pixels inside the brush that is affected by each dab. At 100 the whole tip works; lower values give a speckled, spray-like result.",
+    "Dikte:": "Squashes the brush tip vertically. At 100 the tip is as tall as it is wide; lower values make it flatter, like a calligraphy nib.",
+    "Rotatie:": "Rotates the brush tip in degrees. This only makes a visible difference when Thickness is below 100 or the shape is Square.",
+    "Dekking:": "The strength of the effect. At 100 it works at full strength; lower values blend the result with the original pixels.",
+    "Modus:": "Which property is moved towards the target color. Color changes both hue and saturation; Hue changes only the hue; Saturation changes only the saturation; Lightness changes only the lightness (making pixels lighter or darker towards the target).",
+    "Doorlopend": "When off, the effect is applied only once per stroke: going back and forth over the same spot in one stroke does not make it stronger. When on, every dab adds a little more, so the effect builds up as long as you keep brushing."
+   },
+   "tips": "<p>Use Hue mode to recolor an object, such as a piece of clothing, while its folds and shadows stay intact.</p>"
+  },
+  "d0ac": {
+   "about": "<p>The Color Replacer replaces one specific color with another where you paint. Only pixels that resemble the color to replace are changed; all other pixels under the brush stay as they are.</p>",
+   "use": "<p>Drag with the <b>left</b> mouse button to replace pixels that match the background color with the foreground color. Drag with the <b>right</b> mouse button to do the opposite: replace the foreground color with the background color. Hold <b>Shift</b> and click to apply along a straight line from the end of the previous stroke. Use the Dropper to pick the exact color you want to replace first.</p>",
+   "options": {
+    "Vorm:": "The shape of the brush tip. Round gives a circular tip; Square gives a square tip with hard edges (Hardness has no effect on a square tip).",
+    "Grootte:": "The diameter of the brush in pixels. Larger values affect a wider area with each dab.",
+    "Hardheid:": "How sharp the edge of the brush is. At 100 the effect is equally strong up to the edge; lower values fade the effect out softly towards the edge.",
+    "Stap:": "The distance between dabs along a stroke, as a percentage of the brush size. Low values give a smooth, continuous stroke; high values leave separate dabs with gaps between them.",
+    "Dichtheid:": "The percentage of pixels inside the brush that is affected by each dab. At 100 the whole tip works; lower values give a speckled, spray-like result.",
+    "Dikte:": "Squashes the brush tip vertically. At 100 the tip is as tall as it is wide; lower values make it flatter, like a calligraphy nib.",
+    "Rotatie:": "Rotates the brush tip in degrees. This only makes a visible difference when Thickness is below 100 or the shape is Square.",
+    "Dekking:": "The strength of the effect. At 100 it works at full strength; lower values blend the result with the original pixels.",
+    "Tolerantie:": "How much a pixel may differ from the color to replace and still be replaced. At 0 only exactly matching pixels change; higher values also replace similar shades."
+   },
+   "tips": "<p>The replacement color is solid, so subtle shading in the replaced area is lost. For recoloring with shading kept, use Change to Target or the Color Changer instead.</p>"
+  },
+  "d0b0": {
+   "about": "<p>The Eraser removes pixels from the active layer by making them transparent, so the layers below (or the transparency checkerboard) show through.</p>",
+   "use": "<p>Drag over the image with the left or right mouse button to erase. Hold <b>Shift</b> and click to erase a straight line from the end of the previous stroke to the click point. Erasing is limited to the active selection when one exists.</p>",
+   "options": {
+    "Vorm:": "The shape of the brush tip. Round gives a circular tip; Square gives a square tip with hard edges (Hardness has no effect on a square tip).",
+    "Grootte:": "The diameter of the brush in pixels. Larger values affect a wider area with each dab.",
+    "Hardheid:": "How sharp the edge of the brush is. At 100 the effect is equally strong up to the edge; lower values fade the effect out softly towards the edge.",
+    "Stap:": "The distance between dabs along a stroke, as a percentage of the brush size. Low values give a smooth, continuous stroke; high values leave separate dabs with gaps between them.",
+    "Dichtheid:": "The percentage of pixels inside the brush that is affected by each dab. At 100 the whole tip works; lower values give a speckled, spray-like result.",
+    "Dikte:": "Squashes the brush tip vertically. At 100 the tip is as tall as it is wide; lower values make it flatter, like a calligraphy nib.",
+    "Rotatie:": "Rotates the brush tip in degrees. This only makes a visible difference when Thickness is below 100 or the shape is Square.",
+    "Dekking:": "How much is erased. At 100 the pixels become fully transparent; lower values only make them partly transparent, and going over them again in a new stroke erases more."
+   },
+   "tips": "<p>A low Hardness gives soft edges, which is useful for blending one layer into another. For non-destructive work, consider a mask instead of erasing.</p>"
+  },
+  "d0c0": {
+   "about": "<p>The Background Eraser erases only the pixels that look like the color under the center of the brush. It is made for removing a background around an object while leaving the edges of the object intact.</p>",
+   "use": "<p>Drag along the edge of the object with the left or right mouse button, keeping the center of the brush (the crosshair point) on the background you want to remove. Pixels similar to that color become transparent; different colors under the brush are kept. Hold <b>Shift</b> and click to erase along a straight line from the end of the previous stroke.</p>",
+   "options": {
+    "Vorm:": "The shape of the brush tip. Round gives a circular tip; Square gives a square tip with hard edges (Hardness has no effect on a square tip).",
+    "Grootte:": "The diameter of the brush in pixels. Larger values affect a wider area with each dab.",
+    "Hardheid:": "How sharp the edge of the brush is. At 100 the effect is equally strong up to the edge; lower values fade the effect out softly towards the edge.",
+    "Stap:": "The distance between dabs along a stroke, as a percentage of the brush size. Low values give a smooth, continuous stroke; high values leave separate dabs with gaps between them.",
+    "Dichtheid:": "The percentage of pixels inside the brush that is affected by each dab. At 100 the whole tip works; lower values give a speckled, spray-like result.",
+    "Dikte:": "Squashes the brush tip vertically. At 100 the tip is as tall as it is wide; lower values make it flatter, like a calligraphy nib.",
+    "Rotatie:": "Rotates the brush tip in degrees. This only makes a visible difference when Thickness is below 100 or the shape is Square.",
+    "Dekking:": "The strength of the effect. At 100 it works at full strength; lower values blend the result with the original pixels.",
+    "Tolerantie:": "How much a pixel may differ from the sampled color and still be erased. Low values erase only very similar colors; higher values also erase colors that are further away. The transition is soft, so nearly matching pixels become partly transparent.",
+    "Bemonstering:": "How the color to erase is chosen. Continuous samples the color under the brush center at every dab, so it follows a background that changes in color. One time samples the color only at the start of the stroke and erases that color for the whole stroke."
+   },
+   "tips": "<p>Use One time sampling when the background is a single color and the object has similar colors near the edge, so the brush does not start erasing the object when you stray onto it.</p>"
+  },
+  "d0d1": {
+   "about": "<p>The Flood Fill tool fills an area of similar pixels with a color, gradient or pattern. The area is found starting from the point you click and spreads out to connected pixels that match.</p>",
+   "use": "<p>Click with the <b>left</b> mouse button to fill with the foreground color or material, or with the <b>right</b> mouse button to fill with the background color or material. When a gradient or pattern is set as material, it is spread over the filled area. When a selection exists, only the part of the area inside the selection is filled; clicking outside the selection does nothing.</p>",
+   "options": {
+    "Overeenkomstmodus:": "How pixels are compared with the clicked pixel to decide whether they belong to the area. None fills everything connected; RGB Value compares the red, green and blue values; Color compares mainly the color and less the brightness; Brightness compares only brightness; Perceptual compares colors the way the eye sees differences; Traditional uses the largest difference in any single channel; Fully opaque fills all connected pixels that are not transparent; Opacity compares only the transparency.",
+    "Tolerantie:": "How much a pixel may differ from the clicked pixel and still be filled. At 0 only identical pixels are filled; higher values fill a wider range of similar pixels. At 200 everything connected is filled.",
+    "Alle lagen gebruiken": "When on, the area is determined from the visible image with all layers combined, but the fill is still painted on the active layer. When off, only the active layer is used to find the area.",
+    "Mengmodus:": "How the fill color is combined with the existing pixels. Normal simply covers them; the other modes (such as Multiply, Screen, Overlay or Color) mix the fill with what is already there, just like layer blend modes. Behind paints only where the layer is transparent, so existing pixels stay in front.",
+    "Dekking:": "The opacity of the fill. At 100 the area is completely covered; lower values let the original pixels show through."
+   },
+   "tips": "<p>To fill an empty transparent layer completely, set Match mode to None, or fill a transparent area with Opacity mode. Raise the tolerance a little when a fill leaves a thin fringe of unfilled pixels along antialiased edges.</p>"
+  },
+  "d0d2": {
+   "about": "<p>The Color Changer recolors an area of similar color with one click, while keeping its light and shadow. Darker and lighter parts of the area stay darker and lighter relative to each other.</p>",
+   "use": "<p>Click with the <b>left</b> mouse button on a color to change it into the foreground color, or with the <b>right</b> mouse button to change it into the background color. The pixels get the hue and saturation of the new color, and their lightness is shifted by the difference between the clicked pixel and the new color. Only the active layer is used, and a selection limits the change.</p>",
+   "options": {
+    "Tolerantie:": "How much pixels may differ from the clicked color and still be changed. Low values change only very similar pixels; higher values include a wider range of shades.",
+    "Aaneengesloten": "When on, only pixels connected to the clicked point are changed. When off, all matching pixels on the whole layer are changed, also in separate areas.",
+    "Dekking:": "The strength of the change. At 100 the new color is applied fully; lower values blend it with the original color."
+   },
+   "tips": "<p>Pick a target color with roughly the same lightness as the area you click for the most natural result, for example when recoloring a car or a wall.</p>"
+  },
+  "d0f0": {
+   "about": "<p>The Text tool adds text to your image. Every text is placed on its own text layer and stays editable: you can change the words, font, size and colors later without loss of quality.</p>",
+   "use": "<p>Click with the left mouse button on the image where the text should start. A new text layer is created and the <b>Enter text</b> window opens. Type your text; press Enter in the text box for a new line. The text appears on the image right away and you can still change the options in the options bar while the window is open. Click <b>Apply</b> to finish or <b>Cancel</b> to throw the text away. If you leave the text empty, the new layer is removed again.</p><p>To edit existing text, click on it with the Text tool. The layer becomes active, the options bar takes over the settings of that text and the window opens with the current text. Cancel restores the text as it was.</p><p>The fill of the letters uses the background color and the outline uses the foreground color. Set the background to transparent for outlined letters only. Tick <b>Remember text</b> in the window to start with the same text the next time you create a new text.</p>",
+   "options": {
+    "Lettertype:": "The font family of the text. All fonts installed on your system are listed.",
+    "Grootte:": "The size of the letters, in the unit chosen under Units.",
+    "Eenheden:": "The unit for the size. Points depend on the resolution of the image, so the same point size looks larger in a high resolution image; Pixels give an exact height in pixels regardless of resolution.",
+    "Vet": "Shows the text in a bold weight.",
+    "Cursief": "Shows the text in italics.",
+    "Onderstreept": "Draws a line under the text.",
+    "Uitlijning:": "How the lines are placed relative to the point you clicked. Left starts each line at that point, Center centers each line on it, and Right ends each line at it. This matters most for text with several lines.",
+    "Lijnbreedte:": "The width of the outline around the letters, drawn in the foreground color. At 0 the letters have no outline.",
+    "Regelafstand:": "Extra space between lines in pixels, added to the normal line spacing of the font. Negative values bring the lines closer together; positive values spread them apart.",
+    "Spatiëring:": "Extra space between letters. Positive values spread the letters apart; negative values squeeze them together.",
+    "Anti-alias": "Smooths the edges of the letters. Turn it off for sharp, pixel-exact text, for example very small text for icons or pixel art."
+   },
+   "tips": "<p>Because each text lives on its own layer, you can move it, change its layer opacity or add effects to it without touching the rest of the image. Click the text again with the Text tool at any time to fix a typo.</p>"
+  },
+  "d101": {
+   "about": "<p>The Preset Shape tool draws ready-made shapes such as arrows, a star, a heart, speech balloons and a lightning bolt with a single drag.</p>",
+   "use": "<p>Drag with the left mouse button on the image from one corner of the shape to the opposite corner. You see the shape while you drag; when you release the button it is finished. Hold <b>Shift</b> while dragging to make the width and height equal. The outline uses the foreground color or material and the fill uses the background color or material. Set the foreground to transparent for a shape without an outline, or the background to transparent for an outline only.</p>",
+   "options": {
+    "Vorm:": "The shape to draw: Right, Left, Up or Down Arrow, a five-pointed Star, Heart, Speech Balloon, Thought Cloud, Lightning Bolt, Cross, Hexagon or Starburst (a sixteen-pointed star). The shape is stretched to fill the rectangle you drag.",
+    "Lijnbreedte:": "The width of the outline in pixels, drawn in the foreground color or material. At 0 the shape gets no outline, only a fill.",
+    "Anti-alias": "Smooths the edges of the shape so they do not look jagged. Turn it off for crisp, pixel-exact edges.",
+    "Op vector maken": "When on, the shape is placed as an editable object on a new vector layer instead of being painted as pixels. If the active layer already is a vector layer, the shape always becomes an object on it."
+   },
+   "tips": "<p>Turn on <b>Create on vector</b> if you want to change the shape later: you can then pick it up with the Pen tool in Edit mode and move its nodes. A shape painted as pixels can only be changed with the paint tools. A shape is limited to the active selection when one exists.</p>"
+  },
+  "d102": {
+   "about": "<p>The Rectangle tool draws rectangles and squares, optionally with rounded corners.</p>",
+   "use": "<p>Drag with the left mouse button on the image from one corner of the shape to the opposite corner. You see the shape while you drag; when you release the button it is finished. Hold <b>Shift</b> while dragging to draw a perfect square. The outline uses the foreground color or material and the fill uses the background color or material. Set the foreground to transparent for a shape without an outline, or the background to transparent for an outline only.</p>",
+   "options": {
+    "Hoekradius:": "The radius of the rounded corners in pixels. At 0 the corners are sharp; higher values give rounder corners.",
+    "Lijnbreedte:": "The width of the outline in pixels, drawn in the foreground color or material. At 0 the shape gets no outline, only a fill.",
+    "Anti-alias": "Smooths the edges of the shape so they do not look jagged. Turn it off for crisp, pixel-exact edges.",
+    "Op vector maken": "When on, the shape is placed as an editable object on a new vector layer instead of being painted as pixels. If the active layer already is a vector layer, the shape always becomes an object on it."
+   },
+   "tips": "<p>Turn on <b>Create on vector</b> if you want to change the shape later: you can then pick it up with the Pen tool in Edit mode and move its nodes. A shape painted as pixels can only be changed with the paint tools. A shape is limited to the active selection when one exists.</p>"
+  },
+  "d103": {
+   "about": "<p>The Ellipse tool draws ovals and circles.</p>",
+   "use": "<p>Drag with the left mouse button on the image from one corner of the shape to the opposite corner. You see the shape while you drag; when you release the button it is finished. Hold <b>Shift</b> while dragging to draw a perfect circle. The outline uses the foreground color or material and the fill uses the background color or material. Set the foreground to transparent for a shape without an outline, or the background to transparent for an outline only.</p>",
+   "options": {
+    "Lijnbreedte:": "The width of the outline in pixels, drawn in the foreground color or material. At 0 the shape gets no outline, only a fill.",
+    "Anti-alias": "Smooths the edges of the shape so they do not look jagged. Turn it off for crisp, pixel-exact edges.",
+    "Op vector maken": "When on, the shape is placed as an editable object on a new vector layer instead of being painted as pixels. If the active layer already is a vector layer, the shape always becomes an object on it."
+   },
+   "tips": "<p>Turn on <b>Create on vector</b> if you want to change the shape later: you can then pick it up with the Pen tool in Edit mode and move its nodes. A shape painted as pixels can only be changed with the paint tools. A shape is limited to the active selection when one exists.</p>"
+  },
+  "d104": {
+   "about": "<p>The Symmetric Shape tool draws regular polygons, such as triangles, pentagons and hexagons, and stars with any number of points.</p>",
+   "use": "<p>Press the left mouse button where the center of the shape should be and drag outwards. The distance you drag sets the size and the direction sets the rotation, so the first corner points towards the mouse. Release the button to finish. The outline uses the foreground color or material and the fill uses the background color or material.</p>",
+   "options": {
+    "Aantal zijden:": "The number of corners of the polygon, or the number of points when Star is on.",
+    "Ster": "When on, the tool draws a star instead of a polygon, with inner corners between the points.",
+    "Straal binnen:": "Only used for stars: the distance of the inner corners from the center, as a percentage of the outer radius. Low values give thin, sharp points; high values give a fuller, blunter star.",
+    "Lijnbreedte:": "The width of the outline in pixels, drawn in the foreground color or material. At 0 the shape gets no outline, only a fill.",
+    "Anti-alias": "Smooths the edges of the shape so they do not look jagged. Turn it off for crisp, pixel-exact edges.",
+    "Op vector maken": "When on, the shape is placed as an editable object on a new vector layer instead of being painted as pixels. If the active layer already is a vector layer, the shape always becomes an object on it."
+   },
+   "tips": "<p>Turn on <b>Create on vector</b> if you want to change the shape later: you can then pick it up with the Pen tool in Edit mode and move its nodes. A shape painted as pixels can only be changed with the paint tools. A shape is limited to the active selection when one exists.</p>"
+  },
+  "d110": {
+   "about": "<p>The Pen tool draws straight lines, polylines, smooth Bezier curves and freehand lines. The line stays editable, so you can move its nodes and handles, until you apply it to the layer or turn it into an object on a vector layer.</p>",
+   "use": "<p>Choose a mode in the options bar and draw with the left mouse button:</p><ul><li><b>Lines and polylines</b>: drag from the start point to the end point for a straight line, or click a start point and then click again for the end point. Hold <b>Shift</b> to snap the angle to steps of 45 degrees. With Connect segments on, each new line continues from the end of the previous one.</li><li><b>Point to point (Bezier curves)</b>: click to place a corner point, or press and drag to place a smooth point and pull out its curve handles. Click on the first point (shown in green) to close the path. Double-click to end the current line so the next click starts a new one.</li><li><b>Freehand</b>: hold the mouse button and draw. When you release, the line is simplified according to Tracking.</li><li><b>Edit</b>: drag nodes to move them (their handles move along) and drag handles to change the curve; the opposite handle mirrors so the node stays smooth. Hold <b>Ctrl</b> and drag from a corner node to pull out handles and turn it into a curve. Click a node to select it (shown in red) and press <b>Delete</b> to remove it.</li></ul><p>Right-click for a context menu with <b>Apply path</b> and, when a node is selected, <b>Smooth node</b>, <b>Corner node</b> and <b>Close path</b> or <b>Open path</b>.</p><p>Press <b>Enter</b> or click <b>Apply</b> to put the line on the layer; press <b>Esc</b> to throw it away. Switching to another tool also applies the line. The line uses the foreground color or material; closed paths are filled with the background color or material.</p><p>On a vector layer, Edit mode also lets you click an existing object to pick it up: it becomes editable again and its colors and line settings are loaded into the options bar. <b>Esc</b> puts it back unchanged, <b>Delete</b> (with no node selected) removes the object, and Apply saves your changes.</p>",
+   "options": {
+    "✓ Toepassen": "Puts the current line on the layer: as pixels on a normal layer, or as an editable object on a vector layer. Same as pressing Enter.",
+    "Modus:": "The way of drawing. Edit moves existing nodes and handles and picks up objects on a vector layer; Lines and polylines draws straight segments; Point to point (Bezier curves) places corner and smooth curve points; Freehand follows the mouse.",
+    "Tracking:": "Only for Freehand: how much the drawn line is simplified. Low values follow the mouse closely with many nodes; higher values give a smoother line with fewer nodes.",
+    "Segmenten verbinden": "When on, each new segment or freehand stroke continues from the end of the current line, so you build one connected polyline. When off, every drag starts a separate line.",
+    "Knooppunten tonen": "Shows the nodes and curve handles of the line on the canvas. Turn it off to see the line without the editing markers.",
+    "Op vector maken": "When on and the active layer is a normal layer, Apply places the line on a new vector layer as an editable object instead of painting it as pixels. On a vector layer the line always becomes an object.",
+    "Lijnstijl:": "The pattern of the line: Solid, Dashes, Dots, Dash-dot or Dash-dot-dot.",
+    "Breedte:": "The width of the line in pixels. At 0 there is no outline; a closed path is then only filled.",
+    "Anti-alias": "Smooths the edges of the line. Turn it off for hard, pixel-exact lines.",
+    "Verbinding:": "How the line looks at corners. Miter gives sharp pointed corners, Round gives rounded corners (and round line ends), and Bevel cuts the corners off flat.",
+    "Verstek:": "Only for Miter joins: the limit for how far a sharp corner may stick out, relative to the line width. If a very sharp corner exceeds it, the corner is cut off like a bevel. Higher values allow longer points."
+   },
+   "tips": "<p>Turn on Create on vector when you expect to change the line later. You can then return at any time with the Pen in Edit mode, click the object and adjust it. A line applied as pixels on a normal layer is limited to the active selection.</p>"
+  },
+  "d121": {
+   "about": "<p>The Warp Brush pushes, bulges, pinches and twirls the pixels of the image as if it were made of soft rubber. It is useful for retouching shapes and for playful distortions.</p>",
+   "use": "<p>Choose a mode and drag over the image with the left or right mouse button. Hold <b>Shift</b> and click to warp along a straight line from the end of the previous stroke. As long as the layer is not changed by another tool, all warping is kept as one distortion of the original pixels, so you can keep working and use <b>Iron out</b> to bring distorted areas back towards their original state.</p>",
+   "options": {
+    "Modus:": "What the brush does. Push drags the pixels along in the direction you move; Expand bulges them outwards from the center of the brush; Contract pinches them towards the center; Twirl right and Twirl left rotate them clockwise or counterclockwise; Noise moves pixels randomly for a rippled look; Iron out gradually restores warped pixels to their original position.",
+    "Grootte:": "The diameter of the brush in pixels. A larger brush distorts a wider area at once.",
+    "Hardheid:": "How evenly the effect is spread over the brush. At 100 the whole brush warps equally strongly; lower values make the effect fade out towards the edge, which gives smoother transitions.",
+    "Sterkte:": "How strongly each dab distorts the pixels. Low values give fine, controlled changes; high values give a strong effect quickly.",
+    "Randmodus:": "What appears where pixels are pulled in from outside the image. Repeat stretches the edge pixels; Transparent leaves transparent pixels; Wrap takes pixels from the opposite side of the image; Mirror uses a mirrored copy of the image."
+   },
+   "tips": "<p>Use Expand and Contract with a soft, large brush and low strength for subtle retouching, for example making eyes slightly bigger. The brush only works while it moves, so drag in small circles over the spot you want to change.</p>"
+  },
+  "d122": {
+   "about": "<p>Mesh Warp places a grid over the image. When you drag the nodes of the grid, the image bends along with it, which lets you reshape parts of a picture smoothly.</p>",
+   "use": "<p>Drag a node (a small white square) with the left mouse button; the image is reshaped when you release. Hold <b>Shift</b> while dragging to move the whole row of nodes, or <b>Ctrl</b> to move the whole column. The nodes on the outer edge can be moved too.</p><p>Click <b>Reset</b> or press <b>Esc</b> to put the grid back and undo all mesh changes since the last apply. Click <b>Apply</b> or press <b>Enter</b> to accept the result: the current image becomes the new starting point with a fresh, straight grid. The context menu (right mouse button) also offers <b>Reset grid</b> and <b>Apply grid</b>.</p>",
+   "options": {
+    "Kolommen:": "The number of grid columns between the image edges. More columns give finer control over smaller areas.",
+    "Rijen:": "The number of grid rows between the image edges. More rows give finer control over smaller areas.",
+    "Herstellen": "Puts all nodes back in their original straight positions and restores the image as it was at the start (or since the last Apply). Same as pressing Esc.",
+    "Toepassen": "Accepts the current distortion. The result becomes the new starting point and a fresh, straight grid is shown so you can continue warping. Same as pressing Enter."
+   },
+   "tips": "<p>Start with a few rows and columns for large, smooth changes. Changing the number of rows or columns resets the grid, so choose the grid size before you start dragging.</p>"
+  },
+  "d131": {
+   "about": "<p>The Oil Brush paints thick oil paint with visible bristle marks. The paint mixes with the colors already on the layer and slowly runs out during a stroke, just like a real loaded brush.</p>",
+   "use": "<p>Drag with the left mouse button to paint with the foreground color, or with the right mouse button to paint with the background color. The bristle marks follow the direction of your stroke. As you paint over existing colors, the brush picks some of them up and carries them along, and as the paint on the brush runs out the stroke becomes thinner and takes on more of the picked-up color. Each new stroke starts with a fully loaded brush. Hold <b>Shift</b> and click to paint a straight line from the end of the previous stroke.</p>",
+   "options": {
+    "Grootte:": "The size of this medium in pixels. Each art medium remembers its own size, separate from the other brushes.",
+    "Dekking:": "The maximum opacity of the stroke. Lower values give a more transparent, lighter stroke.",
+    "Lading:": "How much paint the brush holds. High values let you paint long strokes with fresh color; at 100 the paint never runs out. Low values make the paint run out quickly, so the stroke soon blends into the colors underneath.",
+    "Viscositeit:": "How strongly the brush picks up and mixes in the colors already on the layer. At 0 the color stays pure; higher values smear more of the existing colors into the stroke."
+   },
+   "tips": "<p>Paint on a normal raster layer. For a painterly look, use short strokes in different directions and a medium Viscosity so neighboring colors blend.</p>"
+  },
+  "d132": {
+   "about": "<p>Chalk draws a dry, grainy stroke that sticks to the raised parts of the paper texture, like chalk on a rough board.</p>",
+   "use": "<p>Drag with the left mouse button to draw with the foreground color, or with the right mouse button to draw with the background color. Hold <b>Shift</b> and click to draw a straight line from the end of the previous stroke to the click point. Within one stroke the paint does not build up: going over the same spot again in the same stroke keeps the strongest coverage, so the grain stays visible. Start a new stroke over the same area to make it fuller.</p>",
+   "options": {
+    "Grootte:": "The size of this medium in pixels. Each art medium remembers its own size, separate from the other brushes.",
+    "Dekking:": "The maximum opacity of the stroke. Lower values give a more transparent, lighter stroke.",
+    "Korrel:": "The strength of the paper texture. At 0 the stroke is smooth; higher values let more of the paper grain show through, so pigment only sticks to the raised parts of the paper."
+   },
+   "tips": "<p>Draw over the same area with several separate strokes to fill in more of the grain. Light chalk on a dark layer gives a blackboard effect.</p>"
+  },
+  "d133": {
+   "about": "<p>Pastel draws a soft, well covering stroke with a fine paper grain, like soft pastel crayons.</p>",
+   "use": "<p>Drag with the left mouse button to draw with the foreground color, or with the right mouse button to draw with the background color. Hold <b>Shift</b> and click to draw a straight line from the end of the previous stroke to the click point. Within one stroke the paint does not build up: going over the same spot again in the same stroke keeps the strongest coverage, so the grain stays visible. Start a new stroke over the same area to make it fuller.</p>",
+   "options": {
+    "Grootte:": "The size of this medium in pixels. Each art medium remembers its own size, separate from the other brushes.",
+    "Dekking:": "The maximum opacity of the stroke. Lower values give a more transparent, lighter stroke.",
+    "Korrel:": "The strength of the paper texture. At 0 the stroke is smooth; higher values let more of the paper grain show through, so pigment only sticks to the raised parts of the paper."
+   },
+   "tips": "<p>Pastel covers more than Chalk. Lower the Grain for smooth color areas, or raise it for a textured paper look.</p>"
+  },
+  "d134": {
+   "about": "<p>Colored Chalk draws a waxy stroke with a coarse grain and irregular edges, like a wax crayon. The color varies slightly from dab to dab.</p>",
+   "use": "<p>Drag with the left mouse button to draw with the foreground color, or with the right mouse button to draw with the background color. Hold <b>Shift</b> and click to draw a straight line from the end of the previous stroke to the click point. Within one stroke the paint does not build up: going over the same spot again in the same stroke keeps the strongest coverage, so the grain stays visible. Start a new stroke over the same area to make it fuller.</p>",
+   "options": {
+    "Grootte:": "The size of this medium in pixels. Each art medium remembers its own size, separate from the other brushes.",
+    "Dekking:": "The maximum opacity of the stroke. Lower values give a more transparent, lighter stroke.",
+    "Korrel:": "The strength of the paper texture. At 0 the stroke is smooth; higher values let more of the paper grain show through, so pigment only sticks to the raised parts of the paper."
+   },
+   "tips": "<p>Great for childlike drawings and rough coloring. A high Grain leaves many small white gaps in the stroke.</p>"
+  },
+  "d135": {
+   "about": "<p>Colored Pencil draws fine lines with paper grain, suitable for sketching and hatching. Its default size is small, like a sharpened pencil tip.</p>",
+   "use": "<p>Drag with the left mouse button to draw with the foreground color, or with the right mouse button to draw with the background color. Hold <b>Shift</b> and click to draw a straight line from the end of the previous stroke to the click point. Within one stroke the paint does not build up: going over the same spot again in the same stroke keeps the strongest coverage, so the grain stays visible. Start a new stroke over the same area to make it fuller.</p>",
+   "options": {
+    "Grootte:": "The size of this medium in pixels. Each art medium remembers its own size, separate from the other brushes.",
+    "Dekking:": "The maximum opacity of the stroke. Lower values give a more transparent, lighter stroke.",
+    "Korrel:": "The strength of the paper texture. At 0 the stroke is smooth; higher values let more of the paper grain show through, so pigment only sticks to the raised parts of the paper."
+   },
+   "tips": "<p>Build up shading with several layers of parallel hatching strokes. Lower the Opacity for light sketch lines.</p>"
+  }
+ },
+ "effects": {
+  "82b3": {
+   "about": "Darkens the bright areas of a photo while leaving the shadows alone, using a soft local brightness mask. Use it when a bright sky or background is washed out compared with your subject.",
+   "params": {
+    "Sterkte": "How much the highlights are darkened; higher values pull bright areas down further, 0 leaves the image unchanged."
+   }
+  },
+  "818e": {
+   "about": "Corrects the strong bulging of a fisheye lens by remapping the image around its centre so that straight lines curve less. The corners stay in place while the centre is compressed.",
+   "params": {
+    "Sterkte": "How strongly the fisheye bulge is flattened; higher values give a stronger correction, 0 leaves the image unchanged."
+   }
+  },
+  "8240": {
+   "about": "Automatically improves a photo in one click: it stretches the tonal range per channel to remove a colour cast, corrects overall brightness towards a balanced middle and adds a little saturation. Useful as a quick first fix for dull or tinted snapshots.",
+   "params": {}
+  },
+  "82f1": {
+   "about": "Removes digital camera noise in one click with medium settings. Brightness grain is smoothed with an edge preserving filter and colour blotches are smoothed more strongly, while edges stay sharp.",
+   "params": {}
+  },
+  "82d9": {
+   "about": "Finds purple and blue-violet fringes that appear next to high contrast edges and turns them into neutral grey. Use it on photos with purple halos around branches, window frames or other bright edges.",
+   "params": {}
+  },
+  "82c1": {
+   "about": "Reduces the grain and colour noise of digital camera photos with an edge preserving filter. Brightness noise and colour noise are treated separately, and you can optionally sharpen the result afterwards.",
+   "params": {
+    "Correctie (sterkte)": "How strongly noise is smoothed; higher values remove more grain and colour blotches but can make surfaces look plastic, 0 skips the noise removal.",
+    "Details behouden %": "How much of the original fine brightness detail is mixed back in; higher values keep more texture (and some grain), lower values give a smoother result.",
+    "Verscherpen": "Amount of sharpening applied after the noise removal; 0 means no sharpening, higher values make edges crisper."
+   }
+  },
+  "8307": {
+   "about": "Smooths skin while keeping other areas sharp. It detects skin coloured pixels automatically and applies an edge preserving blur only there, which softens blemishes and pores in portraits.",
+   "params": {
+    "Mate": "How strongly skin areas are smoothed; 0 leaves the image unchanged, 100 applies the full smoothing to detected skin."
+   }
+  },
+  "82b1": {
+   "about": "Brightens the dark areas of a photo while leaving the highlights mostly untouched, like a flash fill light. Use it for subjects that are too dark against a bright background, such as backlit portraits.",
+   "params": {
+    "Sterkte": "How much the shadows are lightened; higher values brighten dark areas more, 0 leaves the image unchanged."
+   }
+  },
+  "82c4": {
+   "about": "Reduces coloured fringes (chromatic aberration) along edges. Near edges, colours that differ strongly from their surroundings are pulled towards the surrounding colour while the brightness stays the same.",
+   "params": {
+    "Straal": "How far from an edge fringes are searched and how wide the comparison area is; use larger values for wider fringes.",
+    "Sterkte": "How strongly the fringe colours are neutralised; higher values remove more colour, 0 leaves the image unchanged."
+   }
+  },
+  "82dc": {
+   "about": "Shifts the colour balance separately in the shadows, midtones or highlights. Use it to remove a colour cast or to warm up or cool down a specific tonal range.",
+   "params": {
+    "Bereik": "Which tonal range is adjusted: Shadows affects dark pixels, Midtones affects middle grey values most, Highlights affects bright pixels.",
+    "Cyaan - rood": "Negative values add cyan, positive values add red to the chosen range.",
+    "Magenta - groen": "Negative values add magenta, positive values add green to the chosen range.",
+    "Geel - blauw": "Negative values add yellow, positive values add blue to the chosen range.",
+    "Helderheid behouden": "When on, the brightness of every pixel is restored after the colour shift, so only the colour changes and the image does not get lighter or darker."
+   }
+  },
+  "806e": {
+   "about": "Automatically finds strongly red pixels (red pupils from a camera flash) and reduces the red channel there, also darkening them slightly. It works best when you first select the eyes so other red areas are not affected.",
+   "params": {
+    "Sterkte": "How much of the correction is applied to the detected red-eye pixels; higher values remove more red, 0 does nothing."
+   }
+  },
+  "82d8": {
+   "about": "A photo fix with manual control. It can start with the same automatic colour balance and levels as One Step Photo Fix and then lets you fine tune brightness, shadows, highlights, saturation and sharpness.",
+   "params": {
+    "Helderheid algemeen": "Changes overall brightness with a gamma curve; positive values brighten the midtones, negative values darken them.",
+    "Schaduwen": "Positive values lighten the dark areas, negative values darken them.",
+    "Lichte delen": "Positive values lighten the bright areas, negative values darken them to recover detail.",
+    "Verzadiging": "Positive values make colours more vivid, negative values make them duller up to grey at -100.",
+    "Focus (verscherpen)": "Amount of sharpening applied at the end; 0 means no sharpening, higher values give crisper detail.",
+    "Automatisch kleurbalans/niveaus": "When on, the image is first auto corrected (tonal range stretched, colour cast removed, brightness balanced) before your other settings are applied."
+   }
+  },
+  "818c": {
+   "about": "Corrects pincushion distortion, where straight lines bow inward towards the centre (common with telephoto lenses). The image is remapped around its centre while the corners stay in place.",
+   "params": {
+    "Sterkte": "How strongly the distortion is corrected; higher values push the centre outward more, 0 leaves the image unchanged."
+   }
+  },
+  "818d": {
+   "about": "Corrects barrel distortion, where straight lines bulge outward away from the centre (common with wide angle lenses). The image is remapped around its centre while the corners stay in place.",
+   "params": {
+    "Sterkte": "How strongly the bulge is corrected; higher values compress the centre more, 0 leaves the image unchanged."
+   }
+  },
+  "82fb": {
+   "about": "Simulates a shallow depth of field: an elliptical area in the centre stays sharp and the surroundings are blurred, with a smooth transition. Useful to draw attention to a subject in the middle of the image.",
+   "params": {
+    "Focusgrootte %": "Size of the sharp ellipse in the centre as a percentage of the image size; larger values keep more of the image sharp.",
+    "Vervaging": "How strongly the area outside the focus is blurred; 0 leaves the image unchanged.",
+    "Doezelen %": "Width of the transition between the sharp and the blurred area; higher values give a softer, more gradual fade."
+   }
+  },
+  "806f": {
+   "about": "Automatically removes thin vertical scratches, such as those on scanned film or old photos. Pixels that differ strongly from their horizontal neighbours along a vertical line are replaced with a median of those neighbours.",
+   "params": {
+    "Lichte krassen verwijderen": "When on, scratches that are lighter than their surroundings are removed.",
+    "Donkere krassen verwijderen": "When on, scratches that are darker than their surroundings are removed.",
+    "Sterkte": "Mild only removes clear, narrow scratches; Normal and Strong detect fainter and wider scratches but may also soften real vertical detail."
+   }
+  },
+  "806d": {
+   "about": "Removes the comb-like stripes in frames captured from interlaced video. It keeps every other scan line and replaces the lines in between with the average of the lines above and below.",
+   "params": {
+    "Behouden scanlijnen": "Which set of lines is kept: Odd or Even. The other set is rebuilt; try the other option if the result still looks jagged."
+   }
+  },
+  "8089": {
+   "about": "Adds random noise to the image, for a film grain look or to hide banding and over smooth areas.",
+   "params": {
+    "Ruis %": "How strong the noise is; higher values give a coarser, more visible grain, 0 adds nothing.",
+    "Type": "Random adds normally distributed grain: mostly small variations with an occasional strong speck, like real film grain. Uniform spreads all variations evenly with no strong specks, which looks flatter and more even. Both have the same overall strength.",
+    "Kleur": "Color adds separate noise to each colour channel (coloured specks); Monochrome adds the same noise to all channels, so the grain is grey."
+   }
+  },
+  "8066": {
+   "about": "Replaces each pixel with the median colour of the pixels around it. This removes isolated specks and dust while keeping edges sharper than a normal blur.",
+   "params": {
+    "Straal": "Size of the area around each pixel that is examined; higher values remove larger specks but also more fine detail."
+   }
+  },
+  "8074": {
+   "about": "Removes isolated light and dark specks (salt and pepper noise, dust) by replacing only the pixels that differ strongly from the median of their neighbourhood. The rest of the image stays untouched.",
+   "params": {
+    "Vlekgrootte": "Largest speck size that should be removed; higher values handle bigger spots but examine a wider area.",
+    "Gevoeligheid": "How easily a pixel is treated as a speck; higher values also correct pixels that differ only a little from their surroundings."
+   }
+  },
+  "806b": {
+   "about": "Reduces the blocky patterns and ringing that heavy JPEG compression leaves behind, using an edge preserving smoothing filter.",
+   "params": {
+    "Sterkte": "How much smoothing is applied, from Low to Maximum; stronger settings remove more artefacts but also more fine detail.",
+    "Scherpte": "Brings back some original detail and adds light sharpening after the cleanup; 0 gives the smoothest result."
+   }
+  },
+  "806c": {
+   "about": "Reduces moiré patterns, the wavy interference patterns that appear when scanning printed material or photographing fine textures. It blurs fine brightness detail lightly and colour detail more strongly.",
+   "params": {
+    "Fijne details": "Strength of the blur on fine patterns; higher values remove coarser moiré but make the image softer, 0 skips this step.",
+    "Kleurbanden verwijderen": "Extra blur on the colour information only, to remove coloured bands without affecting brightness detail; 0 skips this step."
+   }
+  },
+  "808a": {
+   "about": "Removes small specks and dust by replacing every pixel with the median of its 3 by 3 neighbourhood. A quick cleanup without settings.",
+   "params": {}
+  },
+  "8068": {
+   "about": "Smooths flat areas and noise while keeping edges crisp, using an edge preserving filter. Useful to clean up skin, skies or noisy surfaces without blurring outlines.",
+   "params": {
+    "Mate": "How strongly the image is smoothed; higher values use a larger area and smooth over bigger differences, and above 50 the filter is applied twice. 0 leaves the image unchanged."
+   }
+  },
+  "8067": {
+   "about": "Smooths only the flat, low detail areas of the image and leaves textured areas alone. Use it to remove noise from smooth regions without losing texture such as hair or fabric.",
+   "params": {
+    "Mate": "How strongly flat areas are smoothed and how much local variation still counts as flat; higher values smooth more, 0 leaves the image unchanged."
+   }
+  },
+  "8075": {
+   "about": "Remaps the tones of the image with a curve you draw. Points above the diagonal brighten those tones and points below darken them; an S shape adds contrast.",
+   "params": {
+    "Curve": "The tone curve: the horizontal axis is the original value and the vertical axis is the new value. Drag points to reshape it; the curve is drawn smoothly through your points.",
+    "Kanaal": "RGB applies the curve to all three channels together; Red, Green or Blue applies it to that channel only, which shifts the colour."
+   }
+  },
+  "8063": {
+   "about": "Turns the image into pure black and white: every pixel brighter than the threshold becomes white, everything else becomes black. Useful for line art, scanned text or graphic effects.",
+   "params": {
+    "Drempel": "Brightness level that separates black from white; higher values make more of the image black, lower values make more of it white."
+   }
+  },
+  "8052": {
+   "about": "Adjusts overall brightness and contrast of the image.",
+   "params": {
+    "Helderheid": "Value added to every channel; positive values lighten the image, negative values darken it.",
+    "Contrast": "Positive values spread the tones away from middle grey for more contrast, negative values pull them towards grey for a flatter look."
+   }
+  },
+  "8070": {
+   "about": "Remaps the tonal range with input limits, a gamma value and output limits. Use it to fix exposure precisely or to compress the range of an image.",
+   "params": {
+    "Invoer laag": "Input value that becomes the output minimum; everything darker is clipped to it. Raising it deepens the shadows.",
+    "Invoer hoog": "Input value that becomes the output maximum; everything brighter is clipped to it. Lowering it brightens the highlights.",
+    "Gamma × 100": "Midtone curve times 100; values above 100 brighten the midtones, values below 100 darken them.",
+    "Uitvoer min": "Darkest value in the result; raising it makes the blacks lighter and lowers contrast.",
+    "Uitvoer max": "Brightest value in the result; lowering it makes the whites darker and lowers contrast."
+   }
+  },
+  "8056": {
+   "about": "Redistributes the brightness values so that all levels are used about equally, based on the image histogram. This often strongly increases contrast in flat images; colours are shifted by the same brightness change.",
+   "params": {}
+  },
+  "8057": {
+   "about": "Automatically stretches each colour channel so its darkest and brightest values (ignoring the extreme 0.5 percent) span the full range. This improves contrast in dull images and can also remove a colour cast.",
+   "params": {}
+  },
+  "8053": {
+   "about": "Adjusts the shadows, midtones and highlights separately through a smooth tone curve applied to brightness. Use it to open up dark areas or tame bright areas without changing the colours.",
+   "params": {
+    "Schaduw": "Positive values lighten the dark tones, negative values darken them.",
+    "Middentoon": "Positive values lighten the middle tones, negative values darken them.",
+    "Lichte delen": "Positive values lighten the bright tones, negative values darken them."
+   }
+  },
+  "8060": {
+   "about": "Sets the black point, white point and midtone gamma of the image. A classic way to correct exposure and contrast.",
+   "params": {
+    "Invoer zwart": "Input value that becomes pure black; raising it makes the shadows darker and increases contrast.",
+    "Invoer wit": "Input value that becomes pure white; lowering it makes the highlights brighter and increases contrast.",
+    "Gamma × 100": "Midtone curve times 100; values above 100 brighten the midtones, values below 100 darken them."
+   }
+  },
+  "806a": {
+   "about": "Increases local contrast (clarity) by boosting the difference between each pixel and its smoothed surroundings, mostly in the midtones. This makes hazy or flat photos look crisper and more defined.",
+   "params": {
+    "Sterkte": "How strongly local contrast is boosted; higher values give a punchier, more detailed look."
+   }
+  },
+  "8062": {
+   "about": "Builds one colour channel from a mix of the red, green and blue channels. Useful for creative colour changes and for custom black and white conversions.",
+   "params": {
+    "Uitvoerkanaal": "The channel (Red, Green or Blue) that is replaced by the mix; the other channels stay as they are.",
+    "Rood %": "How much of the original red channel goes into the mix; negative values subtract it.",
+    "Groen %": "How much of the original green channel goes into the mix; negative values subtract it.",
+    "Blauw %": "How much of the original blue channel goes into the mix; negative values subtract it.",
+    "Constante %": "A fixed amount added to the mix; positive values brighten the output channel, negative values darken it.",
+    "Monochroom": "When on, the mix is written to all three channels, giving a greyscale image based on your percentages."
+   }
+  },
+  "8054": {
+   "about": "Adjusts the red, green and blue channels individually. Use it to correct a colour cast or to tint the image.",
+   "params": {
+    "Rood %": "Positive values push the red channel towards full, negative values scale it down towards zero.",
+    "Groen %": "Positive values push the green channel towards full, negative values scale it down towards zero.",
+    "Blauw %": "Positive values push the blue channel towards full, negative values scale it down towards zero."
+   }
+  },
+  "8064": {
+   "about": "Restores faded photos by stretching the tonal range of each channel and boosting saturation. Useful for old prints or scans that have become pale and washed out.",
+   "params": {
+    "Mate": "How strongly the image is corrected; higher values clip more of the extremes, add more saturation and apply the correction more fully, 0 leaves the image unchanged."
+   }
+  },
+  "804a": {
+   "about": "Gives the whole image a single colour while keeping its brightness, like a tinted monochrome photo. Useful for sepia or other toned looks.",
+   "params": {
+    "Kleurtoon": "The colour of the tint, on a 0 to 255 scale around the colour wheel (0 is red, around 85 green, around 170 blue).",
+    "Verzadiging": "How intense the tint is; 0 gives grey, 255 gives the strongest colour."
+   }
+  },
+  "8076": {
+   "about": "Shifts the hue, saturation and lightness of all colours in the image.",
+   "params": {
+    "Kleurtoon": "Rotates every colour around the colour wheel by this number of degrees.",
+    "Verzadiging": "Positive values make colours more vivid, negative values make them duller up to grey at -100.",
+    "Helderheid": "Positive values lighten the image towards white, negative values darken it towards black."
+   }
+  },
+  "805f": {
+   "about": "Changes one specific hue into another and adjusts its saturation, leaving other colours alone. For example, you can turn a red car blue or make only the greens more vivid.",
+   "params": {
+    "Bronkleurtoon": "The hue (0 to 359 degrees) you want to change.",
+    "Bereik": "How many degrees around the source hue are affected; larger values include more neighbouring colours, with a soft falloff.",
+    "Doelkleurtoon": "The hue (0 to 359 degrees) the selected colours are shifted to.",
+    "Verzadiging": "Positive values make the affected colours more vivid, negative values make them duller."
+   }
+  },
+  "82db": {
+   "about": "Sharpens by blending a high pass version of the image (the fine detail only) back onto itself with a contrast blend mode. Gives strong, controllable sharpening of edges and texture.",
+   "params": {
+    "Straal": "Size of the detail that is enhanced; small values sharpen fine detail, large values boost broader local contrast.",
+    "Sterkte": "How much of the sharpening blend is applied; 0 leaves the image unchanged, 100 applies it fully.",
+    "Mengmodus": "How the detail is blended: Overlay and Hard Light give strong contrast, Soft Light gives a gentler result."
+   }
+  },
+  "8086": {
+   "about": "Applies a stronger fixed sharpening than Sharpen, increasing the contrast of small details and edges. No settings.",
+   "params": {}
+  },
+  "809b": {
+   "about": "Sharpens the image by increasing contrast where it differs from a blurred copy, with control over size, amount and a threshold. The most flexible way to sharpen photos.",
+   "params": {
+    "Straal": "Size of the blur used for comparison; small values sharpen fine detail, larger values give broader, more pronounced edges.",
+    "Sterkte": "How much the detected differences are amplified, in percent; higher values give stronger sharpening.",
+    "Clip": "Minimum difference a pixel must have before it is sharpened; higher values leave smooth areas and noise alone and only sharpen clear edges."
+   }
+  },
+  "8085": {
+   "about": "Applies a light fixed sharpening that increases the contrast of small details and edges. No settings.",
+   "params": {}
+  },
+  "808f": {
+   "about": "Blurs the image along a straight line in one direction, as if the camera or subject moved during the exposure. Useful to suggest speed.",
+   "params": {
+    "Hoek": "Direction of the motion in degrees; 0 is horizontal and 90 is vertical.",
+    "Sterkte (px)": "Length of the motion trail in pixels; higher values give a longer, stronger blur."
+   }
+  },
+  "80b5": {
+   "about": "Softens the whole image with a smooth blur, with correct handling of transparent areas. Useful for backgrounds, reducing detail or creating soft effects.",
+   "params": {
+    "Straal": "Size of the blur in pixels; higher values make the image softer."
+   }
+  },
+  "8065": {
+   "about": "Replaces every pixel by the plain average of a square block around it (with correct handling of transparent areas). Compared with Gaussian Blur the result looks harder and slightly blocky at large radius, which can be useful for a deliberate smeared or diffuse effect.",
+   "params": {
+    "Straal": "Half the width of the square block that is averaged; higher values give a stronger, more blocky blur."
+   }
+  },
+  "8084": {
+   "about": "A stronger version of Blur: it averages over a larger area and then once more over the direct neighbours. Use it when Blur is not enough to smooth noise or detail.",
+   "params": {}
+  },
+  "8288": {
+   "about": "Blurs the image around a center point, either by rotating, zooming or twisting it, which suggests spinning or fast forward motion.",
+   "params": {
+    "Type": "The kind of blur: Draaien smears pixels along circles around the center, Zoomen smears them outward along lines from the center, and Kronkelen combines a small rotation and zoom along a spiral.",
+    "Sterkte": "How long the blur streaks are; 0 leaves the image unchanged and higher values give a stronger blur.",
+    "Horizontale verschuiving %": "Moves the center of the blur left (negative) or right (positive) from the middle of the image, as a percentage of half the width.",
+    "Verticale verschuiving %": "Moves the center of the blur up (negative) or down (positive) from the middle of the image, as a percentage of half the height.",
+    "Kronkelgraden": "Only used with Kronkelen: how much extra twist is added, strongest near the center and fading toward the edge; negative values twist the other way."
+   }
+  },
+  "8083": {
+   "about": "Blurs the image by giving every pixel the plain average of itself and its eight neighbours. This clearly softens noise and jagged edges, and fine detail fades noticeably.",
+   "params": {}
+  },
+  "8088": {
+   "about": "A stronger version of Soften with a larger, smoothly weighted area. It gives a softer look than Soften while keeping more detail than Blur More; useful for portraits or noisy areas.",
+   "params": {}
+  },
+  "8087": {
+   "about": "Softens the image gently: the pixel itself counts much more than its neighbours, so harsh edges become smoother while fine detail stays more visible than with Blur. Good for taking the edge off without losing sharpness overall.",
+   "params": {}
+  },
+  "8192": {
+   "about": "Gives a dreamy, soft focus look by mixing a blurred copy over the image and optionally adding a glowing halo around bright areas.",
+   "params": {
+    "Zachtheid": "How much of the blurred copy is mixed in; 0 keeps the image sharp and 100 makes it very soft.",
+    "Halo hoeveelheid": "How strongly bright areas glow; higher values also lower the brightness at which the glow starts, so more of the image gets a halo. 0 turns the halo off.",
+    "Halo grootte": "How far the glow spreads around bright areas; higher values give a wider, softer halo."
+   }
+  },
+  "8079": {
+   "about": "Converts the image to shades of gray using the standard luminance weights for red, green and blue. Transparency is kept.",
+   "params": {}
+  },
+  "804b": {
+   "about": "Inverts every color so you get a negative, as with photographic film. Transparency is not changed; applying it twice restores the original.",
+   "params": {}
+  },
+  "807c": {
+   "about": "Lets you build your own convolution filter: each pixel becomes a weighted sum of itself and its neighbors in a 5x5 grid. Use it to make custom blur, sharpen, emboss or edge filters.",
+   "params": {
+    "Rij 1 kol 1": "The weight of the neighbor 2 rows above and 2 columns to the left of the pixel; positive values add that neighbor's color, negative values subtract it.",
+    "Rij 1 kol 2": "The weight of the neighbor 2 rows above and 1 column to the left of the pixel; positive values add that neighbor's color, negative values subtract it.",
+    "Rij 1 kol 3": "The weight of the neighbor 2 rows above of the pixel; positive values add that neighbor's color, negative values subtract it.",
+    "Rij 1 kol 4": "The weight of the neighbor 2 rows above and 1 column to the right of the pixel; positive values add that neighbor's color, negative values subtract it.",
+    "Rij 1 kol 5": "The weight of the neighbor 2 rows above and 2 columns to the right of the pixel; positive values add that neighbor's color, negative values subtract it.",
+    "Rij 2 kol 1": "The weight of the neighbor 1 row above and 2 columns to the left of the pixel; positive values add that neighbor's color, negative values subtract it.",
+    "Rij 2 kol 2": "The weight of the neighbor 1 row above and 1 column to the left of the pixel; positive values add that neighbor's color, negative values subtract it.",
+    "Rij 2 kol 3": "The weight of the neighbor 1 row above of the pixel; positive values add that neighbor's color, negative values subtract it.",
+    "Rij 2 kol 4": "The weight of the neighbor 1 row above and 1 column to the right of the pixel; positive values add that neighbor's color, negative values subtract it.",
+    "Rij 2 kol 5": "The weight of the neighbor 1 row above and 2 columns to the right of the pixel; positive values add that neighbor's color, negative values subtract it.",
+    "Rij 3 kol 1": "The weight of the neighbor 2 columns to the left of the pixel; positive values add that neighbor's color, negative values subtract it.",
+    "Rij 3 kol 2": "The weight of the neighbor 1 column to the left of the pixel; positive values add that neighbor's color, negative values subtract it.",
+    "Rij 3 kol 3": "The weight of the pixel itself (the center of the 5x5 grid); the default 1 with all other cells at 0 leaves the image unchanged.",
+    "Rij 3 kol 4": "The weight of the neighbor 1 column to the right of the pixel; positive values add that neighbor's color, negative values subtract it.",
+    "Rij 3 kol 5": "The weight of the neighbor 2 columns to the right of the pixel; positive values add that neighbor's color, negative values subtract it.",
+    "Rij 4 kol 1": "The weight of the neighbor 1 row below and 2 columns to the left of the pixel; positive values add that neighbor's color, negative values subtract it.",
+    "Rij 4 kol 2": "The weight of the neighbor 1 row below and 1 column to the left of the pixel; positive values add that neighbor's color, negative values subtract it.",
+    "Rij 4 kol 3": "The weight of the neighbor 1 row below of the pixel; positive values add that neighbor's color, negative values subtract it.",
+    "Rij 4 kol 4": "The weight of the neighbor 1 row below and 1 column to the right of the pixel; positive values add that neighbor's color, negative values subtract it.",
+    "Rij 4 kol 5": "The weight of the neighbor 1 row below and 2 columns to the right of the pixel; positive values add that neighbor's color, negative values subtract it.",
+    "Rij 5 kol 1": "The weight of the neighbor 2 rows below and 2 columns to the left of the pixel; positive values add that neighbor's color, negative values subtract it.",
+    "Rij 5 kol 2": "The weight of the neighbor 2 rows below and 1 column to the left of the pixel; positive values add that neighbor's color, negative values subtract it.",
+    "Rij 5 kol 3": "The weight of the neighbor 2 rows below of the pixel; positive values add that neighbor's color, negative values subtract it.",
+    "Rij 5 kol 4": "The weight of the neighbor 2 rows below and 1 column to the right of the pixel; positive values add that neighbor's color, negative values subtract it.",
+    "Rij 5 kol 5": "The weight of the neighbor 2 rows below and 2 columns to the right of the pixel; positive values add that neighbor's color, negative values subtract it.",
+    "Deler": "The weighted sum is divided by this number; set it to the sum of the weights to keep the overall brightness the same.",
+    "Basis": "A value added to every result after dividing; positive values brighten and negative values darken the image.",
+    "Absolute waarde (anders afkappen)": "When on, negative results become positive (useful for edge detection filters); when off, negative results are clipped to black.",
+    "Ook alfakanaal filteren": "When on, the transparency channel is filtered with the same matrix as the colors; when off, transparency is left unchanged."
+   }
+  },
+  "80b2": {
+   "about": "Lights the inside edge of the image or of the opaque area (such as a selection on a transparent layer) as if it were a raised, beveled shape. Useful for buttons and text.",
+   "params": {
+    "Afschuining": "The profile of the bevel: Schuin is a straight slope, Rond a rounded convex edge, Hol a concave edge, Dubbel two stacked rounded steps, Rug a ridge that rises and falls again, and Getrapt three flat steps like a staircase.",
+    "Breedte": "How far the bevel reaches into the image or selection from its edge, in pixels; higher values give a wider bevel.",
+    "Gladheid": "Blurs the bevel profile so the slope becomes softer; higher values round off hard ridges and steps.",
+    "Diepte": "The height of the bevel; higher values give stronger light and shadow, so the edge looks deeper.",
+    "Omgevingslicht": "Brightens (positive) or darkens (negative) the whole result before the light is applied.",
+    "Glans": "Adds a shiny highlight; higher values give a stronger, tighter specular spot on the slope that faces the light.",
+    "Hoek": "The direction the light comes from in degrees, where 0 is the top and values increase clockwise (315 is the top left).",
+    "Intensiteit": "How strongly the light and shadow are applied to the slope; 0 shows almost no shading.",
+    "Hoogte": "The elevation of the light above the image; low values give long, strong shading, 90 lights the bevel from straight above.",
+    "Kleur": "The color of the light that falls on the bevel and its highlights."
+   }
+  },
+  "80b3": {
+   "about": "Adds a lit, beveled rim outside the edge of the opaque area of a layer, so the object looks like it sits on a raised frame. On an image without transparency the bevel is placed on the inside of the image border instead.",
+   "params": {
+    "Afschuining": "The profile of the bevel: Schuin is a straight slope, Rond a rounded convex edge, Hol a concave edge, Dubbel two stacked rounded steps, Rug a ridge that rises and falls again, and Getrapt three flat steps like a staircase.",
+    "Breedte": "How far the bevel reaches outward from the edge of the opaque area, in pixels; higher values give a wider bevel.",
+    "Gladheid": "Blurs the bevel profile so the slope becomes softer; higher values round off hard ridges and steps.",
+    "Diepte": "The height of the bevel; higher values give stronger light and shadow, so the edge looks deeper.",
+    "Omgevingslicht": "Brightens (positive) or darkens (negative) the whole result before the light is applied.",
+    "Glans": "Adds a shiny highlight; higher values give a stronger, tighter specular spot on the slope that faces the light.",
+    "Hoek": "The direction the light comes from in degrees, where 0 is the top and values increase clockwise (315 is the top left).",
+    "Intensiteit": "How strongly the light and shadow are applied to the slope; 0 shows almost no shading.",
+    "Hoogte": "The elevation of the light above the image; low values give long, strong shading, 90 lights the bevel from straight above.",
+    "Kleur": "The color of the light that falls on the bevel and its highlights."
+   }
+  },
+  "80a0": {
+   "about": "Turns the image into a button by lightening the top and left edges and darkening the bottom and right edges, so it looks raised.",
+   "params": {
+    "Hoogte": "The thickness in pixels of the top and bottom edges of the button.",
+    "Breedte": "The thickness in pixels of the left and right edges of the button.",
+    "Dekking": "How strongly the edges are lightened and darkened; higher values give more contrast.",
+    "Rand": "Transparant shades the image's own pixels so they show through the edge with a soft fade inward; Massief paints the edges with shades of the chosen color instead.",
+    "Kleur": "The base color of the edges when Rand is set to Massief; it is ignored for Transparant."
+   }
+  },
+  "80a2": {
+   "about": "Adds a chiseled, lit border. On a layer with transparency the border is added around the outside of the opaque shape; on an image without transparency it is carved into the edge of the image.",
+   "params": {
+    "Grootte": "The width of the chiseled border in pixels.",
+    "Transparant": "When on, the border uses the image itself (or plain light and shadow around a shape); when off, the border is filled with the chosen color and then lit.",
+    "Kleur": "The color of the border when Transparant is off."
+   }
+  },
+  "809f": {
+   "about": "Makes the image look as if a hole was cut into it, by casting a shadow from the transparent surroundings onto the inside of the shape. Use it on a selection or on a layer with transparency.",
+   "params": {
+    "Verticaal": "Shifts the shadow down (positive) or up (negative), in pixels.",
+    "Horizontaal": "Shifts the shadow right (positive) or left (negative), in pixels.",
+    "Dekking": "How dark and solid the shadow is.",
+    "Vervaging": "How soft the shadow edge is; 0 gives a hard edge.",
+    "Schaduwkleur": "The color of the shadow.",
+    "Binnenkant opvullen met kleur": "When on, the inside of the hole is filled with the fill color instead of showing the original image.",
+    "Opvulkleur": "The color used for the inside of the hole when filling is turned on."
+   }
+  },
+  "809e": {
+   "about": "Adds a shadow behind the opaque parts of a layer, offset and softened, so the object seems to float above the background. The shadow only shows where the layer is transparent.",
+   "params": {
+    "Verticaal": "Shifts the shadow down (positive) or up (negative), in pixels.",
+    "Horizontaal": "Shifts the shadow right (positive) or left (negative), in pixels.",
+    "Dekking": "How dark and solid the shadow is.",
+    "Vervaging": "How soft the shadow is; 0 gives a hard edged shadow.",
+    "Kleur": "The color of the shadow."
+   }
+  },
+  "8188": {
+   "about": "Makes the image tile without visible seams, so you can use it as a repeating background or pattern.",
+   "params": {
+    "Methode": "Rand blends the image with a copy shifted by half its size near the edges, Hoek does the same but uses the nearest edge so the blend is concentrated in the corners, and Spiegelen mirrors the image so the edges always match.",
+    "Richting": "Whether the tile must match left to right (Horizontaal), top to bottom (Verticaal) or both (Bidirectioneel).",
+    "Overgang (%)": "How wide the blended zone near the edges is; higher values give a smoother but larger transition. Not used with Spiegelen."
+   }
+  },
+  "80c2": {
+   "about": "Curls up one corner of the image like a page of paper, showing the back of the paper and a soft shadow on the image.",
+   "params": {
+    "Hoek": "Which corner of the image curls up.",
+    "Breedte (%)": "How far along the horizontal edge the curl reaches, as a percentage of the image width.",
+    "Hoogte (%)": "How far along the vertical edge the curl reaches, as a percentage of the image height.",
+    "Straal": "The size of the roll of the curl; higher values give a fatter, rounder curl.",
+    "Kleur krul": "The color of the back of the paper that is visible on the curl.",
+    "Randmodus": "What fills the area uncovered by the curl: Transparant leaves it transparent, Achtergrondkleur fills it with the background color."
+   }
+  },
+  "80bb": {
+   "about": "Shifts the whole image horizontally and vertically. With the default wrap mode and 50% offsets the edges move to the middle, which helps you check and fix seams when making tiles.",
+   "params": {
+    "Horizontale verschuiving (%)": "How far to move the image right (positive) or left (negative), as a percentage of its width.",
+    "Verticale verschuiving (%)": "How far to move the image down (positive) or up (negative), as a percentage of its height.",
+    "Randmodus": "What fills the uncovered area: Achtergrondkleur uses the background color, Herhalen stretches the edge pixels, Transparant leaves it transparent and Omloop brings back the part that was pushed off the other side."
+   }
+  },
+  "804c": {
+   "about": "Reduces the number of brightness levels per color channel, giving flat bands of color like a poster.",
+   "params": {
+    "Niveaus": "How many levels each of red, green and blue may have; low values give strong banding, high values look close to the original."
+   }
+  },
+  "81f1": {
+   "about": "Scatters spheres over the image: transparent soap bubbles or solid shiny balls colored from the image below. Each ball or bubble is lit from the top left.",
+   "params": {
+    "Dekking van canvas": "How much of the image is covered; higher values place more balls or bubbles.",
+    "Gemiddelde grootte": "The average diameter of the balls or bubbles in pixels.",
+    "Grootte-variatie": "How much the sizes differ from the average; 0 makes them all the same size.",
+    "Type": "Bellen draws see through bubbles with a bright rim and highlight; Ballen draws opaque balls colored by the pixel at their center.",
+    "Willekeurig getal": "The random seed that determines the positions and sizes; change it to get a different arrangement."
+   }
+  },
+  "80ab": {
+   "about": "Gives the image a polished metal look by turning its brightness into repeating light and dark bands with bright highlights.",
+   "params": {
+    "Vouwen": "How many light and dark bands the brightness range is folded into; higher values give a busier, more reflective look.",
+    "Helderheid": "Shifts the bands lighter (above 50) or darker (below 50).",
+    "Oorspronkelijke kleur gebruiken": "When on, the original colors of the image are kept in the metal; when off, the chosen color is used.",
+    "Kleur": "The metal color used when the original colors are not used."
+   }
+  },
+  "80c9": {
+   "about": "Draws contour lines, like on a map, along places where the brightness of the image crosses fixed steps.",
+   "params": {
+    "Afstand": "The brightness step between lines; low values give many close lines, high values only a few.",
+    "Lijnkleur": "The color of the contour lines."
+   }
+  },
+  "80bf": {
+   "about": "Makes the image look like it is covered in shiny enamel, with raised, lit color areas based on the brightness of the image.",
+   "params": {
+    "Detail": "How sharp the steps between enamel areas are and how high they stand; higher values give crisper, deeper relief.",
+    "Dichtheid": "How many brightness steps become separate enamel areas; higher values give more, smaller areas.",
+    "Dikte": "How thick and smooth the enamel layer is; higher values blur more detail away.",
+    "Hoek": "The direction the light comes from in degrees, where 0 is the top and values increase clockwise.",
+    "Kleur": "The color of the light and the shine on the enamel."
+   }
+  },
+  "80cc": {
+   "about": "Covers the image with a shiny, rainbow colored foil whose colors follow the brightness of the image, mixed with the original.",
+   "params": {
+    "Vervaging": "Blurs the image before the foil is made, giving smoother color bands and relief.",
+    "Detail": "How strong the embossed relief and highlights on the foil are.",
+    "Dichtheid": "How quickly the colors change with brightness; higher values give more color bands."
+   }
+  },
+  "80c7": {
+   "about": "Finds the edges in the image and colors them with the chosen color, leaving the rest of the image as it is.",
+   "params": {
+    "Detail": "Higher values detect finer edges; lower values only pick up broad, soft edges.",
+    "Intensiteit": "How many edges are colored and how strongly; higher values give thicker, more visible edges.",
+    "Kleur": "The color painted on the edges."
+   }
+  },
+  "80a1": {
+   "about": "Makes the image look as if it was dipped in hot wax: it is softened, tinted with the foreground color and given a glossy, lit relief.",
+   "params": {}
+  },
+  "818b": {
+   "about": "Recreates the image as a print raster of dots, lines or squares, like in newspapers and comics.",
+   "params": {
+    "Halftoonpatroon": "The shape of the raster: Rond uses dots, Lijn uses parallel lines and Vierkant uses squares.",
+    "Grootte": "The size of one raster cell in pixels; larger values give a coarser pattern.",
+    "Rasterhoek": "The angle of the raster in degrees.",
+    "Kleurenschema": "Grijswaarden makes black dots on white based on brightness; RGB makes a separate raster for red, green and blue, each at a slightly different angle, for a colored result."
+   }
+  },
+  "80a8": {
+   "about": "Turns the edges of the image into glowing neon lines in vivid colors on a dark background. The neon color is the opposite hue of the original color.",
+   "params": {
+    "Intensiteit": "How bright the lines are and how far the glow spreads.",
+    "Scherpte": "Higher values detect finer, sharper edges; lower values give broader, softer lines."
+   }
+  },
+  "80a7": {
+   "about": "Shows only the edges of the image as bright colored lines on black, as if they light up.",
+   "params": {
+    "Intensiteit": "How bright the glowing edges are.",
+    "Scherpte": "Higher values keep fine detail and make the lines brighter; lower values blur first so only coarse edges remain."
+   }
+  },
+  "80c4": {
+   "about": "Makes the image look like a yellowed old newspaper photo: grayscale, lower contrast, a paper tone, stains and some grain.",
+   "params": {
+    "Aantal jaren": "How old the paper looks; higher values give more yellow, more blur, more stains and lower contrast."
+   }
+  },
+  "804d": {
+   "about": "Inverts all color values brighter than the threshold, creating the strange partly negative look of a solarized photo.",
+   "params": {
+    "Drempel": "Channel values above this level are inverted; lower values invert more of the image."
+   }
+  },
+  "80bd": {
+   "about": "Turns the brightness of the image into stacked terraces, like a relief map, and lights them so each level casts a shadow.",
+   "params": {
+    "Breedte": "How sloped the terrace edges are; higher values give wider, softer slopes.",
+    "Dichtheid": "How many terrace levels are made; higher values give more, thinner levels.",
+    "Hoek": "The direction the light comes from in degrees, where 0 is the top and values increase clockwise.",
+    "Kleur": "The color of the light on the terraces."
+   }
+  },
+  "81e5": {
+   "about": "Places a round magnifying lens on the image that enlarges what is under it, with a darker rim and a glass highlight.",
+   "params": {
+    "Midden X %": "The horizontal position of the lens center, as a percentage of the image width.",
+    "Midden Y %": "The vertical position of the lens center, as a percentage of the image height.",
+    "Straal %": "The size of the lens relative to the shorter side of the image.",
+    "Vergroting %": "How much the center of the lens enlarges; 100 means no enlargement and 500 is five times."
+   }
+  },
+  "80c6": {
+   "about": "Darkens the image and lights it with up to two colored spotlights, as if it were lit on a stage.",
+   "params": {
+    "Duisternis": "How much the whole image is darkened before the lamps light it; higher values make the unlit areas darker.",
+    "Lamp 1 aan": "Turns lamp 1 on or off.",
+    "Lamp 1 kleur": "The color of the light of lamp 1.",
+    "Lamp 1 horizontaal %": "The horizontal position of lamp 1, as a percentage of the image width.",
+    "Lamp 1 verticaal %": "The vertical position of lamp 1, as a percentage of the image height.",
+    "Lamp 1 richting": "The direction lamp 1 points in degrees, where 0 is up and values increase clockwise (180 points down).",
+    "Lamp 1 kegelgrootte": "The width of the light cone of lamp 1; higher values give a wider beam.",
+    "Lamp 1 intensiteit": "How bright lamp 1 is.",
+    "Lamp 2 aan": "Turns lamp 2 on or off.",
+    "Lamp 2 kleur": "The color of the light of lamp 2.",
+    "Lamp 2 horizontaal %": "The horizontal position of lamp 2, as a percentage of the image width.",
+    "Lamp 2 verticaal %": "The vertical position of lamp 2, as a percentage of the image height.",
+    "Lamp 2 richting": "The direction lamp 2 points in degrees, where 0 is up and values increase clockwise (180 points down).",
+    "Lamp 2 kegelgrootte": "The width of the light cone of lamp 2; higher values give a wider beam.",
+    "Lamp 2 intensiteit": "How bright lamp 2 is."
+   }
+  },
+  "80c5": {
+   "about": "Adds a bright sun with rays, a light spot and a row of lens flare circles toward the center of the image.",
+   "params": {
+    "Kleur": "The color of the sunlight, rays and circles.",
+    "Horizontaal %": "The horizontal position of the sun, as a percentage of the image width.",
+    "Verticaal %": "The vertical position of the sun, as a percentage of the image height.",
+    "Helderheid lichtvlek": "How bright the sun spot and its glow are.",
+    "Dichtheid stralen": "How many rays come from the sun; higher values give more, thinner rays.",
+    "Helderheid stralen": "How bright the rays are; 0 hides them.",
+    "Helderheid cirkels": "How bright the lens flare circles between the sun and the center are; 0 hides them."
+   }
+  },
+  "8319": {
+   "about": "Gives a photo the color character of a type of film and can then place a colored filter over it, like a filter in front of a lens.",
+   "params": {
+    "Filmlook": "The film character: Geen changes nothing, Levendig boosts saturation and contrast, Levendige huidtinten warms skin tones, Gedempt rood and Versterkt rood reduce or boost reds, Weelderig gebladerte boosts greens and blues, Warme aardtinten boosts orange and brown, and Glamour adds a soft glow with slightly muted colors.",
+    "Creatief filter": "A color filter laid over the result: Nachteffect (dark blue and darker), Koeler, Warmer, Oranje, Champagne, Zonsondergang, or Aangepast to use your own filter color. Geen applies no filter.",
+    "Filterkleur": "The filter color, only used when Creatief filter is set to Aangepast.",
+    "Dichtheid": "How strongly the filter colors the image; 0 has no effect.",
+    "Luminantie behouden": "When on, the brightness of each pixel is kept the same so the filter only changes the color; when off, the filter also darkens the image."
+   }
+  },
+  "82e7": {
+   "about": "Simulates black and white infrared film: green areas such as foliage turn bright, blue skies turn dark, and bright areas can get a glow.",
+   "params": {
+    "Sterkte": "How strongly the infrared color mix replaces a normal grayscale conversion.",
+    "Gloed": "How much bright areas glow and bleed into their surroundings.",
+    "Korrel": "How much film grain is added."
+   }
+  },
+  "80c3": {
+   "about": "Turns the image into a brownish sepia toned photo, like an old print.",
+   "params": {
+    "Mate van veroudering": "How old the photo looks; higher values give a stronger brown tone and less contrast."
+   }
+  },
+  "82fe": {
+   "about": "Makes your photo look as if it was taken with an old photographic process.",
+   "params": {
+    "Stijl": "The process to imitate: Daguerreotypie (cool silver gray with vignette and grain), Albuminedruk (warm brown with vignette), Cyanotypie (blue print), Platinadruk (neutral warm gray with soft contrast), Vroege kleurenfoto (faded, warm, grainy colors), Box camera (contrasty black and white with soft, dark corners) or Cross processing (shifted, contrasty colors).",
+    "Intensiteit": "How much of the effect is mixed with the original photo; 100 gives the full effect."
+   }
+  },
+  "82e6": {
+   "about": "Converts the image to black and white as if shot on film through a colored lens filter, so you control which colors become light or dark.",
+   "params": {
+    "Filterkleur": "The color of the filter; colors similar to it turn lighter and opposite colors turn darker (an orange filter darkens blue skies).",
+    "Sterkte": "How much the filter color affects the conversion; 0 gives a normal grayscale conversion.",
+    "Helderheid": "Makes the result lighter (positive) or darker (negative).",
+    "Helderheid details": "Increases local contrast so details and texture stand out more; 0 leaves it off."
+   }
+  },
+  "8096": {
+   "about": "Wraps the image horizontally around a cylinder, stretching the middle and squeezing the left and right sides, or the reverse.",
+   "params": {
+    "Sterkte (%)": "Positive values bulge the middle outward like a convex cylinder; negative values pinch it like a concave one; 0 changes nothing."
+   }
+  },
+  "8097": {
+   "about": "Wraps the image vertically around a cylinder, stretching the middle and squeezing the top and bottom, or the reverse.",
+   "params": {
+    "Sterkte (%)": "Positive values bulge the middle outward like a convex cylinder; negative values pinch it like a concave one; 0 changes nothing."
+   }
+  },
+  "8098": {
+   "about": "Squeezes the whole image into an ellipse that fills the canvas, so a square image becomes a circle.",
+   "params": {
+    "Randmodus": "What appears where the distortion samples outside the image: Achtergrondkleur fills with the background color, Herhalen stretches the edge pixels, Transparant leaves those areas transparent and Omloop wraps the image around from the opposite side."
+   }
+  },
+  "809c": {
+   "about": "Gives the image horizontal perspective by making one side shorter than the other, as if it is turned away from you.",
+   "params": {
+    "Vervorming": "Positive values shrink the right side, negative values shrink the left side; higher values give stronger perspective.",
+    "Randmodus": "What appears where the distortion samples outside the image: Achtergrondkleur fills with the background color, Herhalen stretches the edge pixels, Transparant leaves those areas transparent and Omloop wraps the image around from the opposite side."
+   }
+  },
+  "809d": {
+   "about": "Gives the image vertical perspective by making the top or bottom narrower, as if it is tilted away from you.",
+   "params": {
+    "Vervorming": "Positive values narrow the bottom, negative values narrow the top; higher values give stronger perspective.",
+    "Randmodus": "What appears where the distortion samples outside the image: Achtergrondkleur fills with the background color, Herhalen stretches the edge pixels, Transparant leaves those areas transparent and Omloop wraps the image around from the opposite side."
+   }
+  },
+  "809a": {
+   "about": "Slants the image sideways or up and down, turning rectangles into parallelograms.",
+   "params": {
+    "Richting": "Horizontaal shifts rows sideways, Verticaal shifts columns up and down.",
+    "Hoek": "The skew angle in degrees; negative values slant the other way.",
+    "Randmodus": "What appears where the distortion samples outside the image: Achtergrondkleur fills with the background color, Herhalen stretches the edge pixels, Transparant leaves those areas transparent and Omloop wraps the image around from the opposite side."
+   }
+  },
+  "8189": {
+   "about": "Distorts the image as if it is printed on a ball, bulging the middle outward or pushing it inward.",
+   "params": {
+    "Sterkte": "Positive values bulge the center outward, negative values pinch it inward; 0 changes nothing.",
+    "Vorm": "Cirkel uses a round area based on the shorter side of the image; Ellips stretches the area to fill the full width and height."
+   }
+  },
+  "8099": {
+   "about": "Bends the whole image into a regular pentagon with one point facing up. Use it for badges, icons or playful frames.",
+   "params": {
+    "Randmodus": "Decides what fills the area outside the pentagon: Background color uses the current background color, Repeat stretches the edge pixels, Transparent leaves it clear (the default), and Wrap takes pixels from the opposite side of the image."
+   }
+  },
+  "80aa": {
+   "about": "Turns the image into a grayscale charcoal drawing with crossing diagonal strokes, dark shading and grainy paper. Good for a rough, expressive sketch look.",
+   "params": {
+    "Detail": "Controls how strongly edges and shading are drawn; higher values give darker, more detailed lines.",
+    "Dekking": "Blends the drawing with the original image; 100 shows only the charcoal drawing, lower values let more of the original photo show through."
+   }
+  },
+  "80a6": {
+   "about": "Redraws the image as colored chalk on dark, grainy paper, with diagonal strokes where light areas get more chalk. Useful for a soft, textured pastel look.",
+   "params": {
+    "Detail": "Controls how much the strokes break up the chalk and how strongly edges are darkened; higher values give more texture and outline.",
+    "Dekking": "Blends the chalk drawing with the original; 100 shows only the chalk version, lower values keep more of the original."
+   }
+  },
+  "80a9": {
+   "about": "Redraws the image as a colored pencil drawing on white paper, with fine diagonal hatching and darkened outlines. Good for a light, hand drawn color sketch.",
+   "params": {
+    "Detail": "Controls the strength of the hatching variation and the outlines; higher values give more pronounced strokes and edges.",
+    "Dekking": "Blends the pencil drawing with the original; 100 shows only the drawing, lower values let more of the original show."
+   }
+  },
+  "80bc": {
+   "about": "Adds a painted texture of short diagonal brush strokes with visible bristles, lit like real paint relief. Use it to give a photo the feel of an oil or acrylic painting.",
+   "params": {
+    "Zachtheid": "Blurs the underlying image before the strokes are added; higher values give a softer, less detailed painting.",
+    "Haren": "Number of bristle lines inside each stroke; higher values give finer, more streaky strokes.",
+    "Breedte": "Width of each brush stroke; higher values give broader strokes.",
+    "Dekking": "Strength of the lighting on the stroke relief; higher values make the strokes stand out more, 0 shows almost no texture.",
+    "Lengte": "Length of each brush stroke; higher values give longer strokes.",
+    "Dichtheid": "How many stroke positions actually get paint; higher values cover the image with more strokes.",
+    "Hoek": "Direction the light comes from on the stroke relief, in degrees (0 is top, increasing clockwise).",
+    "Kleur": "Color of the light that shines on the strokes; white keeps the original colors, other colors tint the highlights."
+   }
+  },
+  "80c8": {
+   "about": "Turns the image into a pencil outline drawing: edges are traced in gray pencil lines on a plain paper color. Good for line art or coloring page style results.",
+   "params": {
+    "Luminantie": "Brightness of the paper; higher values make the background lighter.",
+    "Detail": "Sensitivity of the edge detection; higher values pick up more and finer lines.",
+    "Dekking": "Blends the drawing with the original; 100 shows only the pencil drawing, lower values keep more of the original.",
+    "Kleur": "Color of the paper behind the pencil lines."
+   }
+  },
+  "80a4": {
+   "about": "Turns the image into a black and white pencil sketch with outlines and diagonal hatching in the dark areas. Useful for a classic graphite drawing look.",
+   "params": {
+    "Detail": "Controls how strongly edges and hatching are drawn; higher values give more lines and darker shading.",
+    "Dekking": "Blends the sketch with the original; 100 shows only the sketch, lower values let the original show through."
+   }
+  },
+  "807d": {
+   "about": "Sharpens edges by increasing the difference between each pixel and its direct neighbors. Use it to make slightly soft details crisper.",
+   "params": {}
+  },
+  "807f": {
+   "about": "Detects all edges in every direction and shows them as bright lines on a dark background, with everything else turning black. Useful for outlines or as a base for further effects.",
+   "params": {}
+  },
+  "8082": {
+   "about": "Draws thin black contour lines on a white background wherever a color channel crosses the middle brightness level. Gives a simple traced outline of the main shapes.",
+   "params": {}
+  },
+  "82da": {
+   "about": "Keeps only the fine detail of the image on a neutral gray background, removing large areas of color and brightness. Often used with a blend mode such as Overlay to sharpen, or to inspect detail.",
+   "params": {
+    "Straal": "Size of the detail that is kept; small values keep only fine edges, larger values also keep bigger structures.",
+    "Kleur verwijderen": "When on, the result is converted to gray so only brightness detail remains and no color fringes appear."
+   }
+  },
+  "8080": {
+   "about": "Detects only horizontal edges (brightness changes from top to bottom) and shows them as light lines on black. Useful for finding horizontal structures.",
+   "params": {}
+  },
+  "808d": {
+   "about": "Spreads dark areas: each pixel takes the darkest color of its 3 by 3 neighborhood. Dark lines get thicker and small bright specks disappear.",
+   "params": {}
+  },
+  "808b": {
+   "about": "Spreads light areas: each pixel takes the brightest color of its 3 by 3 neighborhood. Bright areas grow and thin dark lines or specks disappear.",
+   "params": {}
+  },
+  "807e": {
+   "about": "A stronger version of Enhance Edges that pushes each pixel much further away from the average of its neighbors. Use it for strong sharpening, but watch for noise and halos.",
+   "params": {}
+  },
+  "8081": {
+   "about": "Detects only vertical edges (brightness changes from left to right) and shows them as light lines on black. Useful for finding vertical structures.",
+   "params": {}
+  },
+  "80ad": {
+   "about": "Takes a wedge of the image and mirrors it repeatedly around the center, creating a symmetrical kaleidoscope flower. Great for abstract patterns and backgrounds.",
+   "params": {
+    "Horizontale verschuiving": "Moves the point in the source image that the wedge is taken from to the left (negative) or right (positive).",
+    "Verticale verschuiving": "Moves the point in the source image that the wedge is taken from up (negative) or down (positive).",
+    "Draaihoek": "Rotates the wedge that is sampled from the image, in degrees, which changes which part of the image fills the petals.",
+    "Schaalfactor": "Zooms the sampled area; higher values take in more of the image so details appear smaller, negative values zoom in.",
+    "Aantal bloembladen": "Number of mirrored segments around the center; higher values give more, narrower petals.",
+    "Aantal banen": "Number of extra rings from the center outward, each mirrored in turn; 0 gives one continuous ring.",
+    "Radiale zuiging": "Pulls content from further out toward the center; higher values squeeze more of the image into the middle.",
+    "Randmodus": "Decides what fills areas that sample outside the image: Background color uses the current background color, Repeat stretches the edge pixels, Transparent leaves them clear, and Wrap takes pixels from the opposite side."
+   }
+  },
+  "80af": {
+   "about": "Repeats the image as a grid of mirrored copies, so neighboring tiles join seamlessly. Useful for making patterns and seamless backgrounds.",
+   "params": {
+    "Horizontale verschuiving": "Shifts the image horizontally inside each tile.",
+    "Verticale verschuiving": "Shifts the image vertically inside each tile.",
+    "Draaihoek": "Rotates the whole tile grid, in degrees.",
+    "Schaalfactor": "Zooms the tiles; higher values make each tile larger, negative values make them smaller so more copies fit.",
+    "Aantal kolommen": "Number of tiles across the width.",
+    "Aantal rijen": "Number of tiles down the height.",
+    "Horizontale opschuiving (%)": "Slides the whole pattern left or right by a percentage of the image width.",
+    "Verticale opschuiving (%)": "Slides the whole pattern up or down by a percentage of the image height."
+   }
+  },
+  "80b7": {
+   "about": "Mirrors one half of the image onto the other along a straight line, creating perfect symmetry. At 0 degrees the line is vertical and the left half is copied onto the right.",
+   "params": {
+    "Horizontale verschuiving": "Moves the mirror line to the left (negative) or right (positive) of the image center.",
+    "Verticale verschuiving": "Moves the mirror line up (negative) or down (positive) from the image center.",
+    "Draaihoek": "Rotates the mirror line, in degrees, so you can mirror horizontally or diagonally.",
+    "Randmodus": "Decides what fills areas that sample outside the image: Background color uses the current background color, Repeat stretches the edge pixels, Transparent leaves them clear, and Wrap takes pixels from the opposite side."
+   }
+  },
+  "80ac": {
+   "about": "Fills the image with ever smaller copies of itself nested toward a center point, like standing between two mirrors. Good for tunnel and feedback effects.",
+   "params": {
+    "Dekking": "Blends the nested copies with the original; 100 shows only the effect, lower values let the original show through.",
+    "Intensiteit": "Higher values create more copies with each one shrinking more, giving a deeper tunnel.",
+    "Horizontale verschuiving (%)": "Horizontal position of the point the copies shrink toward, as a percentage of the width.",
+    "Verticale verschuiving (%)": "Vertical position of the point the copies shrink toward, as a percentage of the height.",
+    "Elliptisch": "When on, the copies are nested in oval rings instead of rectangles."
+   }
+  },
+  "80ca": {
+   "about": "Covers the image with fine, curving hair strands so it looks like fur. Useful for animal textures or soft fuzzy surfaces.",
+   "params": {
+    "Vervaging": "Blurs the image under the fur; higher values give smoother color areas.",
+    "Dichtheid": "How many hairs are drawn; higher values give thicker fur.",
+    "Lengte": "Length of each hair; higher values give longer, more flowing strands.",
+    "Transparantie": "Blends the original image back over the fur; higher values make the fur fainter."
+   }
+  },
+  "808c": {
+   "about": "Turns the image into a gray relief that looks pressed into metal or paper, with diagonal edges lit on one side and shaded on the other. All color is removed.",
+   "params": {}
+  },
+  "80ce": {
+   "about": "Adds a fine leather grain with lit, curving grooves over the image. Good for book covers, cases and other leather looking surfaces.",
+   "params": {
+    "Lichtkleur": "Color of the light shining on the texture; white keeps the original colors.",
+    "Hoek": "Direction the light comes from, in degrees (0 is top, increasing clockwise).",
+    "Vervaging": "Blurs the underlying image before the grain is added.",
+    "Transparantie": "How much image color stays visible inside the grooves; higher values make the grooves less dark.",
+    "Aantal groeven": "Number of grooves; higher values give a denser, finer grain.",
+    "Lengte groeven": "Stretches the grooves in one direction; higher values give longer, more elongated grooves."
+   }
+  },
+  "80c1": {
+   "about": "Makes the image look like polished stone with marble like veins and shiny highlights. The image brightness is used as a soft relief.",
+   "params": {
+    "Vervaging": "Blurs the underlying image first; higher values give smoother stone.",
+    "Detail": "How strongly the image itself shows up as relief; higher values give more pronounced shapes.",
+    "Polijsten": "Smooths the relief and increases the gloss; higher values look more polished and shiny.",
+    "Hoek": "Direction the light comes from, in degrees (0 is top, increasing clockwise).",
+    "Kleur": "Color of the light shining on the stone."
+   }
+  },
+  "80a5": {
+   "about": "Overlays evenly spaced strips with a shaded gradient, like looking through window blinds. Useful for stylized lighting or striped textures.",
+   "params": {
+    "Breedte": "Width of each strip in pixels.",
+    "Dekking": "How strongly the shading color covers the image; higher values give darker, more visible blinds.",
+    "Kleur": "Color of the shading on the strips.",
+    "Horizontaal": "When on, the strips run horizontally; when off, they are vertical.",
+    "Licht van links/boven": "Flips the gradient inside each strip so the light seems to come from the left or top instead of the right or bottom."
+   }
+  },
+  "80b9": {
+   "about": "Breaks the image into slightly irregular, beveled tiles with grout lines, like an old stone mosaic. Each tile mostly takes the average color of its area.",
+   "params": {
+    "Aantal kolommen": "Number of tiles across the width; higher values give smaller tiles.",
+    "Aantal rijen": "Number of tiles down the height; ignored when Symmetric is on.",
+    "Symmetrisch": "When on, tiles are square and their size follows the number of columns.",
+    "Tegeldiffusie": "How much of the original detail remains inside each tile; 0 gives flat single color tiles, higher values show more of the image.",
+    "Voegbreedte": "Width of the grout lines between tiles; 0 removes them.",
+    "Voegdekking": "How much the dark grout color covers the image in the grout lines; lower values let the image show through."
+   }
+  },
+  "80ba": {
+   "about": "Divides the image into square glass tiles, each acting like a small lens that magnifies and bends the part of the image behind it. Gives a glass block or glass mosaic look.",
+   "params": {
+    "Aantal kolommen": "Number of tiles across the width; higher values give smaller tiles.",
+    "Aantal rijen": "Number of tiles down the height; ignored when Symmetric is on.",
+    "Symmetrisch": "When on, tiles are square and their size follows the number of columns.",
+    "Glaskromming": "How strongly each tile magnifies its content; higher values show a smaller part of the image per tile.",
+    "Randkromming": "Extra distortion and shading near the tile edges; higher values give rounder, more three dimensional tiles.",
+    "Voegbreedte": "Width of the lines between tiles; 0 removes them.",
+    "Voegdekking": "How dark the lines between tiles are; higher values give darker grout."
+   }
+  },
+  "80b4": {
+   "about": "Overlays a grid of raised tiles (triangles, squares or hexagons) with lit bevels and dark joints, while keeping the image colors. Good for tiled wall or mosaic looks.",
+   "params": {
+    "Tegelvorm": "Shape of the tiles: Triangle, Square or Hexagon.",
+    "Tegelgrootte": "Size of each tile in pixels.",
+    "Randgrootte": "Width of the black joints between tiles; 0 removes them.",
+    "Gladheid": "Width of the sloping bevel at the tile edges; higher values give softer, rounder edges.",
+    "Diepte": "Height of the relief; higher values make the bevels stand out more.",
+    "Omgevingslicht": "Overall brightness of the light that falls everywhere; negative values darken, positive values brighten.",
+    "Glans": "Strength of the shiny highlights on the bevels.",
+    "Kleur": "Color of the light; white keeps the original colors.",
+    "Hoek": "Direction the light comes from, in degrees (0 is top, increasing clockwise).",
+    "Intensiteit": "Strength of the directional light; higher values give stronger contrast between lit and shaded sides.",
+    "Hoogte": "Elevation of the light above the image; low values give long, dramatic shading, 90 lights from straight above."
+   }
+  },
+  "80cd": {
+   "about": "Replaces the image with a rough leather surface in your chosen color, with a coarse grain and the image shapes pressed into it as relief. Useful for embossed leather looks.",
+   "params": {
+    "Lichtkleur": "Color of the light shining on the leather.",
+    "Leerkleur": "Base color of the leather; the image brightness varies it slightly.",
+    "Hoek": "Direction the light comes from, in degrees (0 is top, increasing clockwise).",
+    "Luminantie": "Overall brightness; negative values darken the leather, positive values brighten it.",
+    "Contrast": "Strength of the rough grain; higher values give a coarser surface.",
+    "Scherpte": "How strongly the image shapes are pressed into the leather; higher values show more of the image.",
+    "Vervaging": "Blurs the image before it is used as relief; higher values give softer shapes."
+   }
+  },
+  "80b0": {
+   "about": "Replaces the image colors with a material pattern such as gold or marble and uses the image brightness as relief, so it looks carved out of that material.",
+   "params": {
+    "Patroon": "Material that fills the image: Gold, Marble, Wood, Granite, Copper or Jade.",
+    "Grootte %": "Scale of the material pattern; higher values give larger veins and grain.",
+    "Gladheid": "Smooths the relief taken from the image; higher values give softer shapes.",
+    "Diepte": "Height of the relief; higher values make the carving stand out more.",
+    "Omgevingslicht": "Overall brightness of the light that falls everywhere; negative values darken, positive values brighten.",
+    "Glans": "Strength of the shiny highlights on the relief.",
+    "Kleur": "Color of the light; white keeps the material colors.",
+    "Hoek": "Direction the light comes from, in degrees (0 is top, increasing clockwise).",
+    "Intensiteit": "Strength of the directional light; higher values give stronger lit and shaded sides.",
+    "Hoogte": "Elevation of the light above the image; low values give stronger shading, 90 lights from straight above."
+   }
+  },
+  "80cb": {
+   "about": "Covers the image with crossing strands of straw in two main directions, with a warm golden tint. Useful for rustic or woven textures.",
+   "params": {
+    "Vervaging": "Blurs the image under the straw; higher values give smoother color areas.",
+    "Dichtheid": "How many straws are drawn; higher values cover the image more thickly.",
+    "Lengte": "Length of each straw.",
+    "Breedte": "Thickness of each straw.",
+    "Transparantie": "Blends the original image back over the straw; higher values make the straw fainter."
+   }
+  },
+  "80b1": {
+   "about": "Lights the image as if it has a surface texture such as stone, fabric, paper or bricks, while keeping its colors. Good for adding physical structure to flat images.",
+   "params": {
+    "Textuur": "The surface pattern: Stone, Fabric, Paper, Noise, Bricks, Waves or Crumpled.",
+    "Grootte %": "Scale of the texture; higher values give larger structures.",
+    "Gladheid": "Softens the texture; higher values give a smoother, less sharp surface.",
+    "Diepte": "Height of the texture relief; higher values make it stand out more.",
+    "Omgevingslicht": "Overall brightness of the light that falls everywhere; negative values darken, positive values brighten.",
+    "Glans": "Strength of the shiny highlights on the texture; 0 gives a matte surface.",
+    "Kleur": "Color of the light; white keeps the original colors.",
+    "Hoek": "Direction the light comes from, in degrees (0 is top, increasing clockwise).",
+    "Intensiteit": "Strength of the directional light; higher values give stronger contrast in the texture.",
+    "Hoogte": "Elevation of the light above the image; low values give stronger shading, 90 lights from straight above."
+   }
+  },
+  "80a3": {
+   "about": "Turns the image into woven strands that cross over and under each other, with gaps in between. Useful for fabric, basket or canvas textures.",
+   "params": {
+    "Tussenruimte": "Width of the gaps between strands in pixels; 0 gives a closed weave.",
+    "Breedte": "Width of each strand in pixels.",
+    "Dekking": "How strongly the weave color and strand shading are applied; higher values give more visible, more tinted strands.",
+    "Weefkleur": "Color the strands are tinted toward.",
+    "Kleur tussenruimte": "Color used in the gaps between strands when Fill spacing is on.",
+    "Tussenruimte vullen": "When on, the gaps are filled with the spacing color; when off, the original image shows in the gaps."
+   }
+  },
+  "80c0": {
+   "about": "Makes the image look like soft, shiny molded plastic by simplifying it into rounded blobs with strong glossy highlights.",
+   "params": {
+    "Vervaging": "Blurs the image first; higher values give smoother, simpler shapes.",
+    "Detail": "Higher values give finer and more pronounced shapes; lower values give softer, broader blobs.",
+    "Dichtheid": "Number of brightness levels used to form the shapes; higher values give more, smaller blobs.",
+    "Hoek": "Direction the light comes from, in degrees (0 is top, increasing clockwise).",
+    "Kleur": "Color of the light and highlights."
+   }
+  },
+  "80be": {
+   "about": "Gives the image a grainy sandstone surface with fine speckles and horizontal layers, lit as relief. Good for rock and stone textures.",
+   "params": {
+    "Vervaging": "Blurs the image first; higher values give softer shapes.",
+    "Detail": "How strongly the image shapes show up in the relief; higher values give more pronounced shapes.",
+    "Luminantie": "Overall brightness; negative values darken, positive values brighten.",
+    "Hoek": "Direction the light comes from, in degrees (0 is top, increasing clockwise).",
+    "Kleur": "Color of the light shining on the stone."
+   }
+  },
+  "80b6": {
+   "about": "Bulges a circular area of the image outward like a ball, or pushes it inward with negative strength. Useful for fun distortions or emphasizing a subject.",
+   "params": {
+    "Horizontaal": "Moves the center of the sphere left (negative) or right (positive) of the image center.",
+    "Verticaal": "Moves the center of the sphere up (negative) or down (positive) from the image center.",
+    "Grootte (%)": "Size of the affected circle, as a percentage of half the larger image side.",
+    "Sterkte": "Positive values magnify the middle of the circle, negative values pinch it inward; larger numbers give a stronger effect."
+   }
+  },
+  "8093": {
+   "about": "Bends the image into sine waves, horizontally, vertically or both. Good for water, flag and wobble effects.",
+   "params": {
+    "Horizontale amplitude": "How far pixels are shifted left and right; 0 turns off the horizontal wave.",
+    "Horizontale golflengte": "Distance between the horizontal wave crests; higher values give longer, gentler waves.",
+    "Verticale amplitude": "How far pixels are shifted up and down; 0 turns off the vertical wave.",
+    "Verticale golflengte": "Distance between the vertical wave crests; higher values give longer, gentler waves.",
+    "Randmodus": "Decides what fills areas that sample outside the image: Background color uses the current background color, Repeat stretches the edge pixels, Transparent leaves them clear, and Wrap takes pixels from the opposite side."
+   }
+  },
+  "8094": {
+   "about": "Squeezes the middle of the image toward the center, as if it is being pinched. Negative values do the opposite and bulge it outward.",
+   "params": {
+    "Sterkte (%)": "Positive values pinch the center, negative values bulge it; larger numbers give a stronger distortion."
+   }
+  },
+  "80ae": {
+   "about": "Twists the image into a grid of small swirls, one in the middle of each cell. Good for decorative, curly patterns.",
+   "params": {
+    "Aantal kolommen": "Number of swirl cells across the width.",
+    "Aantal rijen": "Number of swirl cells down the height; ignored when Symmetric is on.",
+    "Symmetrisch": "When on, the number of rows equals the number of columns.",
+    "Straal (%)": "Size of each swirl as a percentage of the cell size.",
+    "Sterkte": "How much each swirl twists; higher values give tighter curls, up to about one and a half turns.",
+    "Met de klok mee": "When on, the swirls turn clockwise; when off, counterclockwise."
+   }
+  },
+  "818f": {
+   "about": "Simulates the distortion of a camera lens, such as barrel, fisheye or pincushion. Use it for creative wide angle looks.",
+   "params": {
+    "Vervormingstype": "Barrel compresses the edges, Fisheye simulates a wide angle lens, Fisheye (spherical) bulges a circle in the middle like a sphere, and Pincushion stretches the edges outward.",
+    "Sterkte / gezichtsveld": "Strength of the distortion, or the field of view for fisheye; higher values distort more.",
+    "Horizontaal (%)": "Horizontal position of the lens center as a percentage of the width.",
+    "Verticaal (%)": "Vertical position of the lens center as a percentage of the height.",
+    "Randmodus": "Decides what fills areas that sample outside the image: Background color uses the current background color, Repeat stretches the edge pixels, Transparent leaves them clear, and Wrap takes pixels from the opposite side."
+   }
+  },
+  "808e": {
+   "about": "Divides the image into rectangular blocks and fills each block with its average color. Use it for a retro pixel look or to hide faces and details.",
+   "params": {
+    "Blokbreedte": "Width of each block in pixels.",
+    "Blokhoogte": "Height of each block in pixels; ignored when Symmetric is on.",
+    "Symmetrisch": "When on, blocks are square and use the block width for both sides."
+   }
+  },
+  "8095": {
+   "about": "Pushes the middle of the image outward so it bulges toward you. Negative values do the opposite and pinch it inward.",
+   "params": {
+    "Sterkte (%)": "Positive values bulge the center, negative values pinch it; larger numbers give a stronger distortion."
+   }
+  },
+  "818a": {
+   "about": "Converts the image between rectangular and circular (polar) coordinates. Rectangular to polar wraps the image around the center, with the top edge becoming the center; polar to rectangular unrolls a circular image into a strip.",
+   "params": {
+    "Omzetting": "Rectangular to polar bends the image into a circle; Polar to rectangular unwraps a circle into a flat rectangle.",
+    "Randmodus": "Decides what fills areas that sample outside the image: Background color uses the current background color, Repeat stretches the edge pixels, Transparent leaves them clear, and Wrap takes pixels from the opposite side."
+   }
+  },
+  "8092": {
+   "about": "Adds concentric rings around a point, like ripples spreading on water after dropping a stone.",
+   "params": {
+    "Horizontaal (%)": "Horizontal position of the ripple center as a percentage of the width.",
+    "Verticaal (%)": "Vertical position of the ripple center as a percentage of the height.",
+    "Amplitude": "How far pixels are pushed in and out; higher values give stronger ripples.",
+    "Golflengte": "Distance between the rings; higher values give wider, fewer ripples.",
+    "Randmodus": "Decides what fills areas that sample outside the image: Background color uses the current background color, Repeat stretches the edge pixels, Transparent leaves them clear, and Wrap takes pixels from the opposite side."
+   }
+  },
+  "8091": {
+   "about": "Twists the image around its center like a whirlpool. The twist is strongest in the middle and fades out toward the corners.",
+   "params": {
+    "Graden": "How far the center is rotated; positive values twist clockwise, negative values counterclockwise, and larger numbers give a tighter spiral."
+   }
+  },
+  "80b8": {
+   "about": "Pushes the image in and out around a center point in a star like pattern, leaving a calm area in the middle. Good for halo, splash and sunburst shapes.",
+   "params": {
+    "Horizontaal": "Moves the center left (negative) or right (positive) of the image center.",
+    "Verticaal": "Moves the center up (negative) or down (positive) from the image center.",
+    "Amplitude": "How far the spikes reach; higher values give deeper waves.",
+    "Frequentie": "Number of spikes around the center; higher values give more, narrower spikes.",
+    "Straal (%)": "Size of the undistorted area in the middle, as a percentage of half the smaller image side.",
+    "Randmodus": "Decides what fills areas that sample outside the image: Background color uses the current background color, Repeat stretches the edge pixels, Transparent leaves them clear, and Wrap takes pixels from the opposite side."
+   }
+  },
+  "8287": {
+   "about": "Shifts pixels in different directions based on a map, which gives a warped, rippled or heat haze look.",
+   "params": {
+    "Toewijzing": "Own brightness uses the image itself as the map, so the warping follows its shapes; Noise texture uses smooth random noise for an organic distortion.",
+    "Sterkte": "Maximum distance pixels are moved; higher values give stronger warping.",
+    "Schaal": "Size of the map structures; higher values give larger, smoother warps, lower values give finer ones.",
+    "Randmodus": "Decides what fills areas that sample outside the image: Background color uses the current background color, Repeat stretches the edge pixels, Transparent leaves them clear, and Wrap takes pixels from the opposite side."
+   }
+  },
+  "8090": {
+   "about": "Smears bright parts of the image sideways into streaks of different lengths, as if blown by wind. Good for motion and windswept effects.",
+   "params": {
+    "Windrichting": "From left blows the streaks toward the right; From right blows them toward the left.",
+    "Windsterkte": "Higher values give longer streaks that are blended more strongly into the image."
+   }
+  }
+ }
+}

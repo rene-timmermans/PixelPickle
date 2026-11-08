@@ -1,6 +1,6 @@
 # Pakketbeschrijving voor PixelPickle. Bouwen: in deze map  makepkg  (of via ../tools/build_package.sh)
 pkgname=pixelpickle
-pkgver=0.8.0
+pkgver=0.9.0
 pkgrel=1
 pkgdesc="Fotobewerker voor Linux met een begrijpelijke en vertrouwde indeling van de gereedschappen"
 arch=('any')
@@ -8,6 +8,7 @@ url="https://github.com/rene-timmermans/pixelpickle"
 license=('GPL-3.0-or-later')
 depends=('python' 'pyside6' 'python-numpy' 'python-pillow')
 optdepends=('noto-fonts: standaard lettertype voor tekst'
+            'noto-fonts-cjk: Chinese tekens in de Chinese vertaling'
             'ttf-dejavu: extra lettertypen')
 source=("pixelpickle-${pkgver}.tar.gz")
 sha256sums=('SKIP')

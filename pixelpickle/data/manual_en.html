@@ -6,19 +6,22 @@ menus, tools and shortcuts are where you expect them.</p>
 <ul>
 <li><b>Menu bar and standard toolbar</b> at the top: files, editing, adjustments, effects, layers and selections.</li>
 <li><b>Tool options bar</b> below it: the settings of the current tool, such as size, hardness and opacity.
-Use the <i>Presets</i> button to save and load your own settings.</li>
+The tool's icon is at the front (hover over it to see its name). Use the <i>Presets</i> button to save and
+load your own settings.</li>
 <li><b>Tools toolbar</b> on the left. A button with a small arrow holds more tools: click the arrow to choose.
 Without an open image the toolbar is greyed out; with the first image the last used tool is active again.</li>
 <li><b>Palettes</b> on the right: <i>Materials</i>, <i>Layers</i> and <i>History</i>. Show or hide them via
 <i>View &gt; Palettes</i>.</li>
 <li><b>Right-click</b> the image, a tab or a layer for a context menu.</li>
+<li>Icons and buttons follow the accent color of your theme, on light and dark themes alike.</li>
 </ul>
 
 <h2>Opening, creating and saving images</h2>
 <ul>
 <li><i>File &gt; New</i> creates an empty image; <i>File &gt; Open</i> opens existing files.</li>
-<li>Saving with layers: <b>.pspimage</b> or <b>.ora</b> (OpenRaster). Common formats such as PNG, JPEG, TIFF,
-WebP and GIF save a merged image; your layers stay in PixelPickle.</li>
+<li>Saving with layers: <b>.ora</b> (OpenRaster, an open standard); vector layers stay editable in it too.
+Files from other photo editors in <b>.pspimage</b> can be opened and, if you like, saved that way as well.
+Common formats such as PNG, JPEG, TIFF, WebP and GIF save a merged image; your layers stay in PixelPickle.</li>
 <li>Several images open at once: switch with Ctrl+Tab.</li>
 </ul>
 
@@ -29,10 +32,40 @@ WebP and GIF save a merged image; your layers stay in PixelPickle.</li>
 <ul>
 <li>The left mouse button paints with the foreground color, the right button with the background color.</li>
 <li>Hold the <b>space bar</b> and drag to pan the image.</li>
-<li>While selecting, the image scrolls along when you reach the edge of the window.</li>
+<li><b>Selecting</b>: with <i>Freehand</i> set to Point to point, Smart edge or Edge seeker, the image scrolls
+along when you reach the edge of the window. With the Add or Remove mode you extend a selection or cut a piece
+out of it, even when you click inside the selection.</li>
 <li><b>Crop</b>: drag a rectangle, adjust it with the squares on its corners and sides, and double-click inside
 it (or press Enter) to crop.</li>
+<li><b>Perspective correction</b> (with Straighten): drag the four corners of the frame along edges that should
+be straight, such as a building or a document photographed at an angle, and double-click inside the frame.</li>
+<li><b>Clone</b>: choose the source with the right mouse button and paint with the left. A circle follows at the
+source so you can see what is being cloned.</li>
+<li><b>Scratch remover</b> (with Clone): drag a narrow box over a scratch or hair; it is filled in from the pixels
+beside it.</li>
+<li><b>Retouch brushes</b> such as Sharpen, Soften, Lighten/Darken and Emboss work once per stroke; going back and
+forth does not build up. Turn on <i>Continuous</i> to build up the effect.</li>
+<li><b>Art media</b>: oil brush, chalk, pastel, crayon and colored pencil, each with its own stroke. Chalk, pastel,
+crayon and colored pencil have an adjustable paper grain; the oil brush mixes with the paint already there and
+runs out during a stroke.</li>
+<li><b>Warping</b>: the Warp brush pushes, expands, contracts or twirls pixels, and Iron out puts them back. Mesh
+warp lets you drag the points of a grid (Shift: whole row, Ctrl: whole column).</li>
 <li><b>Text</b>: click to create text, or click existing text to edit it again.</li>
+</ul>
+
+<h2>The pen and vector layers</h2>
+<ul>
+<li>The <b>pen</b> has four modes: <i>Lines and polylines</i> (straight lines, Shift for 45° steps),
+<i>Point to point (Bézier curves)</i> (click for a corner, hold and drag for a curve; click the first point to
+close), <i>Freehand</i> (Tracking makes the line smoother) and <i>Edit</i> (drag nodes and handles; Ctrl + drag
+from a node turns it into a curve).</li>
+<li>The line stays editable until you press <b>✓ Apply</b> or Enter; Esc discards it. Set line style, width, join
+and miter in the options bar.</li>
+<li>With <b>Create on vector</b> (pen and shapes) what you draw becomes an editable object on a <b>vector
+layer</b>. To change it later, choose the pen in Edit mode and click the line or shape. You can then change the
+nodes, the colors and the line; Delete removes the object.</li>
+<li>Vector layers stay vector when moving, mirroring, rotating and resizing, and in .ora. If you want to paint on
+one or apply an effect, PixelPickle first converts it to a raster layer.</li>
 </ul>
 
 <h2>Materials: color, gradient and pattern</h2>
@@ -40,7 +73,8 @@ it (or press Enter) to crop.</li>
 <li>The top box is the <b>foreground</b> (and the outline of shapes), the bottom box the <b>background</b>
 (and the fill). Click a box to open <i>Material Properties</i>.</li>
 <li>There you choose a <b>color</b>, a <b>gradient</b> (linear, rectangular, sunburst or radial, with angle and
-repeats) or a <b>pattern</b> (with angle and scale; an open image or your own file works too).</li>
+repeats) or a <b>pattern</b> (with angle and scale; an open image or your own file works too). Dozens of
+gradients and patterns are included.</li>
 <li>The small buttons under a box switch quickly between color, gradient and pattern; ⊘ makes it transparent
 (no outline or no fill). ⇅ swaps foreground and background.</li>
 <li>Gradients and patterns work with the flood fill, brushes and shapes.</li>
@@ -48,16 +82,18 @@ repeats) or a <b>pattern</b> (with angle and scale; an open image or your own fi
 
 <h2>Layers</h2>
 <ul>
-<li>Create layers, groups, masks and adjustment layers via the <i>Layers</i> menu or the buttons in the
-<i>Layers</i> palette.</li>
+<li>Create layers, vector layers, groups, masks and adjustment layers via the <i>Layers</i> menu or the buttons
+in the <i>Layers</i> palette.</li>
 <li>Set opacity and blend mode per layer. An adjustment layer (for example Curves) changes everything below it
 without touching the pixels; a mask controls where.</li>
-<li>Double-click a layer for its properties.</li>
+<li>Double-click a layer for its properties. On the <i>Blend Ranges</i> tab you decide per channel where the
+layer is visible, based on the layer itself and on what lies beneath it.</li>
 </ul>
 
 <h2>Adjustments and effects</h2>
 <ul>
 <li>Each dialog shows a before and after preview; you can zoom and pan the preview.</li>
+<li>When a selection is active, the effect only works inside it and the dialog tells you so.</li>
 <li>Save settings as a preset to recall them quickly later.</li>
 <li><i>Effects &gt; Effect Browser</i> shows the effects side by side with a preview.</li>
 </ul>
@@ -68,8 +104,8 @@ go back.</p>
 
 <h2>Preferences</h2>
 <ul>
-<li><i>File &gt; Preferences &gt; General Program Preferences</i>: the language (Dutch or English).</li>
-<li><i>File &gt; Preferences &gt; Autosave Settings</i>: keeps changed images in a recovery folder every few
-minutes. If PixelPickle closes unexpectedly, it offers to restore them on the next start. Your own files are
-never overwritten.</li>
+<li><i>File &gt; Preferences &gt; General Program Preferences</i>: the language. PixelPickle is available in
+English, Dutch, German, French, Spanish, Italian, Russian, Chinese and Arabic.</li>
+<li><i>File &gt; Preferences &gt; Autosave Settings</i>: keeps changed images in a recovery folder at an
+adjustable interval. Your own files are never overwritten.</li>
 </ul>

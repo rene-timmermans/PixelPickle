@@ -500,7 +500,7 @@ def page_curl(a, ctx, corner, width, height, radius, color, edge):
     return flip(to_u8(out)).copy()
 
 
-@effect(0x8188, "Naadloze herhaling", [Choice("method", "Methode", ["Rand", "Hoek", "Spiegelen"]),
+@effect(0x8188, "Naadloze herhaling", [Choice("method", "Methode", ["Rand", "Hoekpunt", "Spiegelen"]),
                                        Choice("dir", "Richting", ["Horizontaal", "Verticaal", "Bidirectioneel"], 2),
                                        Int("trans", "Overgang (%)", 1, 100, 50)])
 def seamless(a, ctx, method, dir, trans):

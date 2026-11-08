@@ -1,0 +1,111 @@
+<h1>PixelPickle: Kurzanleitung</h1>
+<p>PixelPickle ist ein Fotoeditor für Linux mit dem vertrauten Layout klassischer Windows-Fotoeditoren:
+Menüs, Werkzeuge und Tastenkürzel befinden sich dort, wo Sie sie erwarten.</p>
+
+<h2>Der Arbeitsbereich</h2>
+<ul>
+<li><b>Menüleiste und Standardsymbolleiste</b> oben: Dateien, Bearbeiten, Anpassungen, Effekte, Ebenen und Auswahlen.</li>
+<li><b>Werkzeugoptionsleiste</b> darunter: die Einstellungen des aktuellen Werkzeugs, etwa Größe, Härte und Deckkraft.
+Das Symbol des Werkzeugs steht vorne (fahren Sie mit der Maus darüber, um seinen Namen zu sehen). Mit der Schaltfläche
+<i>Vorgaben</i> speichern und laden Sie eigene Einstellungen.</li>
+<li><b>Werkzeugleiste</b> links. Eine Schaltfläche mit einem kleinen Pfeil enthält weitere Werkzeuge: Klicken Sie auf den Pfeil, um zu wählen.
+Ohne geöffnetes Bild ist die Werkzeugleiste ausgegraut; beim ersten Bild ist das zuletzt verwendete Werkzeug wieder aktiv.</li>
+<li><b>Paletten</b> rechts: <i>Materialien</i>, <i>Ebenen</i> und <i>Verlauf</i>. Blenden Sie sie über
+<i>Ansicht &gt; Paletten</i> ein oder aus.</li>
+<li><b>Rechtsklick</b> auf das Bild, eine Registerkarte oder eine Ebene öffnet ein Kontextmenü.</li>
+<li>Symbole und Schaltflächen folgen der Akzentfarbe Ihres Designs, bei hellen wie bei dunklen Designs.</li>
+</ul>
+
+<h2>Bilder öffnen, erstellen und speichern</h2>
+<ul>
+<li><i>Datei &gt; Neu</i> erstellt ein leeres Bild; <i>Datei &gt; Öffnen</i> öffnet vorhandene Dateien.</li>
+<li>Speichern mit Ebenen: <b>.ora</b> (OpenRaster, ein offener Standard); auch Vektorebenen bleiben darin bearbeitbar.
+Dateien anderer Fotoeditoren im Format <b>.pspimage</b> lassen sich öffnen und auf Wunsch auch so speichern.
+Gängige Formate wie PNG, JPEG, TIFF, WebP und GIF speichern ein zusammengeführtes Bild; Ihre Ebenen bleiben in PixelPickle erhalten.</li>
+<li>Mehrere Bilder gleichzeitig geöffnet: Wechseln Sie mit Strg+Tab.</li>
+</ul>
+
+<h2>Werkzeuge und Tastenkürzel</h2>
+{tools}
+<p>Alle Tastenkürzel, einschließlich der Menükürzel, finden Sie unter <i>Hilfe &gt; Tastaturbelegung</i>.</p>
+<p>Tipps:</p>
+<ul>
+<li>Die linke Maustaste malt mit der Vordergrundfarbe, die rechte mit der Hintergrundfarbe.</li>
+<li>Halten Sie die <b>Leertaste</b> gedrückt und ziehen Sie, um das Bild zu verschieben.</li>
+<li><b>Auswählen</b>: Wenn <i>Freihand</i> auf Punkt zu Punkt, Intelligente Kante oder Kantensucher steht, scrollt das Bild
+mit, sobald Sie den Fensterrand erreichen. Mit dem Modus Hinzufügen oder Entfernen erweitern Sie eine Auswahl oder schneiden
+ein Stück heraus, auch wenn Sie innerhalb der Auswahl klicken.</li>
+<li><b>Zuschneiden</b>: Ziehen Sie ein Rechteck auf, passen Sie es mit den Quadraten an Ecken und Seiten an und doppelklicken Sie
+hinein (oder drücken Sie Enter), um zuzuschneiden.</li>
+<li><b>Perspektivkorrektur</b> (bei Begradigen): Ziehen Sie die vier Ecken des Rahmens entlang von Kanten, die gerade sein
+sollen, etwa ein Gebäude oder ein schräg fotografiertes Dokument, und doppelklicken Sie in den Rahmen.</li>
+<li><b>Klonen</b>: Wählen Sie die Quelle mit der rechten Maustaste und malen Sie mit der linken. Ein Kreis folgt an der
+Quelle, damit Sie sehen, was geklont wird.</li>
+<li><b>Kratzerentferner</b> (bei Klonen): Ziehen Sie ein schmales Rechteck über einen Kratzer oder ein Haar; es wird mit den
+benachbarten Pixeln aufgefüllt.</li>
+<li><b>Retuschierpinsel</b> wie Scharfzeichnen, Weichzeichnen, Aufhellen/Abdunkeln und Relief wirken einmal pro Strich; Hin- und
+Herfahren verstärkt den Effekt nicht. Schalten Sie <i>Durchgehend</i> ein, um den Effekt aufzubauen.</li>
+<li><b>Malmedien</b>: Ölpinsel, Kreide, Pastell, Wachsmalstift und Farbstift, jeweils mit eigenem Strich. Kreide, Pastell,
+Wachsmalstift und Farbstift haben eine einstellbare Papierstruktur; der Ölpinsel mischt sich mit der vorhandenen Farbe und
+geht während eines Strichs aus.</li>
+<li><b>Verformen</b>: Der Verformungspinsel schiebt, erweitert, zieht zusammen oder verwirbelt Pixel, und Ausbügeln stellt sie
+wieder her. Mit der Gitterverzerrung ziehen Sie die Punkte eines Gitters (Shift: ganze Zeile, Strg: ganze Spalte).</li>
+<li><b>Text</b>: Klicken Sie, um Text zu erstellen, oder klicken Sie auf vorhandenen Text, um ihn erneut zu bearbeiten.</li>
+</ul>
+
+<h2>Der Stift und Vektorebenen</h2>
+<ul>
+<li>Der <b>Stift</b> hat vier Modi: <i>Linien und Polylinien</i> (gerade Linien, Shift für 45°-Schritte),
+<i>Punkt zu Punkt (Bézierkurven)</i> (Klicken für eine Ecke, gedrückt halten und ziehen für eine Kurve; auf den ersten Punkt
+klicken zum Schließen), <i>Freihand</i> (Glättung macht die Linie glatter) und <i>Bearbeiten</i> (Knoten und Griffe ziehen; Strg + Ziehen
+von einem Knoten macht ihn zu einer Kurve).</li>
+<li>Die Linie bleibt bearbeitbar, bis Sie <b>✓ Anwenden</b> oder Enter drücken; Esc verwirft sie. Linienstil, Breite, Verbindung
+und Gehrung stellen Sie in der Optionsleiste ein.</li>
+<li>Mit <b>Auf Vektor erstellen</b> (Stift und Formen) wird das Gezeichnete zu einem bearbeitbaren Objekt auf einer <b>Vektorebene</b>.
+Um es später zu ändern, wählen Sie den Stift im Bearbeitungsmodus und klicken auf die Linie oder Form. Dann können Sie die
+Knoten, die Farben und die Linie ändern; Entf entfernt das Objekt.</li>
+<li>Vektorebenen bleiben beim Verschieben, Spiegeln, Drehen und Ändern der Größe sowie in .ora vektoriell. Wenn Sie darauf malen
+oder einen Effekt anwenden möchten, wandelt PixelPickle sie zuerst in eine Rasterebene um.</li>
+</ul>
+
+<h2>Materialien: Farbe, Farbverlauf und Muster</h2>
+<ul>
+<li>Das obere Feld ist der <b>Vordergrund</b> (und die Kontur von Formen), das untere Feld der <b>Hintergrund</b>
+(und die Füllung). Klicken Sie auf ein Feld, um die <i>Materialeigenschaften</i> zu öffnen.</li>
+<li>Dort wählen Sie eine <b>Farbe</b>, einen <b>Farbverlauf</b> (linear, rechteckig, Sonnenstrahlen oder radial, mit Winkel und
+Wiederholungen) oder ein <b>Muster</b> (mit Winkel und Skalierung; auch ein geöffnetes Bild oder eine eigene Datei ist möglich).
+Dutzende Farbverläufe und Muster sind enthalten.</li>
+<li>Die kleinen Schaltflächen unter einem Feld wechseln schnell zwischen Farbe, Farbverlauf und Muster; ⊘ macht es transparent
+(keine Kontur oder keine Füllung). ⇅ tauscht Vorder- und Hintergrund.</li>
+<li>Farbverläufe und Muster funktionieren mit der Farbfüllung, mit Pinseln und mit Formen.</li>
+</ul>
+
+<h2>Ebenen</h2>
+<ul>
+<li>Erstellen Sie Ebenen, Vektorebenen, Gruppen, Masken und Einstellungsebenen über das Menü <i>Ebenen</i> oder die Schaltflächen
+in der Palette <i>Ebenen</i>.</li>
+<li>Legen Sie Deckkraft und Mischmodus pro Ebene fest. Eine Einstellungsebene (zum Beispiel Kurven) ändert alles darunter,
+ohne die Pixel anzutasten; eine Maske bestimmt, wo.</li>
+<li>Doppelklicken Sie auf eine Ebene, um ihre Eigenschaften zu öffnen. Auf der Registerkarte <i>Mischbereiche</i> legen Sie pro Kanal fest,
+wo die Ebene sichtbar ist, abhängig von der Ebene selbst und von dem, was darunter liegt.</li>
+</ul>
+
+<h2>Anpassungen und Effekte</h2>
+<ul>
+<li>Jeder Dialog zeigt eine Vorher-Nachher-Vorschau; Sie können die Vorschau zoomen und verschieben.</li>
+<li>Wenn eine Auswahl aktiv ist, wirkt der Effekt nur innerhalb dieser Auswahl, und der Dialog weist darauf hin.</li>
+<li>Speichern Sie Einstellungen als Vorgabe, um sie später schnell wieder aufzurufen.</li>
+<li><i>Effekte &gt; Effektbrowser</i> zeigt die Effekte nebeneinander mit einer Vorschau.</li>
+</ul>
+
+<h2>Rückgängig</h2>
+<p>Strg+Z macht rückgängig, Strg+Alt+Z stellt wieder her. Die Palette <i>Verlauf</i> listet jeden Schritt auf; klicken Sie auf einen
+früheren Schritt, um dorthin zurückzukehren.</p>
+
+<h2>Einstellungen</h2>
+<ul>
+<li><i>Datei &gt; Einstellungen &gt; Allgemeine Programmeinstellungen</i>: die Sprache. PixelPickle ist verfügbar auf
+Englisch, Niederländisch, Deutsch, Französisch, Spanisch, Italienisch, Russisch, Chinesisch und Arabisch.</li>
+<li><i>Datei &gt; Einstellungen &gt; Einstellungen für automatisches Speichern</i>: bewahrt geänderte Bilder in einem
+Wiederherstellungsordner in einstellbaren Abständen auf. Ihre eigenen Dateien werden nie überschrieben.</li>
+</ul>

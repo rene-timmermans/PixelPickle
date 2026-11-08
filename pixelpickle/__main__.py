@@ -54,7 +54,8 @@ def _qt_translations(app, lang):
     if lang == "en":
         return
     t = QTranslator(app)
-    if t.load(f"qtbase_{lang}", QLibraryInfo.path(QLibraryInfo.LibraryPath.TranslationsPath)):
+    name = {"zh": "zh_CN"}.get(lang, lang)  # Qt kent vereenvoudigd Chinees als zh_CN
+    if t.load(f"qtbase_{name}", QLibraryInfo.path(QLibraryInfo.LibraryPath.TranslationsPath)):
         app.installTranslator(t)
 
 
@@ -92,6 +93,9 @@ def main():
     # de selftest start zoals een eerste start: Engels, met automatisch vertalen al actief
     lang = i18n.load("en" if "--selftest" in sys.argv[1:] else None)
     _qt_translations(app, lang)
+    if i18n.is_rtl():  # Arabisch: hele venster van rechts naar links
+        from PySide6.QtCore import Qt
+        app.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
     i18n.install(app)
     if "--selftest" in sys.argv[1:]:
         sys.exit(selftest(app))

@@ -1,0 +1,111 @@
+<h1>PixelPickle : guide rapide</h1>
+<p>PixelPickle est un éditeur photo pour Linux avec la disposition familière des éditeurs photo classiques de Windows :
+les menus, outils et raccourcis se trouvent là où vous les attendez.</p>
+
+<h2>L'espace de travail</h2>
+<ul>
+<li><b>Barre de menus et barre d'outils standard</b> en haut : fichiers, édition, réglages, effets, calques et sélections.</li>
+<li><b>Barre d'options de l'outil</b> juste en dessous : les paramètres de l'outil actif, comme la taille, la dureté et l'opacité.
+L'icône de l'outil se trouve au début (survolez-la pour voir son nom). Utilisez le bouton <i>Préréglages</i> pour enregistrer et
+charger vos propres paramètres.</li>
+<li><b>Barre d'outils Outils</b> à gauche. Un bouton avec une petite flèche contient d'autres outils : cliquez sur la flèche pour choisir.
+Sans image ouverte, la barre d'outils est grisée ; à l'ouverture de la première image, le dernier outil utilisé est de nouveau actif.</li>
+<li><b>Palettes</b> à droite : <i>Matériaux</i>, <i>Calques</i> et <i>Historique</i>. Affichez-les ou masquez-les via
+<i>Affichage &gt; Palettes</i>.</li>
+<li><b>Clic droit</b> sur l'image, un onglet ou un calque pour ouvrir un menu contextuel.</li>
+<li>Les icônes et boutons suivent la couleur d'accentuation de votre thème, aussi bien sur les thèmes clairs que sombres.</li>
+</ul>
+
+<h2>Ouvrir, créer et enregistrer des images</h2>
+<ul>
+<li><i>Fichier &gt; Nouveau</i> crée une image vide ; <i>Fichier &gt; Ouvrir</i> ouvre des fichiers existants.</li>
+<li>Enregistrer avec les calques : <b>.ora</b> (OpenRaster, un standard ouvert) ; les calques vectoriels y restent également modifiables.
+Les fichiers <b>.pspimage</b> d'autres éditeurs photo peuvent être ouverts et, si vous le souhaitez, enregistrés aussi dans ce format.
+Les formats courants comme PNG, JPEG, TIFF, WebP et GIF enregistrent une image fusionnée ; vos calques restent dans PixelPickle.</li>
+<li>Plusieurs images ouvertes à la fois : passez de l'une à l'autre avec Ctrl+Tab.</li>
+</ul>
+
+<h2>Outils et raccourcis</h2>
+{tools}
+<p>Tous les raccourcis, y compris ceux des menus, sont répertoriés sous <i>Aide &gt; Raccourcis clavier</i>.</p>
+<p>Astuces :</p>
+<ul>
+<li>Le bouton gauche de la souris peint avec la couleur de premier plan, le bouton droit avec la couleur d'arrière-plan.</li>
+<li>Maintenez la <b>barre d'espace</b> et faites glisser pour déplacer l'image.</li>
+<li><b>Sélection</b> : avec <i>Main levée</i> réglé sur Point à point, Bord intelligent ou Détecteur de bords, l'image défile
+lorsque vous atteignez le bord de la fenêtre. Avec le mode Ajouter ou Retirer, vous étendez une sélection ou en retirez
+un morceau, même si vous cliquez à l'intérieur de la sélection.</li>
+<li><b>Recadrer</b> : tracez un rectangle, ajustez-le avec les carrés sur ses coins et ses côtés, puis double-cliquez à l'intérieur
+(ou appuyez sur Entrée) pour recadrer.</li>
+<li><b>Correction de perspective</b> (avec Redresser) : faites glisser les quatre coins du cadre le long des bords qui doivent
+être droits, comme un bâtiment ou un document photographié en biais, puis double-cliquez dans le cadre.</li>
+<li><b>Cloner</b> : choisissez la source avec le bouton droit de la souris et peignez avec le gauche. Un cercle suit la
+source pour que vous voyiez ce qui est cloné.</li>
+<li><b>Suppression des rayures</b> (avec Cloner) : tracez un cadre étroit sur une rayure ou un cheveu ; il est comblé avec les pixels
+voisins.</li>
+<li><b>Pinceaux de retouche</b> comme Netteté, Adoucir, Éclaircir/Obscurcir et Estampage agissent une fois par trait ; les allers-retours
+ne cumulent pas l'effet. Activez <i>Continu</i> pour cumuler l'effet.</li>
+<li><b>Médias artistiques</b> : pinceau à huile, craie, pastel, crayon gras et crayon de couleur, chacun avec son propre trait. La craie, le pastel,
+le crayon gras et le crayon de couleur ont un grain de papier réglable ; le pinceau à huile se mélange à la peinture déjà présente et
+s'épuise au cours d'un trait.</li>
+<li><b>Déformation</b> : le pinceau de déformation pousse, dilate, contracte ou fait tourbillonner les pixels, et Aplanir les remet en place. La déformation
+par maillage permet de faire glisser les points d'une grille (Maj : toute la ligne, Ctrl : toute la colonne).</li>
+<li><b>Texte</b> : cliquez pour créer du texte, ou cliquez sur un texte existant pour le modifier à nouveau.</li>
+</ul>
+
+<h2>La plume et les calques vectoriels</h2>
+<ul>
+<li>La <b>plume</b> a quatre modes : <i>Lignes et polylignes</i> (lignes droites, Maj pour des pas de 45°),
+<i>Point à point (courbes de Bézier)</i> (cliquez pour un angle, maintenez et faites glisser pour une courbe ; cliquez sur le premier point pour
+fermer), <i>Main levée</i> (le suivi rend la ligne plus lisse) et <i>Édition</i> (faites glisser les nœuds et les poignées ; Ctrl + glisser
+depuis un nœud le transforme en courbe).</li>
+<li>La ligne reste modifiable jusqu'à ce que vous appuyiez sur <b>✓ Appliquer</b> ou Entrée ; Échap l'abandonne. Réglez le style de ligne, la largeur, la jointure
+et l'onglet dans la barre d'options.</li>
+<li>Avec <b>Créer sur vecteur</b> (plume et formes), ce que vous dessinez devient un objet modifiable sur un <b>calque
+vectoriel</b>. Pour le modifier plus tard, choisissez la plume en mode Édition et cliquez sur la ligne ou la forme. Vous pouvez alors modifier les
+nœuds, les couleurs et la ligne ; Suppr supprime l'objet.</li>
+<li>Les calques vectoriels restent vectoriels lors du déplacement, de la mise en miroir, de la rotation et du redimensionnement, ainsi que dans .ora. Si vous voulez peindre
+dessus ou appliquer un effet, PixelPickle le convertit d'abord en calque raster.</li>
+</ul>
+
+<h2>Matériaux : couleur, dégradé et motif</h2>
+<ul>
+<li>La case du haut est le <b>premier plan</b> (et le contour des formes), la case du bas l'<b>arrière-plan</b>
+(et le remplissage). Cliquez sur une case pour ouvrir <i>Propriétés du matériau</i>.</li>
+<li>Vous y choisissez une <b>couleur</b>, un <b>dégradé</b> (linéaire, rectangulaire, rayons de soleil ou radial, avec angle et
+répétitions) ou un <b>motif</b> (avec angle et échelle ; une image ouverte ou votre propre fichier fonctionne aussi). Des dizaines de
+dégradés et de motifs sont inclus.</li>
+<li>Les petits boutons sous une case permettent de passer rapidement entre couleur, dégradé et motif ; ⊘ la rend transparente
+(pas de contour ou pas de remplissage). ⇅ permute le premier plan et l'arrière-plan.</li>
+<li>Les dégradés et motifs fonctionnent avec le pot de peinture, les pinceaux et les formes.</li>
+</ul>
+
+<h2>Calques</h2>
+<ul>
+<li>Créez des calques, des calques vectoriels, des groupes, des masques et des calques de réglage via le menu <i>Calques</i> ou les boutons
+de la palette <i>Calques</i>.</li>
+<li>Réglez l'opacité et le mode de fusion de chaque calque. Un calque de réglage (par exemple Courbes) modifie tout ce qui se trouve en dessous
+sans toucher aux pixels ; un masque détermine où.</li>
+<li>Double-cliquez sur un calque pour afficher ses propriétés. Dans l'onglet <i>Plages de fusion</i>, vous décidez pour chaque canal où le
+calque est visible, en fonction du calque lui-même et de ce qui se trouve en dessous.</li>
+</ul>
+
+<h2>Réglages et effets</h2>
+<ul>
+<li>Chaque boîte de dialogue affiche un aperçu avant et après ; vous pouvez zoomer et vous déplacer dans l'aperçu.</li>
+<li>Lorsqu'une sélection est active, l'effet n'agit qu'à l'intérieur de celle-ci et la boîte de dialogue vous le signale.</li>
+<li>Enregistrez des paramètres comme préréglage pour les retrouver rapidement plus tard.</li>
+<li><i>Effets &gt; Navigateur d'effets</i> affiche les effets côte à côte avec un aperçu.</li>
+</ul>
+
+<h2>Annuler</h2>
+<p>Ctrl+Z annule, Ctrl+Alt+Z rétablit. La palette <i>Historique</i> répertorie chaque étape ; cliquez sur une étape antérieure pour
+y revenir.</p>
+
+<h2>Préférences</h2>
+<ul>
+<li><i>Fichier &gt; Préférences &gt; Préférences générales du programme</i> : la langue. PixelPickle est disponible en
+anglais, néerlandais, allemand, français, espagnol, italien, russe, chinois et arabe.</li>
+<li><i>Fichier &gt; Préférences &gt; Paramètres d'enregistrement automatique</i> : conserve les images modifiées dans un dossier de récupération à un
+intervalle réglable. Vos propres fichiers ne sont jamais écrasés.</li>
+</ul>

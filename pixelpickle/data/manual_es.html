@@ -1,0 +1,111 @@
+<h1>PixelPickle: guía rápida</h1>
+<p>PixelPickle es un editor de fotos para Linux con la disposición familiar de los editores de fotos clásicos de Windows:
+los menús, las herramientas y los atajos están donde los espera.</p>
+
+<h2>El espacio de trabajo</h2>
+<ul>
+<li><b>Barra de menús y barra de herramientas estándar</b> en la parte superior: archivos, edición, ajustes, efectos, capas y selecciones.</li>
+<li><b>Barra de opciones de herramienta</b> debajo: la configuración de la herramienta actual, como tamaño, dureza y opacidad.
+El icono de la herramienta está al principio (pase el ratón por encima para ver su nombre). Use el botón <i>Ajustes preestablecidos</i> para guardar y
+cargar su propia configuración.</li>
+<li><b>Barra de herramientas</b> a la izquierda. Un botón con una pequeña flecha contiene más herramientas: haga clic en la flecha para elegir.
+Sin una imagen abierta la barra aparece atenuada; con la primera imagen vuelve a estar activa la última herramienta usada.</li>
+<li><b>Paletas</b> a la derecha: <i>Materiales</i>, <i>Capas</i> e <i>Historial</i>. Muéstrelas u ocúltelas mediante
+<i>Ver &gt; Paletas</i>.</li>
+<li><b>Haga clic derecho</b> en la imagen, una pestaña o una capa para abrir un menú contextual.</li>
+<li>Los iconos y botones siguen el color de acento de su tema, tanto en temas claros como oscuros.</li>
+</ul>
+
+<h2>Abrir, crear y guardar imágenes</h2>
+<ul>
+<li><i>Archivo &gt; Nuevo</i> crea una imagen vacía; <i>Archivo &gt; Abrir</i> abre archivos existentes.</li>
+<li>Guardar con capas: <b>.ora</b> (OpenRaster, un estándar abierto); las capas vectoriales también siguen siendo editables en él.
+Los archivos de otros editores de fotos en <b>.pspimage</b> se pueden abrir y, si lo desea, también guardar en ese formato.
+Los formatos comunes como PNG, JPEG, TIFF, WebP y GIF guardan una imagen combinada; sus capas permanecen en PixelPickle.</li>
+<li>Puede tener varias imágenes abiertas a la vez: cambie entre ellas con Ctrl+Tab.</li>
+</ul>
+
+<h2>Herramientas y atajos</h2>
+{tools}
+<p>Todos los atajos, incluidos los de los menús, aparecen en <i>Ayuda &gt; Mapa de teclado</i>.</p>
+<p>Consejos:</p>
+<ul>
+<li>El botón izquierdo del ratón pinta con el color de primer plano y el derecho con el color de fondo.</li>
+<li>Mantenga pulsada la <b>barra espaciadora</b> y arrastre para desplazar la imagen.</li>
+<li><b>Seleccionar</b>: con <i>A mano alzada</i> en Punto a punto, Borde inteligente o Buscador de bordes, la imagen se desplaza
+cuando llega al borde de la ventana. Con el modo Añadir o Quitar amplía una selección o recorta un trozo
+de ella, incluso cuando hace clic dentro de la selección.</li>
+<li><b>Recortar</b>: arrastre un rectángulo, ajústelo con los cuadrados de sus esquinas y lados, y haga doble clic dentro
+(o pulse Intro) para recortar.</li>
+<li><b>Corrección de perspectiva</b> (con Enderezar): arrastre las cuatro esquinas del marco a lo largo de bordes que deberían
+ser rectos, como un edificio o un documento fotografiado en ángulo, y haga doble clic dentro del marco.</li>
+<li><b>Clonar</b>: elija el origen con el botón derecho del ratón y pinte con el izquierdo. Un círculo sigue al
+origen para que vea lo que se está clonando.</li>
+<li><b>Eliminador de arañazos</b> (con Clonar): arrastre un cuadro estrecho sobre un arañazo o pelo; se rellena con los píxeles
+de al lado.</li>
+<li><b>Pinceles de retoque</b> como Enfocar, Suavizar, Aclarar/Oscurecer y Relieve actúan una vez por trazo; pasar varias veces
+no acumula el efecto. Active <i>Continuo</i> para acumularlo.</li>
+<li><b>Medios artísticos</b>: pincel de óleo, tiza, pastel, crayón y lápiz de color, cada uno con su propio trazo. La tiza, el pastel,
+el crayón y el lápiz de color tienen un grano de papel ajustable; el pincel de óleo se mezcla con la pintura que ya hay y
+se agota durante el trazo.</li>
+<li><b>Deformación</b>: el Pincel de deformación empuja, expande, contrae o arremolina píxeles, y Alisar los devuelve a su sitio. La Deformación
+de malla le permite arrastrar los puntos de una cuadrícula (Mayús: fila entera, Ctrl: columna entera).</li>
+<li><b>Texto</b>: haga clic para crear texto, o haga clic en un texto existente para volver a editarlo.</li>
+</ul>
+
+<h2>La pluma y las capas vectoriales</h2>
+<ul>
+<li>La <b>pluma</b> tiene cuatro modos: <i>Líneas y polilíneas</i> (líneas rectas, Mayús para pasos de 45°),
+<i>Punto a punto (curvas Bézier)</i> (clic para una esquina, mantener pulsado y arrastrar para una curva; clic en el primer punto para
+cerrar), <i>A mano alzada</i> (Seguimiento suaviza la línea) y <i>Edición</i> (arrastre nodos y tiradores; Ctrl + arrastrar
+desde un nodo lo convierte en curva).</li>
+<li>La línea sigue siendo editable hasta que pulse <b>✓ Aplicar</b> o Intro; Esc la descarta. Defina el estilo, el ancho, la unión
+y el inglete de línea en la barra de opciones.</li>
+<li>Con <b>Crear como vector</b> (pluma y formas) lo que dibuje se convierte en un objeto editable en una <b>capa
+vectorial</b>. Para cambiarlo después, elija la pluma en modo Edición y haga clic en la línea o forma. Entonces puede cambiar los
+nodos, los colores y la línea; Supr elimina el objeto.</li>
+<li>Las capas vectoriales siguen siendo vectoriales al mover, reflejar, girar y cambiar de tamaño, y en .ora. Si desea pintar en
+una o aplicar un efecto, PixelPickle la convierte primero en capa ráster.</li>
+</ul>
+
+<h2>Materiales: color, degradado y patrón</h2>
+<ul>
+<li>El cuadro superior es el <b>primer plano</b> (y el contorno de las formas), el cuadro inferior el <b>fondo</b>
+(y el relleno). Haga clic en un cuadro para abrir <i>Propiedades del material</i>.</li>
+<li>Allí elige un <b>color</b>, un <b>degradado</b> (lineal, rectangular, resplandor solar o radial, con ángulo y
+repeticiones) o un <b>patrón</b> (con ángulo y escala; también sirve una imagen abierta o un archivo propio). Se incluyen decenas de
+degradados y patrones.</li>
+<li>Los botones pequeños bajo un cuadro cambian rápidamente entre color, degradado y patrón; ⊘ lo hace transparente
+(sin contorno o sin relleno). ⇅ intercambia primer plano y fondo.</li>
+<li>Los degradados y patrones funcionan con el relleno, los pinceles y las formas.</li>
+</ul>
+
+<h2>Capas</h2>
+<ul>
+<li>Cree capas, capas vectoriales, grupos, máscaras y capas de ajuste desde el menú <i>Capas</i> o con los botones
+de la paleta <i>Capas</i>.</li>
+<li>Defina la opacidad y el modo de fusión de cada capa. Una capa de ajuste (por ejemplo Curvas) cambia todo lo que hay debajo
+sin tocar los píxeles; una máscara controla dónde.</li>
+<li>Haga doble clic en una capa para ver sus propiedades. En la pestaña <i>Rangos de fusión</i> decide por canal dónde es
+visible la capa, según la propia capa y lo que hay debajo de ella.</li>
+</ul>
+
+<h2>Ajustes y efectos</h2>
+<ul>
+<li>Cada cuadro de diálogo muestra una vista previa de antes y después; puede hacer zoom y desplazarse por la vista previa.</li>
+<li>Cuando hay una selección activa, el efecto solo actúa dentro de ella y el cuadro de diálogo se lo indica.</li>
+<li>Guarde la configuración como ajuste preestablecido para recuperarla rápidamente más tarde.</li>
+<li><i>Efectos &gt; Explorador de efectos</i> muestra los efectos uno al lado de otro con una vista previa.</li>
+</ul>
+
+<h2>Deshacer</h2>
+<p>Ctrl+Z deshace, Ctrl+Alt+Z rehace. La paleta <i>Historial</i> muestra cada paso; haga clic en un paso anterior para
+volver atrás.</p>
+
+<h2>Preferencias</h2>
+<ul>
+<li><i>Archivo &gt; Preferencias &gt; Preferencias generales del programa</i>: el idioma. PixelPickle está disponible en
+inglés, neerlandés, alemán, francés, español, italiano, ruso, chino y árabe.</li>
+<li><i>Archivo &gt; Preferencias &gt; Configuración de autoguardado</i>: guarda las imágenes modificadas en una carpeta de recuperación a un
+intervalo ajustable. Sus propios archivos nunca se sobrescriben.</li>
+</ul>

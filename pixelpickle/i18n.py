@@ -14,7 +14,10 @@ from PySide6.QtCore import QEvent, QObject, QSettings
 from PySide6.QtWidgets import (QAbstractButton, QComboBox, QDockWidget, QGroupBox, QLabel, QLineEdit, QMenu,
                                QMenuBar, QTabBar, QTabWidget, QToolBar, QWidget)
 
-LANGUAGES = [("nl", "Nederlands"), ("en", "English")]
+# taalnamen in hun eigen taal; Engels is de standaard bij de eerste start
+LANGUAGES = [("en", "English"), ("nl", "Nederlands"), ("de", "Deutsch"), ("fr", "Français"), ("es", "Español"),
+             ("it", "Italiano"), ("ru", "Русский"), ("zh", "中文（简体）"), ("ar", "العربية")]
+RTL = {"ar"}  # talen die van rechts naar links lopen
 _lang = "nl"
 _exact = {}
 _patterns = []  # [(regex, engels sjabloon, aantal delen)]
@@ -29,15 +32,20 @@ def load(lang=None):
     global _lang, _exact, _patterns
     if lang is None:
         lang = setting() or "en"
-    _lang = lang if lang in dict(LANGUAGES) else "nl"
+    _lang = lang if lang in dict(LANGUAGES) else "en"
     _exact, _patterns = {}, []
     if _lang == "nl":
         return _lang
-    path = os.path.join(os.path.dirname(__file__), "data", f"lang_{_lang}.json")
-    try:
-        with open(path, encoding="utf-8") as f:
-            cat = json.load(f)
-    except (OSError, ValueError):
+    folder = os.path.join(os.path.dirname(__file__), "data")
+    cat = {}
+    # Engels als vangnet: een tekst die in een andere vertaling (nog) ontbreekt, verschijnt in het Engels
+    for code in (["en"] if _lang != "en" else []) + [_lang]:
+        try:
+            with open(os.path.join(folder, f"lang_{code}.json"), encoding="utf-8") as f:
+                cat.update({k: v for k, v in json.load(f).items() if isinstance(v, str) and v})
+        except (OSError, ValueError):
+            continue
+    if not cat:
         return _lang
     for nl, other in cat.items():
         if not isinstance(other, str) or not other:
@@ -54,6 +62,10 @@ def load(lang=None):
 
 def language():
     return _lang
+
+
+def is_rtl():
+    return _lang in RTL
 
 
 def tr(text, _depth=0):

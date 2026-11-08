@@ -1021,6 +1021,7 @@ class StrokeTool(Tool):
         self.cv = cv
         cv.doc.push_undo(self.name)
         self.active = True
+        self._stroke_size = cv.doc.layer().image.size()
         self.dirty = QRect()
         self.begin(cv, pt)
         start = self.last_pt if (ev.modifiers() & SHIFT and self.last_pt is not None) else pt
@@ -1032,7 +1033,14 @@ class StrokeTool(Tool):
         self.flush(cv)
 
     def move(self, cv, pt, ev):
-        if self.active and ev.buttons() & (LB | RB):
+        if not self.active:
+            return
+        if cv is not getattr(self, "cv", None) or cv.doc.layer().image.size() != self._stroke_size:
+            # andere afbeelding of laag van ander formaat (bijv. na wisselen of ongedaan maken): streek stoppen
+            self.active = False
+            self.end(cv)
+            return
+        if ev.buttons() & (LB | RB):
             self.line(cv, self.prev, pt)
             self.flush(cv)
 
@@ -1042,7 +1050,7 @@ class StrokeTool(Tool):
         self.active = False
         self.last_pt = self.prev
         self.end(cv)
-        cv.doc.structureChanged.emit()
+        (self.cv or cv).doc.structureChanged.emit()
 
     def line(self, cv, a, b):
         spacing = max(0.5, self.o["size"] * self.o["step"] / 100)
@@ -1890,6 +1898,8 @@ class PixelBrush(StrokeTool):
         if not w.any():
             return
         layer = d.layer()
+        if self.snap is not None and self.snap.shape[:2] != (d.h, d.w):
+            self.snap = self.wmax = None  # laag veranderde van formaat tijdens de streek
         if self.snapshot and not self.o.get("continuous", False) and self.snap is not None:
             base = self.snap[r.y():r.bottom() + 1, r.x():r.right() + 1].astype(np.float32)
             new = self._filtered(self.snap, r, full, c, d)
@@ -2144,6 +2154,11 @@ class CloneTool(PixelBrush):
 
     def press(self, cv, pt, ev):
         if ev.button() == RB:
+            if self.active:  # een lopende streek eerst netjes afsluiten
+                self.active = False
+                self.last_pt = self.prev
+                self.end(cv)
+                cv.doc.structureChanged.emit()
             self.source = QPointF(pt)
             self.offset = None
             self.main.statusBar().showMessage("Kloonbron ingesteld.", 2500)
@@ -2162,22 +2177,41 @@ class CloneTool(PixelBrush):
         self.src_img = QImage(cv.cache if self.o["sample_merged"] else cv.doc.layer().image)
 
     def op(self, a, r, full, c):
+        if self.offset is None:
+            return None
         sr = r.translated(round(self.offset.x()), round(self.offset.y()))
         src = ops.qimage_to_rgba(self.src_img.copy(sr)).astype(np.float32)
         return src
 
     def overlay(self, cv, p):
         super().overlay(cv, p)
-        if self.source is not None and cv.mouse_doc is not None:
-            src = self.source
-            if self.offset is not None and self.active:
-                src = QPointF(cv.mouse_doc.x() + self.offset.x(), cv.mouse_doc.y() + self.offset.y())
-            c = cv.to_widget(src)
-            p.setPen(QPen(QColor(255, 255, 255), 1))
-            p.drawLine(c + QPointF(-6, 0), c + QPointF(6, 0))
-            p.drawLine(c + QPointF(0, -6), c + QPointF(0, 6))
-            p.setPen(QPen(QColor(0, 0, 0), 1, Qt.PenStyle.DotLine))
-            p.drawEllipse(c, 4, 4)
+        if self.source is None:
+            return
+        # bij de bron een cirkel ter grootte van het penseel die meeloopt, zodat je ziet wat er gekloond
+        # gaat worden (en wat er 'aankomt'); bij uitgelijnd klonen ook al voor de volgende streek
+        src = self.source
+        follow = self.offset is not None and cv.mouse_doc is not None and (self.active or self.o["clone_aligned"])
+        if follow:
+            src = QPointF(cv.mouse_doc.x() + self.offset.x(), cv.mouse_doc.y() + self.offset.y())
+        c = cv.to_widget(src)
+        r = max(3.0, self.o["size"] * cv.zoom / 2)
+        p.save()
+        p.setBrush(Qt.BrushStyle.NoBrush)
+        p.translate(c)
+        p.rotate(self.o["rotation"])
+        p.scale(1, self.o["thickness"] / 100)
+        for col, style in ((QColor(0, 0, 0, 200), Qt.PenStyle.SolidLine), (QColor(255, 255, 255, 230), Qt.PenStyle.DashLine)):
+            p.setPen(QPen(col, 1.2, style))
+            if self.o["brush_shape"] == 1:
+                p.drawRect(QRectF(-r, -r, 2 * r, 2 * r))
+            else:
+                p.drawEllipse(QPointF(0, 0), r, r)
+        p.restore()
+        # klein kruisje in het midden van de bron
+        for col, w_ in ((QColor(0, 0, 0), 3), (QColor(255, 255, 255), 1)):
+            p.setPen(QPen(col, w_))
+            p.drawLine(c + QPointF(-5, 0), c + QPointF(5, 0))
+            p.drawLine(c + QPointF(0, -5), c + QPointF(0, 5))
 
 
 # ================================================================ vullen

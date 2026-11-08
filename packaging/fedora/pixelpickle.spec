@@ -11,6 +11,8 @@ Requires:       python3-pyside6
 Requires:       python3-numpy
 Requires:       python3-pillow
 Recommends:     google-noto-sans-fonts
+Recommends:     google-noto-sans-cjk-fonts
+Recommends:     google-noto-sans-arabic-fonts
 # Python bestanden staan buiten site-packages; geen automatische bytecode/afhankelijkheden afleiden
 %global __brp_python_bytecompile %{nil}
 %global __requires_exclude_from ^%{_datadir}/pixelpickle/.*$

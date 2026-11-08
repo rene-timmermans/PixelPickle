@@ -16,8 +16,9 @@ OPEN_FILTER = ("Alle afbeeldingen (*.ora *.png *.jpg *.jpeg *.jpe *.bmp *.gif *.
                "*.tga *.pcx *.ico *.psd *.ppm *.pgm *.pbm *.xpm *.jp2 *.dds *.pspimage *.psp *.pspframe "
                "*.psptube *.pspmask *.tub *.msk);;"
                "OpenRaster met lagen (*.ora);;Alle bestanden (*)")
-SAVE_FILTER = ("PspImage (*.pspimage);;OpenRaster met lagen (*.ora);;PNG (*.png);;JPEG (*.jpg *.jpeg);;"
-               "TIFF (*.tif *.tiff);;BMP (*.bmp);;WebP (*.webp);;GIF (*.gif);;Targa (*.tga)")
+# OpenRaster (open standaard) is het eigen formaat met lagen; .pspimage blijft als extra keuze
+SAVE_FILTER = ("OpenRaster met lagen (*.ora);;PNG (*.png);;JPEG (*.jpg *.jpeg);;TIFF (*.tif *.tiff);;BMP (*.bmp);;"
+               "WebP (*.webp);;GIF (*.gif);;Targa (*.tga);;PspImage (*.pspimage)")
 LAYERED = {".ora", ".pspimage", ".psp"}
 PSP_EXT = {".pspimage", ".psp", ".pspframe", ".psptube", ".pspmask", ".tub", ".msk"}
 

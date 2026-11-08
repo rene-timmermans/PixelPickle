@@ -449,7 +449,7 @@ class MaterialBox(QWidget):
         icons.set_button(self.none, "none", 12)
         self.none.setCheckable(True)
         self.none.setFixedSize(18, 18)
-        self.none.setToolTip("Transparant: geen " + ("rand" if fg else "vulling"))
+        self.none.setToolTip("Transparant: geen rand" if fg else "Transparant: geen vulling")
         self.none.toggled.connect(self.toggled_none)
         row.addWidget(self.none)
         v.addLayout(row)

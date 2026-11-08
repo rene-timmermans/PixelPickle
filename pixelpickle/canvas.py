@@ -397,8 +397,48 @@ class Canvas(QWidget):
             self.space = True
             self.setCursor(Qt.CursorShape.OpenHandCursor)
             return
-        if not self.main.tool.key(self, e):
-            super().keyPressEvent(e)
+        if self.main.tool.key(self, e):
+            return
+        if self._nudge_key(e):
+            return
+        super().keyPressEvent(e)
+
+    ARROWS = {Qt.Key.Key_Left: (-1, 0), Qt.Key.Key_Right: (1, 0), Qt.Key.Key_Up: (0, -1), Qt.Key.Key_Down: (0, 1)}
+
+    def _nudge_key(self, e):
+        """Pijltoetsen: geselecteerde pixels 1 pixel verschuiven (Shift: 10), Ctrl: alleen het selectiekader.
+        Met Verplaatsen en zonder selectie schuift de hele laag. Een reeks duwtjes is één stap ongedaan maken."""
+        step = self.ARROWS.get(e.key())
+        if step is None:
+            return False
+        from .tools import LayerMover, MoveTool, SelectionBase
+        tool, d = self.main.tool, self.doc
+        if isinstance(tool, SelectionBase):
+            if d.sel is None:
+                return False
+            what = "marquee" if e.modifiers() & Qt.KeyboardModifier.ControlModifier else "pixels"
+        elif isinstance(tool, MoveTool):
+            what = "layer" if d.sel is None else ("marquee" if e.modifiers() & Qt.KeyboardModifier.ControlModifier else "pixels")
+        else:
+            return False
+        if what != "marquee" and not self.main.ensure_raster():
+            return True
+        n = 10 if e.modifiers() & Qt.KeyboardModifier.ShiftModifier else 1
+        nz = getattr(self, "_nudge", None)
+        # dezelfde reeks zolang er tussendoor niets anders met de afbeelding is gebeurd
+        if nz is None or nz["what"] != what or nz["layer"] is not d.layer() or nz["undo"] != len(d.undo_stack) \
+                or nz["sel"] is not d.sel:
+            nz = {"mover": LayerMover(self, QPointF(0, 0), what), "what": what, "layer": d.layer(), "dx": 0, "dy": 0}
+        nz["dx"] += step[0] * n
+        nz["dy"] += step[1] * n
+        nz["mover"].move(QPointF(nz["dx"], nz["dy"]))
+        nz["mover"].finish()
+        nz["undo"] = len(d.undo_stack)
+        nz["sel"] = d.sel
+        self._nudge = nz
+        d.changed.emit(QRect())
+        self.update()
+        return True
 
     def keyReleaseEvent(self, e):
         if e.key() == Qt.Key.Key_Space and not e.isAutoRepeat():

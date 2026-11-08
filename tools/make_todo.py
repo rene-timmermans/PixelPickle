@@ -110,6 +110,9 @@ Totaal: {len(rows_tools)} gereedschappen en {len(rows_menu)} menu-opdrachten.
 
 Wat al gebouwd is, met de versie waarin het verscheen.
 
+- [x] Zeven extra talen (Duits, Frans, Spaans, Italiaans, Russisch, Chinees, Arabisch), handleiding in elke taal;
+  .ora als standaardformaat met lagen; broncirkel bij Klonen; uitgebreide handleiding in alle talen;
+  selectie verschuiven met de pijltoetsen; Vervagen/Verzachten, Gemiddelde en Filmkorrel verbeterd (0.9.0)
 - [x] Vernieuwde optiebalk: vaste hoogte, strak uitgelijnd, groot gereedschapsicoon, kleine vinkjes (0.8.0)
 - [x] Vectorlagen: pen en vormen blijven bewerkbaar (oppakken met de Pen in Bewerken), ook in .ora (0.7.0)
 - [x] Pen met modi Bewerken, Lijnen en polylijnen, Punt tot punt (Bézier) en Uit de vrije hand, met lijnstijl,

@@ -1,0 +1,111 @@
+<h1>PixelPickle: guida rapida</h1>
+<p>PixelPickle è un editor di foto per Linux con il layout familiare dei classici editor di foto per Windows:
+menu, strumenti e scorciatoie si trovano dove te li aspetti.</p>
+
+<h2>L'area di lavoro</h2>
+<ul>
+<li><b>Barra dei menu e barra degli strumenti standard</b> in alto: file, modifica, regolazioni, effetti, livelli e selezioni.</li>
+<li><b>Barra delle opzioni strumento</b> subito sotto: le impostazioni dello strumento corrente, come dimensione, durezza e opacità.
+L'icona dello strumento si trova all'inizio (passaci sopra con il mouse per vederne il nome). Usa il pulsante <i>Preimpostazioni</i> per salvare e
+caricare le tue impostazioni.</li>
+<li><b>Barra degli strumenti</b> a sinistra. Un pulsante con una piccola freccia contiene altri strumenti: fai clic sulla freccia per sceglierli.
+Senza un'immagine aperta la barra è disattivata; con la prima immagine torna attivo l'ultimo strumento usato.</li>
+<li><b>Tavolozze</b> a destra: <i>Materiali</i>, <i>Livelli</i> e <i>Cronologia</i>. Mostrale o nascondile tramite
+<i>Visualizza &gt; Tavolozze</i>.</li>
+<li><b>Fai clic destro</b> sull'immagine, su una scheda o su un livello per aprire un menu contestuale.</li>
+<li>Icone e pulsanti seguono il colore di accento del tuo tema, sia con temi chiari sia scuri.</li>
+</ul>
+
+<h2>Aprire, creare e salvare immagini</h2>
+<ul>
+<li><i>File &gt; Nuovo</i> crea un'immagine vuota; <i>File &gt; Apri</i> apre file esistenti.</li>
+<li>Salvare con i livelli: <b>.ora</b> (OpenRaster, uno standard aperto); anche i livelli vettoriali restano modificabili.
+I file di altri editor di foto in formato <b>.pspimage</b> possono essere aperti e, se vuoi, anche salvati in quel formato.
+I formati comuni come PNG, JPEG, TIFF, WebP e GIF salvano un'immagine unita; i livelli restano in PixelPickle.</li>
+<li>Più immagini aperte contemporaneamente: passa dall'una all'altra con Ctrl+Tab.</li>
+</ul>
+
+<h2>Strumenti e scorciatoie</h2>
+{tools}
+<p>Tutte le scorciatoie, comprese quelle dei menu, sono elencate in <i>Aiuto &gt; Mappa tastiera</i>.</p>
+<p>Suggerimenti:</p>
+<ul>
+<li>Il tasto sinistro del mouse dipinge con il colore di primo piano, il destro con il colore di sfondo.</li>
+<li>Tieni premuta la <b>barra spaziatrice</b> e trascina per spostare la vista dell'immagine.</li>
+<li><b>Selezionare</b>: con <i>Mano libera</i> impostato su Da punto a punto, Bordo intelligente o Cerca bordi, l'immagine scorre
+quando raggiungi il bordo della finestra. Con la modalità Aggiungi o Rimuovi estendi una selezione o ne togli una parte,
+anche quando fai clic all'interno della selezione.</li>
+<li><b>Ritaglia</b>: trascina un rettangolo, regolalo con i quadratini sugli angoli e sui lati e fai doppio clic al suo
+interno (o premi Invio) per ritagliare.</li>
+<li><b>Correzione prospettiva</b> (con Raddrizza): trascina i quattro angoli della cornice lungo i bordi che devono
+essere dritti, come un edificio o un documento fotografato di sbieco, e fai doppio clic all'interno della cornice.</li>
+<li><b>Clona</b>: scegli l'origine con il tasto destro del mouse e dipingi con il sinistro. Un cerchio segue l'origine
+così puoi vedere cosa viene clonato.</li>
+<li><b>Rimozione graffi</b> (con Clona): trascina un riquadro stretto su un graffio o un capello; viene riempito con i pixel
+adiacenti.</li>
+<li><b>Pennelli di ritocco</b> come Nitidezza, Ammorbidisci, Schiarisci/Scurisci e Rilievo agiscono una volta per pennellata; passare
+avanti e indietro non accumula l'effetto. Attiva <i>Continuo</i> per accumulare l'effetto.</li>
+<li><b>Supporti artistici</b>: pennello a olio, gessetto, pastello, pastello a cera e matita colorata, ognuno con il proprio tratto. Gessetto, pastello,
+pastello a cera e matita colorata hanno una grana della carta regolabile; il pennello a olio si mescola con il colore già presente e
+si esaurisce durante una pennellata.</li>
+<li><b>Deformazione</b>: il Pennello deformazione spinge, espande, contrae o fa vorticare i pixel, e Appiana li riporta a posto. La Deformazione
+a griglia ti permette di trascinare i punti di una griglia (Maiusc: intera riga, Ctrl: intera colonna).</li>
+<li><b>Testo</b>: fai clic per creare un testo, o fai clic su un testo esistente per modificarlo di nuovo.</li>
+</ul>
+
+<h2>La penna e i livelli vettoriali</h2>
+<ul>
+<li>La <b>penna</b> ha quattro modalità: <i>Linee e polilinee</i> (linee rette, Maiusc per passi di 45°),
+<i>Da punto a punto (curve di Bézier)</i> (fai clic per un angolo, tieni premuto e trascina per una curva; fai clic sul primo punto per
+chiudere), <i>Mano libera</i> (Stabilizzazione rende la linea più morbida) e <i>Modifica</i> (trascina nodi e maniglie; Ctrl + trascinamento
+da un nodo lo trasforma in curva).</li>
+<li>La linea resta modificabile finché non premi <b>✓ Applica</b> o Invio; Esc la annulla. Imposta stile, larghezza, giunzione
+e angolo vivo della linea nella barra delle opzioni.</li>
+<li>Con <b>Crea su vettore</b> (penna e forme) ciò che disegni diventa un oggetto modificabile su un <b>livello
+vettoriale</b>. Per modificarlo in seguito, scegli la penna in modalità Modifica e fai clic sulla linea o sulla forma. Potrai quindi cambiare
+i nodi, i colori e la linea; Canc rimuove l'oggetto.</li>
+<li>I livelli vettoriali restano vettoriali durante spostamento, specchiatura, rotazione e ridimensionamento, e nei file .ora. Se vuoi dipingervi
+o applicare un effetto, PixelPickle li converte prima in livello raster.</li>
+</ul>
+
+<h2>Materiali: colore, sfumatura e motivo</h2>
+<ul>
+<li>Il riquadro superiore è il <b>primo piano</b> (e il contorno delle forme), quello inferiore lo <b>sfondo</b>
+(e il riempimento). Fai clic su un riquadro per aprire <i>Proprietà materiale</i>.</li>
+<li>Lì scegli un <b>colore</b>, una <b>sfumatura</b> (lineare, rettangolare, raggi di sole o radiale, con angolo e
+ripetizioni) o un <b>motivo</b> (con angolo e scala; funziona anche un'immagine aperta o un tuo file). Sono incluse decine di
+sfumature e motivi.</li>
+<li>I piccoli pulsanti sotto un riquadro passano rapidamente tra colore, sfumatura e motivo; ⊘ lo rende trasparente
+(nessun contorno o nessun riempimento). ⇅ scambia primo piano e sfondo.</li>
+<li>Sfumature e motivi funzionano con il riempimento, i pennelli e le forme.</li>
+</ul>
+
+<h2>Livelli</h2>
+<ul>
+<li>Crea livelli, livelli vettoriali, gruppi, maschere e livelli di regolazione tramite il menu <i>Livelli</i> o i pulsanti
+della tavolozza <i>Livelli</i>.</li>
+<li>Imposta opacità e modalità di fusione per ogni livello. Un livello di regolazione (ad esempio Curve) modifica tutto ciò che sta sotto
+senza toccare i pixel; una maschera controlla dove.</li>
+<li>Fai doppio clic su un livello per le sue proprietà. Nella scheda <i>Intervalli di fusione</i> decidi per ogni canale dove il
+livello è visibile, in base al livello stesso e a ciò che si trova sotto.</li>
+</ul>
+
+<h2>Regolazioni ed effetti</h2>
+<ul>
+<li>Ogni finestra di dialogo mostra un'anteprima prima e dopo; puoi ingrandire e spostare l'anteprima.</li>
+<li>Quando è attiva una selezione, l'effetto agisce solo al suo interno e la finestra di dialogo lo segnala.</li>
+<li>Salva le impostazioni come preimpostazione per richiamarle rapidamente in seguito.</li>
+<li><i>Effetti &gt; Browser effetti</i> mostra gli effetti affiancati con un'anteprima.</li>
+</ul>
+
+<h2>Annulla</h2>
+<p>Ctrl+Z annulla, Ctrl+Alt+Z ripete. La tavolozza <i>Cronologia</i> elenca ogni passaggio; fai clic su un passaggio precedente per
+tornare indietro.</p>
+
+<h2>Preferenze</h2>
+<ul>
+<li><i>File &gt; Preferenze &gt; Preferenze generali del programma</i>: la lingua. PixelPickle è disponibile in
+inglese, olandese, tedesco, francese, spagnolo, italiano, russo, cinese e arabo.</li>
+<li><i>File &gt; Preferenze &gt; Impostazioni salvataggio automatico</i>: conserva le immagini modificate in una cartella di ripristino a un
+intervallo regolabile. I tuoi file non vengono mai sovrascritti.</li>
+</ul>

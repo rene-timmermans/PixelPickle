@@ -1,3 +1,4 @@
+import numpy as np
 """Basisaanpassingen (menu Aanpassen en Afbeelding) die al eerder bestonden."""
 from .. import imageops as ops
 from . import Choice, Int, effect
@@ -42,7 +43,19 @@ def hsl(a, ctx, hue, saturation, lightness):
                                                Choice("kind", "Type", ["Willekeurig", "Uniform"]),
                                                Choice("mono", "Kleur", ["Kleur", "Monochroom"])])
 def add_noise(a, ctx, amount, kind, mono):
-    return ops.adj_noise(a, amount, mono)
+    # Willekeurig: normaal verdeelde korrel (meer kleine, af en toe een flinke afwijking);
+    # Uniform: gelijkmatig verdeelde korrel (alle afwijkingen even waarschijnlijk, vlakker ogende ruis)
+    rgb = a[..., :3].astype(np.float32)
+    shape = rgb.shape[:2] + ((1,) if mono else (3,))
+    rng = np.random.default_rng(ctx.seed)
+    sd = amount * 2.55
+    if kind == 1:
+        n = rng.uniform(-sd * 1.732, sd * 1.732, shape)  # zelfde spreiding als de normale verdeling
+    else:
+        n = rng.normal(0, sd, shape)
+    out = a.copy()
+    out[..., :3] = np.clip(rgb + n.astype(np.float32), 0, 255)
+    return out
 
 
 @effect(0x8066, "Mediaanfilter", [Int("radius", "Straal", 1, 3, 1)])
@@ -50,9 +63,30 @@ def median(a, ctx, radius):
     return ops.adj_median(a, max(1, round(radius * ctx.scale)) if ctx.scale < 1 else radius)
 
 
+def _kernel_rgba(a, kernel):
+    """Kleine convolutiekern op RGBA, met correcte behandeling van transparantie."""
+    from .common import convolve
+    al = a[..., 3].astype(np.float32) / 255
+    pm = a[..., :3].astype(np.float32) * al[..., None]
+    pm = convolve(pm, kernel)
+    al2 = convolve(al, kernel)
+    rgb = np.where(al2[..., None] > 1e-6, pm / np.maximum(al2[..., None], 1e-6), 0)
+    return np.dstack([np.clip(rgb, 0, 255), np.clip(al2 * 255, 0, 255)]).astype(np.uint8)
+
+
+def _box_rgba(a, radius):
+    """Echt gemiddelde: elke pixel wordt het gemiddelde van een vierkant blok (één doorgang)."""
+    al = a[..., 3:4].astype(np.float32) / 255
+    pm = ops.box_blur(a[..., :3].astype(np.float32) * al, int(radius), passes=1)
+    al2 = ops.box_blur(al[..., 0], int(radius), passes=1)[..., None]
+    rgb = np.where(al2 > 1e-6, pm / np.maximum(al2, 1e-6), 0)
+    return np.dstack([np.clip(rgb, 0, 255), np.clip(al2[..., 0] * 255, 0, 255)]).astype(np.uint8)
+
+
 @effect(0x8065, "Gemiddeld", [Int("radius", "Straal", 1, 50, 1)])
 def average(a, ctx, radius):
-    return blur_rgba(a, radius * ctx.scale)
+    # gemiddelde over een vierkant blok: harder, 'blokkiger' dan gaussiaans (vooral bij grote straal)
+    return _box_rgba(a, max(1, round(radius * ctx.scale)))
 
 
 @effect(0x80b5, "Gaussiaanse vervaging", [Int("radius", "Straal", 1, 100, 3)])
@@ -60,24 +94,34 @@ def gaussian(a, ctx, radius):
     return blur_rgba(a, radius * ctx.scale)
 
 
+# Vervagen gebruikt een gelijkmatig gemiddelde (alle buren even zwaar): duidelijk vager.
+# Verzachten weegt de pixel zelf het zwaarst (binomiale kern): fijne details blijven beter zichtbaar.
+_BOX3 = np.ones((3, 3), np.float32) / 9
+_BOX5 = np.ones((5, 5), np.float32) / 25
+_B3 = np.outer([1, 2, 1], [1, 2, 1]).astype(np.float32)
+_SOFT3 = (_B3 + np.pad([[8.0]], 1)) / (_B3.sum() + 8)            # extra gewicht in het midden
+_B5 = np.outer([1, 4, 6, 4, 1], [1, 4, 6, 4, 1]).astype(np.float32)
+_SOFT5 = _B5 / _B5.sum()
+
+
 @effect(0x8083, "Vervagen")
 def blur1(a, ctx):
-    return blur_rgba(a, 1 * ctx.scale)
+    return _kernel_rgba(a, _BOX3)
 
 
 @effect(0x8084, "Meer vervagen")
 def blur2(a, ctx):
-    return blur_rgba(a, 2 * ctx.scale)
+    return _kernel_rgba(_kernel_rgba(a, _BOX5), _BOX3)
 
 
 @effect(0x8087, "Verzachten")
 def soften(a, ctx):
-    return blur_rgba(a, 1 * ctx.scale)
+    return _kernel_rgba(a, _SOFT3)
 
 
 @effect(0x8088, "Nog zachter")
 def soften_more(a, ctx):
-    return blur_rgba(a, 2 * ctx.scale)
+    return _kernel_rgba(a, _SOFT5)
 
 
 @effect(0x8085, "Verscherpen")

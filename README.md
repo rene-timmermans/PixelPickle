@@ -14,13 +14,14 @@ niet hoeft te zoeken.
 - Meerdere afbeeldingen tegelijk, als tabbladen of als losse vensters.
 - Snelmenu's met de rechtermuisknop op de afbeelding, de tabbladen en de lagen.
 - Strakke lijniconen in de accentkleur van je eigen thema; ziet er goed uit op licht en donker.
-- Nederlands en Engels.
+- In negen talen: Engels, Nederlands, Duits, Frans, Spaans, Italiaans, Russisch, Chinees en Arabisch.
 
 **Gereedschappen**
 - Pannen en zoomen, selecteren en verplaatsen.
 - Selecties: rechthoek, ovaal en andere vormen, uit de vrije hand (ook punt tot punt en Slimme rand)
   en de toverstaf met overeenkomstmodi en tolerantie. Bij puntsgewijs selecteren schuift het beeld
-  vanzelf mee als je bij de rand van het venster komt.
+  vanzelf mee als je bij de rand van het venster komt. Met de pijltoetsen schuif je een selectie per pixel
+  (Shift: 10 pixels, Ctrl: alleen het kader).
 - Bijsnijden met een aanpasbaar kader: grepen op hoeken en zijden, vaste verhoudingen, maten in te
   typen en uitlijnen op laag of afbeelding. Dubbelklik in het kader om bij te snijden.
 - Rechtzetten, perspectiefcorrectie, rode ogen verwijderen, klonen en krasjes verwijderen.
@@ -53,12 +54,14 @@ niet hoeft te zoeken.
 
 **Bestanden en veiligheid**
 - Openen en opslaan: PNG, JPEG, TIFF, BMP, WebP, GIF (ook transparant, via GIF-optimalisatie),
-  OpenRaster (.ora, met lagen) en PspImage (.pspimage, met lagen).
+  OpenRaster (.ora, de open standaard waarin lagen en vectoren bewaard blijven) en .pspimage
+  (openen van bestaande bestanden, en opslaan als extra keuze).
 - Ongedaan maken en opnieuw, met alle stappen in het palet Geschiedenis.
 - Automatisch opslaan naar een herstelmap, op een instelbaar interval.
 
 **Hulp**
-- Beknopte gebruikershandleiding en een overzicht van alle sneltoetsen in het menu Help.
+- Uitgebreide gebruikershandleiding in negen talen, met een hoofdstuk per gereedschap, elke menu-opdracht
+  en elk effect met al zijn instellingen, plus een overzicht van alle sneltoetsen (menu Help).
 
 ## Installeren
 
@@ -78,11 +81,15 @@ Ubuntu 24.04 en Debian 12 worden niet ondersteund.
 
 ## Taal
 
-Bij de eerste start is de taal Engels. Kies Nederlands via
-**File > Preferences > General Program Preferences** (*Bestand > Voorkeuren > Algemene
-programmavoorkeuren*).
+PixelPickle is er in het Engels, Nederlands, Duits, Frans, Spaans, Italiaans, Russisch, Chinees en
+Arabisch (van rechts naar links). Bij de eerste start is de taal Engels. Kies een andere taal via
+**File > Preferences > General Program Preferences**; de gebruikershandleiding is er in elke taal.
 
 ## Wat er nieuw is
+
+**0.9.0** Negen talen (Engels, Nederlands, Duits, Frans, Spaans, Italiaans, Russisch, Chinees, Arabisch) en een
+uitgebreide handleiding met elk gereedschap, menu en effect. Selecties verschuiven met de pijltoetsen,
+broncirkel bij klonen, .ora als standaardformaat en verbeterde vervaag- en korreleffecten.
 
 **0.8.0** Vernieuwde optiebalk: bij elk gereedschap even hoog en strak uitgelijnd, met een groot icoon
 vooraan in plaats van de naam, kleinere vinkjes in dezelfde letter als de labels, en een smallere balk.

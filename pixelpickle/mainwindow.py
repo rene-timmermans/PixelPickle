@@ -343,7 +343,6 @@ class MainWindow(QMainWindow):
             0x811c: lambda: self.modify_selection("contract", "Inkrimpen", "Aantal pixels:"),
             0x80e3: lambda: self.modify_selection("feather", "Doezelen", "Aantal pixels:"),
             0x8109: D(lambda d: d.promote_selection()), 0x811a: self.toggle_marquee,
-            0x8283: lambda: None,
             # Venster
             0xe130: self.new_window, 0x82ce: lambda: self.set_tab_mode(self.mdi.viewMode() != QMdiArea.ViewMode.TabbedView),
             0xe132: self.mdi.cascadeSubWindows, 0xe133: lambda: self.tile(False), 0xe134: lambda: self.tile(True),
@@ -974,9 +973,9 @@ class MainWindow(QMainWindow):
         if ask or not path or ext not in writable:
             base = os.path.splitext(path)[0] if path else os.path.join(
                 self.settings.value("lastdir", os.path.expanduser("~/Afbeeldingen")), doc.untitled)
-            default_ext = ".pspimage" if len(doc.layers) > 1 else ".png"
+            default_ext = ".ora" if len(doc.layers) > 1 else ".png"
             path, flt = QFileDialog.getSaveFileName(self, "Opslaan als", base + default_ext, fileio.SAVE_FILTER,
-                                                    "PspImage (*.pspimage)" if default_ext == ".pspimage" else "PNG (*.png)")
+                                                    "OpenRaster met lagen (*.ora)" if default_ext == ".ora" else "PNG (*.png)")
             if not path:
                 return False
             if not os.path.splitext(path)[1]:
@@ -1560,7 +1559,9 @@ class MainWindow(QMainWindow):
                 if it["items"]:
                     walk(it["items"], path + [name])
                 elif it["keys"]:
-                    rows.append((" > ".join(path + [name]), ", ".join(it["keys"])))
+                    # sneltoets in de taal van het systeem (bijvoorbeeld Strg in het Duits)
+                    keys = [QKeySequence(k).toString(QKeySequence.SequenceFormat.NativeText) or k for k in it["keys"]]
+                    rows.append((" > ".join(path + [tr(name)]), ", ".join(keys)))
         walk(self.menu_tree, [])
         tools = [(f"Gereedschap: {t.name}", self.tool_key(t)) for t in self.tools.values() if self.tool_key(t)]
         html = "<table cellspacing=3>" + "".join(f"<tr><td>{tr(a)}</td><td style='padding-left:16px'><b>{b}</b></td></tr>"
@@ -1575,15 +1576,18 @@ class MainWindow(QMainWindow):
         from . import i18n
         folder = os.path.join(os.path.dirname(__file__), "data")
         path = os.path.join(folder, f"manual_{i18n.language()}.html")
-        if not os.path.exists(path):
-            path = os.path.join(folder, "manual_nl.html")
+        if not os.path.exists(path):  # taal zonder eigen handleiding: Engels
+            path = os.path.join(folder, "manual_en.html")
         html = open(path, encoding="utf-8").read()
         rows = "".join(f"<tr><td>{tr(t.name)}</td><td style='padding-left:16px'><b>{self.tool_key(t)}</b></td></tr>"
                        for t in self.tools.values() if t.available and self.tool_key(t))
         return html.replace("{tools}", f"<table cellspacing=2>{rows}</table>")
 
     def show_manual(self):
-        dialogs.text_window(self, tr("Gebruikershandleiding"), self.manual_html(), (820, 760)).show()
+        """Uitgebreide handleiding (per gereedschap, menu en effect); zonder die bestanden de beknopte."""
+        from . import manual
+        page = manual.build() if os.path.exists(os.path.join(manual.DATA, "prose_en.json")) else self.manual_html()
+        dialogs.text_window(self, tr("Gebruikershandleiding"), page, (900, 820)).show()
 
     # ---------------------------------------------------------------- automatisch opslaan
     def autosave_settings(self):

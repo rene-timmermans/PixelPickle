@@ -194,6 +194,22 @@ print("11 lichter maken, 3x heen en weer: zonder Doorlopend", vals[False], "| me
 assert 120 < vals[False] < vals[True], vals
 w.opts["continuous"] = False
 doc8.set_modified(False)
+# ---- 8. Klonen: nieuwe bron kiezen tijdens een lopende streek geeft geen fout
+doc9 = Document(200, 150, QColor(200, 150, 120)); cv9 = w.add_document(doc9).canvas; app.processEvents()
+cl = w.tools[0xd081]; w.select_tool(cl); w.opts.update(size=20, clone_aligned=True)
+RB = Qt.MouseButton.RightButton
+def rev(t, p):
+    return QMouseEvent(t, cv9.to_widget(p), cv9.to_widget(p), RB, RB if t != QEvent.Type.MouseButtonRelease else Qt.MouseButton.NoButton, Qt.KeyboardModifier.NoModifier)
+cl.press(cv9, P(30, 30), rev(QEvent.Type.MouseButtonPress, P(30, 30)))          # bron
+cl.press(cv9, P(100, 80), ev(cv9, QEvent.Type.MouseButtonPress, P(100, 80)))   # streek begint
+cl.move(cv9, P(110, 80), ev(cv9, QEvent.Type.MouseMove, P(110, 80)))
+cl.press(cv9, P(40, 40), rev(QEvent.Type.MouseButtonPress, P(40, 40)))          # nieuwe bron midden in de streek
+cl.move(cv9, P(130, 80), ev(cv9, QEvent.Type.MouseMove, P(130, 80)))           # gaf eerder een fout
+cl.release(cv9, P(130, 80), ev(cv9, QEvent.Type.MouseButtonRelease, P(130, 80)))
+assert not cl.active and cl.source == P(40, 40)
+drag(cv9, cl, [P(120, 100), P(140, 100)])  # gewoon verder klonen werkt
+print("12 klonen: nieuwe bron tijdens een streek OK")
+doc9.set_modified(False)
 for d_ in (doc4, doc5, doc7):
     d_.set_modified(False)
 print("ALLES OK")

@@ -1,0 +1,8911 @@
+{
+ "tools": [
+  {
+   "id": "d001",
+   "name": "Pannen",
+   "group": 1,
+   "glyph": "✋",
+   "key": "A",
+   "options": []
+  },
+  {
+   "id": "d002",
+   "name": "Zoomen",
+   "group": 1,
+   "glyph": "🔍",
+   "key": "Z",
+   "options": [
+    {
+     "label": "100%",
+     "type": "button"
+    },
+    {
+     "label": "Passend",
+     "type": "button"
+    }
+   ]
+  },
+  {
+   "id": "d011",
+   "name": "Selecteren",
+   "group": 2,
+   "glyph": "➚",
+   "key": "K",
+   "options": []
+  },
+  {
+   "id": "d012",
+   "name": "Verplaatsen",
+   "group": 2,
+   "glyph": "✥",
+   "key": "M",
+   "options": []
+  },
+  {
+   "id": "d021",
+   "name": "Selectie",
+   "group": 3,
+   "glyph": "⬚",
+   "key": "S",
+   "options": [
+    {
+     "label": "Selectietype:",
+     "type": "choice",
+     "choices": [
+      "Rechthoek",
+      "Vierkant",
+      "Afgeronde rechthoek",
+      "Afgerond vierkant",
+      "Ovaal",
+      "Cirkel",
+      "Driehoek",
+      "Ster 1",
+      "Ster 2",
+      "Pijl rechts"
+     ]
+    },
+    {
+     "label": "Modus:",
+     "type": "choice",
+     "choices": [
+      "Vervangen",
+      "Toevoegen",
+      "Verwijderen"
+     ]
+    },
+    {
+     "label": "Doezelen:",
+     "type": "number",
+     "range": [
+      0,
+      200
+     ]
+    },
+    {
+     "label": "Anti-alias",
+     "type": "check"
+    }
+   ]
+  },
+  {
+   "id": "d022",
+   "name": "Selectie uit vrije hand",
+   "group": 3,
+   "glyph": "➰",
+   "key": "",
+   "options": [
+    {
+     "label": "Selectietype:",
+     "type": "choice",
+     "choices": [
+      "Uit de vrije hand",
+      "Punt tot punt",
+      "Slimme rand",
+      "Rand zoeken"
+     ]
+    },
+    {
+     "label": "Modus:",
+     "type": "choice",
+     "choices": [
+      "Vervangen",
+      "Toevoegen",
+      "Verwijderen"
+     ]
+    },
+    {
+     "label": "Doezelen:",
+     "type": "number",
+     "range": [
+      0,
+      200
+     ]
+    },
+    {
+     "label": "Bereik:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Vloeiend:",
+     "type": "number",
+     "range": [
+      0,
+      40
+     ]
+    },
+    {
+     "label": "Anti-alias",
+     "type": "check"
+    },
+    {
+     "label": "Alle lagen gebruiken",
+     "type": "check"
+    }
+   ]
+  },
+  {
+   "id": "d023",
+   "name": "Toverstaf",
+   "group": 3,
+   "glyph": "✨",
+   "key": "",
+   "options": [
+    {
+     "label": "Modus:",
+     "type": "choice",
+     "choices": [
+      "Vervangen",
+      "Toevoegen",
+      "Verwijderen"
+     ]
+    },
+    {
+     "label": "Overeenkomstmodus:",
+     "type": "choice",
+     "choices": [
+      "Geen",
+      "RGB-waarde",
+      "Kleur",
+      "Helderheid",
+      "Perceptueel",
+      "Traditioneel",
+      "Alles dekkend",
+      "Dekking"
+     ]
+    },
+    {
+     "label": "Tolerantie:",
+     "type": "number",
+     "range": [
+      0,
+      200
+     ]
+    },
+    {
+     "label": "Alle lagen gebruiken",
+     "type": "check"
+    },
+    {
+     "label": "Aaneengesloten",
+     "type": "check"
+    },
+    {
+     "label": "Doezelen:",
+     "type": "number",
+     "range": [
+      0,
+      200
+     ]
+    },
+    {
+     "label": "Anti-alias",
+     "type": "check"
+    }
+   ]
+  },
+  {
+   "id": "d030",
+   "name": "Pipet",
+   "group": 4,
+   "glyph": "💧",
+   "key": "E",
+   "options": [
+    {
+     "label": "Proefgrootte:",
+     "type": "choice",
+     "choices": [
+      "1 × 1",
+      "3 × 3",
+      "5 × 5",
+      "7 × 7",
+      "9 × 9",
+      "11 × 11"
+     ]
+    },
+    {
+     "label": "Alle lagen gebruiken",
+     "type": "check"
+    }
+   ]
+  },
+  {
+   "id": "d040",
+   "name": "Bijsnijden",
+   "group": 5,
+   "glyph": "⛶",
+   "key": "R",
+   "options": [
+    {
+     "label": "Breedte:",
+     "type": "number",
+     "range": [
+      0,
+      100000
+     ]
+    },
+    {
+     "label": "Hoogte:",
+     "type": "number",
+     "range": [
+      0,
+      100000
+     ]
+    },
+    {
+     "label": "Links:",
+     "type": "number",
+     "range": [
+      0,
+      100000
+     ]
+    },
+    {
+     "label": "Boven:",
+     "type": "number",
+     "range": [
+      0,
+      100000
+     ]
+    },
+    {
+     "label": "Rechts:",
+     "type": "number",
+     "range": [
+      0,
+      100000
+     ]
+    },
+    {
+     "label": "Onder:",
+     "type": "number",
+     "range": [
+      0,
+      100000
+     ]
+    },
+    {
+     "label": "Verhouding behouden",
+     "type": "check"
+    },
+    {
+     "label": "⬚",
+     "type": "button"
+    },
+    {
+     "label": "▣",
+     "type": "button"
+    },
+    {
+     "label": "◼",
+     "type": "button"
+    }
+   ]
+  },
+  {
+   "id": "d051",
+   "name": "Rechttrekken",
+   "group": 6,
+   "glyph": "📐",
+   "key": "",
+   "options": [
+    {
+     "label": "Modus:",
+     "type": "choice",
+     "choices": [
+      "Automatisch",
+      "Horizontaal maken",
+      "Verticaal maken"
+     ]
+    },
+    {
+     "label": "Afbeelding bijsnijden",
+     "type": "check"
+    },
+    {
+     "label": "Toepassen",
+     "type": "button"
+    }
+   ]
+  },
+  {
+   "id": "d052",
+   "name": "Perspectiefcorrectie",
+   "group": 6,
+   "glyph": "⏢",
+   "key": "",
+   "options": [
+    {
+     "label": "Rasterlijnen:",
+     "type": "number",
+     "range": [
+      0,
+      30
+     ]
+    },
+    {
+     "label": "Afbeelding bijsnijden",
+     "type": "check"
+    },
+    {
+     "label": "Toepassen",
+     "type": "button"
+    },
+    {
+     "label": "Herstellen",
+     "type": "button"
+    }
+   ]
+  },
+  {
+   "id": "d060",
+   "name": "Rode ogen",
+   "group": 7,
+   "glyph": "👁",
+   "key": "",
+   "options": [
+    {
+     "label": "Grootte:",
+     "type": "number",
+     "range": [
+      2,
+      500
+     ]
+    },
+    {
+     "label": "Sterkte:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    }
+   ]
+  },
+  {
+   "id": "d081",
+   "name": "Klonen",
+   "group": 9,
+   "glyph": "⎘",
+   "key": "C",
+   "options": [
+    {
+     "label": "Vorm:",
+     "type": "choice",
+     "choices": [
+      "Rond",
+      "Vierkant"
+     ]
+    },
+    {
+     "label": "Grootte:",
+     "type": "number",
+     "range": [
+      1,
+      999
+     ]
+    },
+    {
+     "label": "Hardheid:",
+     "type": "number",
+     "range": [
+      0,
+      100
+     ]
+    },
+    {
+     "label": "Stap:",
+     "type": "number",
+     "range": [
+      1,
+      200
+     ]
+    },
+    {
+     "label": "Dichtheid:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Dikte:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Rotatie:",
+     "type": "number",
+     "range": [
+      0,
+      359
+     ]
+    },
+    {
+     "label": "Dekking:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Uitgelijnde modus",
+     "type": "check"
+    },
+    {
+     "label": "Alle lagen gebruiken",
+     "type": "check"
+    }
+   ]
+  },
+  {
+   "id": "d082",
+   "name": "Krasjes verwijderen",
+   "group": 9,
+   "glyph": "〰",
+   "key": "",
+   "options": [
+    {
+     "label": "Breedte:",
+     "type": "number",
+     "range": [
+      2,
+      100
+     ]
+    },
+    {
+     "label": "Uiteinden:",
+     "type": "choice",
+     "choices": [
+      "Recht",
+      "Puntig"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "d091",
+   "name": "Penseel",
+   "group": 10,
+   "glyph": "🖌",
+   "key": "B",
+   "options": [
+    {
+     "label": "Vorm:",
+     "type": "choice",
+     "choices": [
+      "Rond",
+      "Vierkant"
+     ]
+    },
+    {
+     "label": "Grootte:",
+     "type": "number",
+     "range": [
+      1,
+      999
+     ]
+    },
+    {
+     "label": "Hardheid:",
+     "type": "number",
+     "range": [
+      0,
+      100
+     ]
+    },
+    {
+     "label": "Stap:",
+     "type": "number",
+     "range": [
+      1,
+      200
+     ]
+    },
+    {
+     "label": "Dichtheid:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Dikte:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Rotatie:",
+     "type": "number",
+     "range": [
+      0,
+      359
+     ]
+    },
+    {
+     "label": "Dekking:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Mengmodus:",
+     "type": "choice",
+     "choices": [
+      "Normaal",
+      "Donkerder",
+      "Lichter",
+      "Kleurtoon",
+      "Kleurtoon (oud)",
+      "Verzadiging",
+      "Verzadiging (oud)",
+      "Kleur",
+      "Kleur (oud)",
+      "Luminantie",
+      "Luminantie (oud)",
+      "Vermenigvuldigen",
+      "Scherm",
+      "Oplossen",
+      "Bedekken",
+      "Hard licht",
+      "Zacht licht",
+      "Verschil",
+      "Tegenhouden",
+      "Doordrukken",
+      "Uitsluiting",
+      "Achter tekenen"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "d092",
+   "name": "Airbrush",
+   "group": 10,
+   "glyph": "💨",
+   "key": "",
+   "options": [
+    {
+     "label": "Vorm:",
+     "type": "choice",
+     "choices": [
+      "Rond",
+      "Vierkant"
+     ]
+    },
+    {
+     "label": "Grootte:",
+     "type": "number",
+     "range": [
+      1,
+      999
+     ]
+    },
+    {
+     "label": "Hardheid:",
+     "type": "number",
+     "range": [
+      0,
+      100
+     ]
+    },
+    {
+     "label": "Stap:",
+     "type": "number",
+     "range": [
+      1,
+      200
+     ]
+    },
+    {
+     "label": "Dichtheid:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Dikte:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Rotatie:",
+     "type": "number",
+     "range": [
+      0,
+      359
+     ]
+    },
+    {
+     "label": "Dekking:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Mengmodus:",
+     "type": "choice",
+     "choices": [
+      "Normaal",
+      "Donkerder",
+      "Lichter",
+      "Kleurtoon",
+      "Kleurtoon (oud)",
+      "Verzadiging",
+      "Verzadiging (oud)",
+      "Kleur",
+      "Kleur (oud)",
+      "Luminantie",
+      "Luminantie (oud)",
+      "Vermenigvuldigen",
+      "Scherm",
+      "Oplossen",
+      "Bedekken",
+      "Hard licht",
+      "Zacht licht",
+      "Verschil",
+      "Tegenhouden",
+      "Doordrukken",
+      "Uitsluiting",
+      "Achter tekenen"
+     ]
+    },
+    {
+     "label": "Snelheid:",
+     "type": "number",
+     "range": [
+      0,
+      50
+     ]
+    }
+   ]
+  },
+  {
+   "id": "d0a1",
+   "name": "Lichter/donkerder",
+   "group": 11,
+   "glyph": "◐",
+   "key": "L",
+   "options": [
+    {
+     "label": "Vorm:",
+     "type": "choice",
+     "choices": [
+      "Rond",
+      "Vierkant"
+     ]
+    },
+    {
+     "label": "Grootte:",
+     "type": "number",
+     "range": [
+      1,
+      999
+     ]
+    },
+    {
+     "label": "Hardheid:",
+     "type": "number",
+     "range": [
+      0,
+      100
+     ]
+    },
+    {
+     "label": "Stap:",
+     "type": "number",
+     "range": [
+      1,
+      200
+     ]
+    },
+    {
+     "label": "Dichtheid:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Dikte:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Rotatie:",
+     "type": "number",
+     "range": [
+      0,
+      359
+     ]
+    },
+    {
+     "label": "Dekking:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Doorlopend",
+     "type": "check"
+    }
+   ]
+  },
+  {
+   "id": "d0a2",
+   "name": "Tegenhouden",
+   "group": 11,
+   "glyph": "◯",
+   "key": "J",
+   "options": [
+    {
+     "label": "Vorm:",
+     "type": "choice",
+     "choices": [
+      "Rond",
+      "Vierkant"
+     ]
+    },
+    {
+     "label": "Grootte:",
+     "type": "number",
+     "range": [
+      1,
+      999
+     ]
+    },
+    {
+     "label": "Hardheid:",
+     "type": "number",
+     "range": [
+      0,
+      100
+     ]
+    },
+    {
+     "label": "Stap:",
+     "type": "number",
+     "range": [
+      1,
+      200
+     ]
+    },
+    {
+     "label": "Dichtheid:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Dikte:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Rotatie:",
+     "type": "number",
+     "range": [
+      0,
+      359
+     ]
+    },
+    {
+     "label": "Dekking:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Doorlopend",
+     "type": "check"
+    }
+   ]
+  },
+  {
+   "id": "d0a3",
+   "name": "Doordrukken",
+   "group": 11,
+   "glyph": "●",
+   "key": "",
+   "options": [
+    {
+     "label": "Vorm:",
+     "type": "choice",
+     "choices": [
+      "Rond",
+      "Vierkant"
+     ]
+    },
+    {
+     "label": "Grootte:",
+     "type": "number",
+     "range": [
+      1,
+      999
+     ]
+    },
+    {
+     "label": "Hardheid:",
+     "type": "number",
+     "range": [
+      0,
+      100
+     ]
+    },
+    {
+     "label": "Stap:",
+     "type": "number",
+     "range": [
+      1,
+      200
+     ]
+    },
+    {
+     "label": "Dichtheid:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Dikte:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Rotatie:",
+     "type": "number",
+     "range": [
+      0,
+      359
+     ]
+    },
+    {
+     "label": "Dekking:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Doorlopend",
+     "type": "check"
+    }
+   ]
+  },
+  {
+   "id": "d0a4",
+   "name": "Uitsmeren",
+   "group": 11,
+   "glyph": "☝",
+   "key": "",
+   "options": [
+    {
+     "label": "Vorm:",
+     "type": "choice",
+     "choices": [
+      "Rond",
+      "Vierkant"
+     ]
+    },
+    {
+     "label": "Grootte:",
+     "type": "number",
+     "range": [
+      1,
+      999
+     ]
+    },
+    {
+     "label": "Hardheid:",
+     "type": "number",
+     "range": [
+      0,
+      100
+     ]
+    },
+    {
+     "label": "Stap:",
+     "type": "number",
+     "range": [
+      1,
+      200
+     ]
+    },
+    {
+     "label": "Dichtheid:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Dikte:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Rotatie:",
+     "type": "number",
+     "range": [
+      0,
+      359
+     ]
+    },
+    {
+     "label": "Dekking:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    }
+   ]
+  },
+  {
+   "id": "d0a5",
+   "name": "Verspreiden",
+   "group": 11,
+   "glyph": "👉",
+   "key": "",
+   "options": [
+    {
+     "label": "Vorm:",
+     "type": "choice",
+     "choices": [
+      "Rond",
+      "Vierkant"
+     ]
+    },
+    {
+     "label": "Grootte:",
+     "type": "number",
+     "range": [
+      1,
+      999
+     ]
+    },
+    {
+     "label": "Hardheid:",
+     "type": "number",
+     "range": [
+      0,
+      100
+     ]
+    },
+    {
+     "label": "Stap:",
+     "type": "number",
+     "range": [
+      1,
+      200
+     ]
+    },
+    {
+     "label": "Dichtheid:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Dikte:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Rotatie:",
+     "type": "number",
+     "range": [
+      0,
+      359
+     ]
+    },
+    {
+     "label": "Dekking:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    }
+   ]
+  },
+  {
+   "id": "d0a6",
+   "name": "Verzachten",
+   "group": 11,
+   "glyph": "◌",
+   "key": "",
+   "options": [
+    {
+     "label": "Vorm:",
+     "type": "choice",
+     "choices": [
+      "Rond",
+      "Vierkant"
+     ]
+    },
+    {
+     "label": "Grootte:",
+     "type": "number",
+     "range": [
+      1,
+      999
+     ]
+    },
+    {
+     "label": "Hardheid:",
+     "type": "number",
+     "range": [
+      0,
+      100
+     ]
+    },
+    {
+     "label": "Stap:",
+     "type": "number",
+     "range": [
+      1,
+      200
+     ]
+    },
+    {
+     "label": "Dichtheid:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Dikte:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Rotatie:",
+     "type": "number",
+     "range": [
+      0,
+      359
+     ]
+    },
+    {
+     "label": "Dekking:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Doorlopend",
+     "type": "check"
+    }
+   ]
+  },
+  {
+   "id": "d0a7",
+   "name": "Verscherpen",
+   "group": 11,
+   "glyph": "◉",
+   "key": "",
+   "options": [
+    {
+     "label": "Vorm:",
+     "type": "choice",
+     "choices": [
+      "Rond",
+      "Vierkant"
+     ]
+    },
+    {
+     "label": "Grootte:",
+     "type": "number",
+     "range": [
+      1,
+      999
+     ]
+    },
+    {
+     "label": "Hardheid:",
+     "type": "number",
+     "range": [
+      0,
+      100
+     ]
+    },
+    {
+     "label": "Stap:",
+     "type": "number",
+     "range": [
+      1,
+      200
+     ]
+    },
+    {
+     "label": "Dichtheid:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Dikte:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Rotatie:",
+     "type": "number",
+     "range": [
+      0,
+      359
+     ]
+    },
+    {
+     "label": "Dekking:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Doorlopend",
+     "type": "check"
+    }
+   ]
+  },
+  {
+   "id": "d0a8",
+   "name": "Bosseleren",
+   "group": 11,
+   "glyph": "▦",
+   "key": "",
+   "options": [
+    {
+     "label": "Vorm:",
+     "type": "choice",
+     "choices": [
+      "Rond",
+      "Vierkant"
+     ]
+    },
+    {
+     "label": "Grootte:",
+     "type": "number",
+     "range": [
+      1,
+      999
+     ]
+    },
+    {
+     "label": "Hardheid:",
+     "type": "number",
+     "range": [
+      0,
+      100
+     ]
+    },
+    {
+     "label": "Stap:",
+     "type": "number",
+     "range": [
+      1,
+      200
+     ]
+    },
+    {
+     "label": "Dichtheid:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Dikte:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Rotatie:",
+     "type": "number",
+     "range": [
+      0,
+      359
+     ]
+    },
+    {
+     "label": "Dekking:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Doorlopend",
+     "type": "check"
+    }
+   ]
+  },
+  {
+   "id": "d0a9",
+   "name": "Verzadiging Omhoog/Omlaag",
+   "group": 11,
+   "glyph": "🌈",
+   "key": "",
+   "options": [
+    {
+     "label": "Vorm:",
+     "type": "choice",
+     "choices": [
+      "Rond",
+      "Vierkant"
+     ]
+    },
+    {
+     "label": "Grootte:",
+     "type": "number",
+     "range": [
+      1,
+      999
+     ]
+    },
+    {
+     "label": "Hardheid:",
+     "type": "number",
+     "range": [
+      0,
+      100
+     ]
+    },
+    {
+     "label": "Stap:",
+     "type": "number",
+     "range": [
+      1,
+      200
+     ]
+    },
+    {
+     "label": "Dichtheid:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Dikte:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Rotatie:",
+     "type": "number",
+     "range": [
+      0,
+      359
+     ]
+    },
+    {
+     "label": "Dekking:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Doorlopend",
+     "type": "check"
+    }
+   ]
+  },
+  {
+   "id": "d0aa",
+   "name": "Kleurtoon omhoog/omlaag",
+   "group": 11,
+   "glyph": "🎨",
+   "key": "",
+   "options": [
+    {
+     "label": "Vorm:",
+     "type": "choice",
+     "choices": [
+      "Rond",
+      "Vierkant"
+     ]
+    },
+    {
+     "label": "Grootte:",
+     "type": "number",
+     "range": [
+      1,
+      999
+     ]
+    },
+    {
+     "label": "Hardheid:",
+     "type": "number",
+     "range": [
+      0,
+      100
+     ]
+    },
+    {
+     "label": "Stap:",
+     "type": "number",
+     "range": [
+      1,
+      200
+     ]
+    },
+    {
+     "label": "Dichtheid:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Dikte:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Rotatie:",
+     "type": "number",
+     "range": [
+      0,
+      359
+     ]
+    },
+    {
+     "label": "Dekking:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Doorlopend",
+     "type": "check"
+    }
+   ]
+  },
+  {
+   "id": "d0ab",
+   "name": "Naar doel overgaan",
+   "group": 11,
+   "glyph": "🎯",
+   "key": "",
+   "options": [
+    {
+     "label": "Vorm:",
+     "type": "choice",
+     "choices": [
+      "Rond",
+      "Vierkant"
+     ]
+    },
+    {
+     "label": "Grootte:",
+     "type": "number",
+     "range": [
+      1,
+      999
+     ]
+    },
+    {
+     "label": "Hardheid:",
+     "type": "number",
+     "range": [
+      0,
+      100
+     ]
+    },
+    {
+     "label": "Stap:",
+     "type": "number",
+     "range": [
+      1,
+      200
+     ]
+    },
+    {
+     "label": "Dichtheid:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Dikte:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Rotatie:",
+     "type": "number",
+     "range": [
+      0,
+      359
+     ]
+    },
+    {
+     "label": "Dekking:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Modus:",
+     "type": "choice",
+     "choices": [
+      "Kleur",
+      "Kleurtoon",
+      "Verzadiging",
+      "Lichtheid"
+     ]
+    },
+    {
+     "label": "Doorlopend",
+     "type": "check"
+    }
+   ]
+  },
+  {
+   "id": "d0ac",
+   "name": "Kleur vervangen",
+   "group": 11,
+   "glyph": "🔁",
+   "key": "",
+   "options": [
+    {
+     "label": "Vorm:",
+     "type": "choice",
+     "choices": [
+      "Rond",
+      "Vierkant"
+     ]
+    },
+    {
+     "label": "Grootte:",
+     "type": "number",
+     "range": [
+      1,
+      999
+     ]
+    },
+    {
+     "label": "Hardheid:",
+     "type": "number",
+     "range": [
+      0,
+      100
+     ]
+    },
+    {
+     "label": "Stap:",
+     "type": "number",
+     "range": [
+      1,
+      200
+     ]
+    },
+    {
+     "label": "Dichtheid:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Dikte:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Rotatie:",
+     "type": "number",
+     "range": [
+      0,
+      359
+     ]
+    },
+    {
+     "label": "Dekking:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Tolerantie:",
+     "type": "number",
+     "range": [
+      0,
+      200
+     ]
+    }
+   ]
+  },
+  {
+   "id": "d0b0",
+   "name": "Wisser",
+   "group": 12,
+   "glyph": "⌫",
+   "key": "X",
+   "options": [
+    {
+     "label": "Vorm:",
+     "type": "choice",
+     "choices": [
+      "Rond",
+      "Vierkant"
+     ]
+    },
+    {
+     "label": "Grootte:",
+     "type": "number",
+     "range": [
+      1,
+      999
+     ]
+    },
+    {
+     "label": "Hardheid:",
+     "type": "number",
+     "range": [
+      0,
+      100
+     ]
+    },
+    {
+     "label": "Stap:",
+     "type": "number",
+     "range": [
+      1,
+      200
+     ]
+    },
+    {
+     "label": "Dichtheid:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Dikte:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Rotatie:",
+     "type": "number",
+     "range": [
+      0,
+      359
+     ]
+    },
+    {
+     "label": "Dekking:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    }
+   ]
+  },
+  {
+   "id": "d0c0",
+   "name": "Achtergrondwisser",
+   "group": 13,
+   "glyph": "🧽",
+   "key": "",
+   "options": [
+    {
+     "label": "Vorm:",
+     "type": "choice",
+     "choices": [
+      "Rond",
+      "Vierkant"
+     ]
+    },
+    {
+     "label": "Grootte:",
+     "type": "number",
+     "range": [
+      1,
+      999
+     ]
+    },
+    {
+     "label": "Hardheid:",
+     "type": "number",
+     "range": [
+      0,
+      100
+     ]
+    },
+    {
+     "label": "Stap:",
+     "type": "number",
+     "range": [
+      1,
+      200
+     ]
+    },
+    {
+     "label": "Dichtheid:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Dikte:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Rotatie:",
+     "type": "number",
+     "range": [
+      0,
+      359
+     ]
+    },
+    {
+     "label": "Dekking:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Tolerantie:",
+     "type": "number",
+     "range": [
+      0,
+      200
+     ]
+    },
+    {
+     "label": "Bemonstering:",
+     "type": "choice",
+     "choices": [
+      "Doorlopend",
+      "Eenmaal"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "d0d1",
+   "name": "Vlakvulling",
+   "group": 14,
+   "glyph": "🪣",
+   "key": "F",
+   "options": [
+    {
+     "label": "Overeenkomstmodus:",
+     "type": "choice",
+     "choices": [
+      "Geen",
+      "RGB-waarde",
+      "Kleur",
+      "Helderheid",
+      "Perceptueel",
+      "Traditioneel",
+      "Alles dekkend",
+      "Dekking"
+     ]
+    },
+    {
+     "label": "Tolerantie:",
+     "type": "number",
+     "range": [
+      0,
+      200
+     ]
+    },
+    {
+     "label": "Alle lagen gebruiken",
+     "type": "check"
+    },
+    {
+     "label": "Mengmodus:",
+     "type": "choice",
+     "choices": [
+      "Normaal",
+      "Donkerder",
+      "Lichter",
+      "Kleurtoon",
+      "Kleurtoon (oud)",
+      "Verzadiging",
+      "Verzadiging (oud)",
+      "Kleur",
+      "Kleur (oud)",
+      "Luminantie",
+      "Luminantie (oud)",
+      "Vermenigvuldigen",
+      "Scherm",
+      "Oplossen",
+      "Bedekken",
+      "Hard licht",
+      "Zacht licht",
+      "Verschil",
+      "Tegenhouden",
+      "Doordrukken",
+      "Uitsluiting",
+      "Achter tekenen"
+     ]
+    },
+    {
+     "label": "Dekking:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    }
+   ]
+  },
+  {
+   "id": "d0d2",
+   "name": "Kleurwisselaar",
+   "group": 14,
+   "glyph": "🖍",
+   "key": "",
+   "options": [
+    {
+     "label": "Tolerantie:",
+     "type": "number",
+     "range": [
+      0,
+      200
+     ]
+    },
+    {
+     "label": "Aaneengesloten",
+     "type": "check"
+    },
+    {
+     "label": "Dekking:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    }
+   ]
+  },
+  {
+   "id": "d0f0",
+   "name": "Tekst",
+   "group": 16,
+   "glyph": "A",
+   "key": "T",
+   "options": [
+    {
+     "label": "Lettertype:",
+     "type": "choice",
+     "choices": [
+      "Adwaita Mono",
+      "Adwaita Sans",
+      "Cantarell",
+      "DejaVu Math TeX Gyre",
+      "DejaVu Sans",
+      "DejaVu Sans Condensed",
+      "DejaVu Sans Mono",
+      "DejaVu Serif",
+      "DejaVu Serif Condensed",
+      "Hack",
+      "Liberation Mono",
+      "Liberation Sans",
+      "Liberation Serif",
+      "Monospace",
+      "Noto Fangsong KSS Rotated",
+      "Noto Fangsong KSS Vertical",
+      "Noto Kufi Arabic",
+      "Noto Kufi Arabic Black",
+      "Noto Kufi Arabic Light",
+      "Noto Kufi Arabic Medium",
+      "Noto Kufi Arabic Thin",
+      "Noto Music",
+      "Noto Naskh Arabic",
+      "Noto Naskh Arabic Medium",
+      "Noto Naskh Arabic UI",
+      "Noto Naskh Arabic UI Medium",
+      "Noto Nastaliq Urdu",
+      "Noto Rashi Hebrew",
+      "Noto Rashi Hebrew Blk",
+      "Noto Rashi Hebrew Light",
+      "Noto Rashi Hebrew Med",
+      "Noto Rashi Hebrew Thin",
+      "Noto Sans",
+      "Noto Sans Adlam",
+      "Noto Sans Adlam Unjoined",
+      "Noto Sans Anatolian Hieroglyphs",
+      "Noto Sans Arabic",
+      "Noto Sans Arabic Blk",
+      "Noto Sans Arabic Light",
+      "Noto Sans Arabic Med",
+      "Noto Sans Arabic Thin",
+      "Noto Sans Arabic UI",
+      "Noto Sans Arabic UI Bk",
+      "Noto Sans Arabic UI Lt",
+      "Noto Sans Arabic UI Md",
+      "Noto Sans Arabic UI Th",
+      "Noto Sans Armenian",
+      "Noto Sans Armenian Black",
+      "Noto Sans Armenian Light",
+      "Noto Sans Armenian Medium",
+      "Noto Sans Armenian Thin",
+      "Noto Sans Avestan",
+      "Noto Sans Balinese",
+      "Noto Sans Balinese Medium",
+      "Noto Sans Bamum",
+      "Noto Sans Bamum Medium",
+      "Noto Sans Bassa Vah",
+      "Noto Sans Bassa Vah Medium",
+      "Noto Sans Batak",
+      "Noto Sans Bengali",
+      "Noto Sans Bengali Black",
+      "Noto Sans Bengali Light",
+      "Noto Sans Bengali Medium",
+      "Noto Sans Bengali Thin",
+      "Noto Sans Bengali UI",
+      "Noto Sans Bengali UI Black",
+      "Noto Sans Bengali UI Light",
+      "Noto Sans Bengali UI Medium",
+      "Noto Sans Bengali UI Thin",
+      "Noto Sans Bhaiksuki",
+      "Noto Sans Black",
+      "Noto Sans Brahmi",
+      "Noto Sans Buginese",
+      "Noto Sans Buhid",
+      "Noto Sans Canadian Aboriginal",
+      "Noto Sans Canadian Aboriginal Black",
+      "Noto Sans Canadian Aboriginal Light",
+      "Noto Sans Canadian Aboriginal Medium",
+      "Noto Sans Canadian Aboriginal Thin",
+      "Noto Sans Carian",
+      "Noto Sans Caucasian Albanian",
+      "Noto Sans Chakma",
+      "Noto Sans Cham",
+      "Noto Sans Cham Black",
+      "Noto Sans Cham Light",
+      "Noto Sans Cham Medium",
+      "Noto Sans Cham Thin",
+      "Noto Sans Cherokee",
+      "Noto Sans Cherokee Black",
+      "Noto Sans Cherokee Light",
+      "Noto Sans Cherokee Medium",
+      "Noto Sans Cherokee Thin",
+      "Noto Sans Chorasmian",
+      "Noto Sans CJK HK",
+      "Noto Sans CJK HK Black",
+      "Noto Sans CJK HK DemiLight",
+      "Noto Sans CJK HK Light",
+      "Noto Sans CJK HK Medium",
+      "Noto Sans CJK HK Thin",
+      "Noto Sans CJK JP",
+      "Noto Sans CJK JP Black",
+      "Noto Sans CJK JP DemiLight",
+      "Noto Sans CJK JP Light",
+      "Noto Sans CJK JP Medium",
+      "Noto Sans CJK JP Thin",
+      "Noto Sans CJK KR",
+      "Noto Sans CJK KR Black",
+      "Noto Sans CJK KR DemiLight",
+      "Noto Sans CJK KR Light",
+      "Noto Sans CJK KR Medium",
+      "Noto Sans CJK KR Thin",
+      "Noto Sans CJK SC",
+      "Noto Sans CJK SC Black",
+      "Noto Sans CJK SC DemiLight",
+      "Noto Sans CJK SC Light",
+      "Noto Sans CJK SC Medium",
+      "Noto Sans CJK SC Thin",
+      "Noto Sans CJK TC",
+      "Noto Sans CJK TC Black",
+      "Noto Sans CJK TC DemiLight",
+      "Noto Sans CJK TC Light",
+      "Noto Sans CJK TC Medium",
+      "Noto Sans CJK TC Thin",
+      "Noto Sans Coptic",
+      "Noto Sans Cuneiform",
+      "Noto Sans Cypriot",
+      "Noto Sans Cypro Minoan",
+      "Noto Sans Deseret",
+      "Noto Sans Devanagari",
+      "Noto Sans Devanagari Black",
+      "Noto Sans Devanagari Light",
+      "Noto Sans Devanagari Medium",
+      "Noto Sans Devanagari Thin",
+      "Noto Sans Devanagari UI",
+      "Noto Sans Devanagari UI Black",
+      "Noto Sans Devanagari UI Light",
+      "Noto Sans Devanagari UI Medium",
+      "Noto Sans Devanagari UI Thin",
+      "Noto Sans Duployan",
+      "Noto Sans Egyptian Hieroglyphs",
+      "Noto Sans Elbasan",
+      "Noto Sans Elymaic",
+      "Noto Sans Ethiopic",
+      "Noto Sans Ethiopic Black",
+      "Noto Sans Ethiopic Light",
+      "Noto Sans Ethiopic Medium",
+      "Noto Sans Ethiopic Thin",
+      "Noto Sans Georgian",
+      "Noto Sans Georgian Black",
+      "Noto Sans Georgian Bold",
+      "Noto Sans Georgian Light",
+      "Noto Sans Georgian Medium",
+      "Noto Sans Georgian Thin",
+      "Noto Sans Glagolitic",
+      "Noto Sans Gothic",
+      "Noto Sans Grantha",
+      "Noto Sans Gujarati",
+      "Noto Sans Gujarati Black",
+      "Noto Sans Gujarati Light",
+      "Noto Sans Gujarati Medium",
+      "Noto Sans Gujarati Thin",
+      "Noto Sans Gujarati UI",
+      "Noto Sans Gujarati UI Black",
+      "Noto Sans Gujarati UI Light",
+      "Noto Sans Gujarati UI Medium",
+      "Noto Sans Gujarati UI Thin",
+      "Noto Sans Gunjala Gondi",
+      "Noto Sans Gunjala Gondi Medium",
+      "Noto Sans Gurmukhi",
+      "Noto Sans Gurmukhi Black",
+      "Noto Sans Gurmukhi Light",
+      "Noto Sans Gurmukhi Medium",
+      "Noto Sans Gurmukhi Thin",
+      "Noto Sans Gurmukhi UI",
+      "Noto Sans Gurmukhi UI Black",
+      "Noto Sans Gurmukhi UI Light",
+      "Noto Sans Gurmukhi UI Medium",
+      "Noto Sans Gurmukhi UI Thin",
+      "Noto Sans Hanifi Rohingya",
+      "Noto Sans Hanifi Rohingya Medium",
+      "Noto Sans Hanunoo",
+      "Noto Sans Hatran",
+      "Noto Sans Hebrew",
+      "Noto Sans Hebrew Black",
+      "Noto Sans Hebrew Light",
+      "Noto Sans Hebrew Medium",
+      "Noto Sans Hebrew Thin",
+      "Noto Sans Imperial Aramaic",
+      "Noto Sans Indic Siyaq Numbers",
+      "Noto Sans Inscriptional Pahlavi",
+      "Noto Sans Inscriptional Parthian",
+      "Noto Sans Javanese",
+      "Noto Sans Kaithi",
+      "Noto Sans Kannada",
+      "Noto Sans Kannada Black",
+      "Noto Sans Kannada Light",
+      "Noto Sans Kannada Medium",
+      "Noto Sans Kannada Thin",
+      "Noto Sans Kannada UI",
+      "Noto Sans Kannada UI Black",
+      "Noto Sans Kannada UI Light",
+      "Noto Sans Kannada UI Medium",
+      "Noto Sans Kannada UI Thin",
+      "Noto Sans Kawi",
+      "Noto Sans Kayah Li",
+      "Noto Sans Kayah Li Medium",
+      "Noto Sans Kharoshthi",
+      "Noto Sans Khmer",
+      "Noto Sans Khmer Black",
+      "Noto Sans Khmer Light",
+      "Noto Sans Khmer Medium",
+      "Noto Sans Khmer Thin",
+      "Noto Sans Khojki",
+      "Noto Sans Khudawadi",
+      "Noto Sans Lao",
+      "Noto Sans Lao Black",
+      "Noto Sans Lao Light",
+      "Noto Sans Lao Looped",
+      "Noto Sans Lao Looped Black",
+      "Noto Sans Lao Looped Light",
+      "Noto Sans Lao Looped Medium",
+      "Noto Sans Lao Looped Thin",
+      "Noto Sans Lao Medium",
+      "Noto Sans Lao Thin",
+      "Noto Sans Lepcha",
+      "Noto Sans Light",
+      "Noto Sans Limbu",
+      "Noto Sans Linear A",
+      "Noto Sans Linear B",
+      "Noto Sans Lisu",
+      "Noto Sans Lisu Medium",
+      "Noto Sans Lycian",
+      "Noto Sans Lydian",
+      "Noto Sans Mahajani",
+      "Noto Sans Malayalam",
+      "Noto Sans Malayalam Black",
+      "Noto Sans Malayalam Light",
+      "Noto Sans Malayalam Medium",
+      "Noto Sans Malayalam Thin",
+      "Noto Sans Malayalam UI",
+      "Noto Sans Malayalam UI Black",
+      "Noto Sans Malayalam UI Light",
+      "Noto Sans Malayalam UI Medium",
+      "Noto Sans Malayalam UI Thin",
+      "Noto Sans Mandaic",
+      "Noto Sans Manichaean",
+      "Noto Sans Marchen",
+      "Noto Sans Masaram Gondi",
+      "Noto Sans Math",
+      "Noto Sans Mayan Numerals",
+      "Noto Sans Medefaidrin",
+      "Noto Sans Medefaidrin Medium",
+      "Noto Sans Medium",
+      "Noto Sans Meetei Mayek",
+      "Noto Sans Meetei Mayek Black",
+      "Noto Sans Meetei Mayek Light",
+      "Noto Sans Meetei Mayek Medium",
+      "Noto Sans Meetei Mayek Thin",
+      "Noto Sans Mende Kikakui",
+      "Noto Sans Meroitic",
+      "Noto Sans Miao",
+      "Noto Sans Modi",
+      "Noto Sans Mongolian",
+      "Noto Sans Mono",
+      "Noto Sans Mono Black",
+      "Noto Sans Mono CJK HK",
+      "Noto Sans Mono CJK JP",
+      "Noto Sans Mono CJK KR",
+      "Noto Sans Mono CJK SC",
+      "Noto Sans Mono CJK TC",
+      "Noto Sans Mono Light",
+      "Noto Sans Mono Medium",
+      "Noto Sans Mono Thin",
+      "Noto Sans Mro",
+      "Noto Sans Multani",
+      "Noto Sans Myanmar",
+      "Noto Sans Myanmar Black",
+      "Noto Sans Myanmar Light",
+      "Noto Sans Myanmar Medium",
+      "Noto Sans Myanmar Thin",
+      "Noto Sans Nabataean",
+      "Noto Sans Nag Mundari",
+      "Noto Sans Nandinagari",
+      "Noto Sans New Tai Lue",
+      "Noto Sans New Tai Lue Medium",
+      "Noto Sans Newa",
+      "Noto Sans NKo",
+      "Noto Sans NKo Unjoined",
+      "Noto Sans Nushu",
+      "Noto Sans Ogham",
+      "Noto Sans Ol Chiki",
+      "Noto Sans Ol Chiki Medium",
+      "Noto Sans Old Hungarian",
+      "Noto Sans Old Italic",
+      "Noto Sans Old North Arabian",
+      "Noto Sans Old Permic",
+      "Noto Sans Old Persian",
+      "Noto Sans Old Sogdian",
+      "Noto Sans Old South Arabian",
+      "Noto Sans Old Turkic",
+      "Noto Sans Oriya",
+      "Noto Sans Oriya Blk",
+      "Noto Sans Oriya Thin",
+      "Noto Sans Osage",
+      "Noto Sans Osmanya",
+      "Noto Sans Pahawh Hmong",
+      "Noto Sans Palmyrene",
+      "Noto Sans Pau Cin Hau",
+      "Noto Sans PhagsPa",
+      "Noto Sans Phoenician",
+      "Noto Sans Psalter Pahlavi",
+      "Noto Sans Rejang",
+      "Noto Sans Runic",
+      "Noto Sans Samaritan",
+      "Noto Sans Saurashtra",
+      "Noto Sans Sharada",
+      "Noto Sans Shavian",
+      "Noto Sans Siddham",
+      "Noto Sans SignWriting",
+      "Noto Sans Sinhala",
+      "Noto Sans Sinhala Black",
+      "Noto Sans Sinhala Black Condensed",
+      "Noto Sans Sinhala Light",
+      "Noto Sans Sinhala Medium",
+      "Noto Sans Sinhala Thin",
+      "Noto Sans Sinhala Thin Condensed",
+      "Noto Sans Sinhala UI",
+      "Noto Sans Sinhala UI Black",
+      "Noto Sans Sinhala UI Light",
+      "Noto Sans Sinhala UI Medium",
+      "Noto Sans Sinhala UI Thin",
+      "Noto Sans Sogdian",
+      "Noto Sans Sora Sompeng",
+      "Noto Sans Sora Sompeng Medium",
+      "Noto Sans Soyombo",
+      "Noto Sans Sundanese",
+      "Noto Sans Sunuwar",
+      "Noto Sans Syloti Nagri",
+      "Noto Sans Symbols",
+      "Noto Sans Symbols 2",
+      "Noto Sans Symbols Black",
+      "Noto Sans Symbols Light",
+      "Noto Sans Symbols Medium",
+      "Noto Sans Symbols Thin",
+      "Noto Sans Syriac",
+      "Noto Sans Syriac Black",
+      "Noto Sans Syriac Eastern",
+      "Noto Sans Syriac Eastern Black",
+      "Noto Sans Syriac Eastern Thin",
+      "Noto Sans Syriac Thin",
+      "Noto Sans Syriac Western",
+      "Noto Sans Syriac Western Black",
+      "Noto Sans Syriac Western Thin",
+      "Noto Sans Tagalog",
+      "Noto Sans Tagbanwa",
+      "Noto Sans Tai Le",
+      "Noto Sans Tai Tham",
+      "Noto Sans Tai Tham Medium",
+      "Noto Sans Tai Viet",
+      "Noto Sans Takri",
+      "Noto Sans Tamil",
+      "Noto Sans Tamil Black",
+      "Noto Sans Tamil Light",
+      "Noto Sans Tamil Medium",
+      "Noto Sans Tamil Supplement",
+      "Noto Sans Tamil Thin",
+      "Noto Sans Tamil UI",
+      "Noto Sans Tamil UI Black",
+      "Noto Sans Tamil UI Light",
+      "Noto Sans Tamil UI Medium",
+      "Noto Sans Tamil UI Thin",
+      "Noto Sans Tangsa",
+      "Noto Sans Tangsa Medium",
+      "Noto Sans Telugu",
+      "Noto Sans Telugu Black",
+      "Noto Sans Telugu Light",
+      "Noto Sans Telugu Medium",
+      "Noto Sans Telugu Thin",
+      "Noto Sans Telugu UI",
+      "Noto Sans Telugu UI Black",
+      "Noto Sans Telugu UI Light",
+      "Noto Sans Telugu UI Medium",
+      "Noto Sans Telugu UI Thin",
+      "Noto Sans Test",
+      "Noto Sans Thaana",
+      "Noto Sans Thaana Black",
+      "Noto Sans Thaana Light",
+      "Noto Sans Thaana Medium",
+      "Noto Sans Thaana Thin",
+      "Noto Sans Thai",
+      "Noto Sans Thai Blk",
+      "Noto Sans Thai Light",
+      "Noto Sans Thai Looped",
+      "Noto Sans Thai Looped Black",
+      "Noto Sans Thai Looped Light",
+      "Noto Sans Thai Looped Medium",
+      "Noto Sans Thai Looped Thin",
+      "Noto Sans Thai Med",
+      "Noto Sans Thai Thin",
+      "Noto Sans Thin",
+      "Noto Sans Tifinagh",
+      "Noto Sans Tifinagh Adrar",
+      "Noto Sans Tifinagh Agraw Imazighen",
+      "Noto Sans Tifinagh Ahaggar",
+      "Noto Sans Tifinagh Air",
+      "Noto Sans Tifinagh APT",
+      "Noto Sans Tifinagh Azawagh",
+      "Noto Sans Tifinagh Ghat",
+      "Noto Sans Tifinagh Hawad",
+      "Noto Sans Tifinagh Rhissa Ixa",
+      "Noto Sans Tifinagh SIL",
+      "Noto Sans Tifinagh Tawellemmet",
+      "Noto Sans Tirhuta",
+      "Noto Sans Ugaritic",
+      "Noto Sans Vai",
+      "Noto Sans Vithkuqi",
+      "Noto Sans Vithkuqi Medium",
+      "Noto Sans Wancho",
+      "Noto Sans Warang Citi",
+      "Noto Sans Yi",
+      "Noto Sans Zanabazar Square",
+      "Noto Serif",
+      "Noto Serif Ahom",
+      "Noto Serif Armenian",
+      "Noto Serif Armenian Black",
+      "Noto Serif Armenian Light",
+      "Noto Serif Armenian Medium",
+      "Noto Serif Armenian Thin",
+      "Noto Serif Balinese",
+      "Noto Serif Bengali",
+      "Noto Serif Bengali Black",
+      "Noto Serif Bengali Light",
+      "Noto Serif Bengali Medium",
+      "Noto Serif Bengali Thin",
+      "Noto Serif Black",
+      "Noto Serif CJK HK",
+      "Noto Serif CJK HK Black",
+      "Noto Serif CJK HK ExtraLight",
+      "Noto Serif CJK HK Light",
+      "Noto Serif CJK HK Medium",
+      "Noto Serif CJK HK SemiBold",
+      "Noto Serif CJK JP",
+      "Noto Serif CJK JP Black",
+      "Noto Serif CJK JP ExtraLight",
+      "Noto Serif CJK JP Light",
+      "Noto Serif CJK JP Medium",
+      "Noto Serif CJK JP SemiBold",
+      "Noto Serif CJK KR",
+      "Noto Serif CJK KR Black",
+      "Noto Serif CJK KR ExtraLight",
+      "Noto Serif CJK KR Light",
+      "Noto Serif CJK KR Medium",
+      "Noto Serif CJK KR SemiBold",
+      "Noto Serif CJK SC",
+      "Noto Serif CJK SC Black",
+      "Noto Serif CJK SC ExtraLight",
+      "Noto Serif CJK SC Light",
+      "Noto Serif CJK SC Medium",
+      "Noto Serif CJK SC SemiBold",
+      "Noto Serif CJK TC",
+      "Noto Serif CJK TC Black",
+      "Noto Serif CJK TC ExtraLight",
+      "Noto Serif CJK TC Light",
+      "Noto Serif CJK TC Medium",
+      "Noto Serif CJK TC SemiBold",
+      "Noto Serif Devanagari",
+      "Noto Serif Devanagari Black",
+      "Noto Serif Devanagari Light",
+      "Noto Serif Devanagari Medium",
+      "Noto Serif Devanagari Thin",
+      "Noto Serif Display",
+      "Noto Serif Display Black",
+      "Noto Serif Display Light",
+      "Noto Serif Display Medium",
+      "Noto Serif Display Thin",
+      "Noto Serif Dives Akuru",
+      "Noto Serif Dogra",
+      "Noto Serif Ethiopic",
+      "Noto Serif Ethiopic Black",
+      "Noto Serif Ethiopic Light",
+      "Noto Serif Ethiopic Medium",
+      "Noto Serif Ethiopic Thin",
+      "Noto Serif Georgian",
+      "Noto Serif Georgian Bk",
+      "Noto Serif Georgian Lt",
+      "Noto Serif Georgian Md",
+      "Noto Serif Georgian Th",
+      "Noto Serif Grantha",
+      "Noto Serif Gujarati",
+      "Noto Serif Gujarati Black",
+      "Noto Serif Gujarati Light",
+      "Noto Serif Gujarati Medium",
+      "Noto Serif Gujarati Thin",
+      "Noto Serif Gurmukhi",
+      "Noto Serif Gurmukhi Black",
+      "Noto Serif Gurmukhi Light",
+      "Noto Serif Gurmukhi Medium",
+      "Noto Serif Gurmukhi Thin",
+      "Noto Serif Hebrew",
+      "Noto Serif Hebrew Black",
+      "Noto Serif Hebrew Light",
+      "Noto Serif Hebrew Medium",
+      "Noto Serif Hebrew Thin",
+      "Noto Serif Hentaigana",
+      "Noto Serif Hentaigana Black",
+      "Noto Serif Hentaigana Bold",
+      "Noto Serif Hentaigana Light",
+      "Noto Serif Hentaigana Medium",
+      "Noto Serif Kannada",
+      "Noto Serif Kannada Black",
+      "Noto Serif Kannada Light",
+      "Noto Serif Kannada Medium",
+      "Noto Serif Kannada Thin",
+      "Noto Serif Khitan Small Script",
+      "Noto Serif Khmer",
+      "Noto Serif Khmer Black",
+      "Noto Serif Khmer Light",
+      "Noto Serif Khmer Medium",
+      "Noto Serif Khmer Thin",
+      "Noto Serif Khojki",
+      "Noto Serif Lao",
+      "Noto Serif Lao Black",
+      "Noto Serif Lao Light",
+      "Noto Serif Lao Medium",
+      "Noto Serif Lao Thin",
+      "Noto Serif Light",
+      "Noto Serif Makasar",
+      "Noto Serif Malayalam",
+      "Noto Serif Malayalam Black",
+      "Noto Serif Malayalam Light",
+      "Noto Serif Malayalam Medium",
+      "Noto Serif Malayalam Thin",
+      "Noto Serif Medium",
+      "Noto Serif Myanmar",
+      "Noto Serif Myanmar Black",
+      "Noto Serif Myanmar Light",
+      "Noto Serif Myanmar Medium",
+      "Noto Serif Myanmar Thin",
+      "Noto Serif NP Hmong",
+      "Noto Serif NP Hmong Medium",
+      "Noto Serif Old Uyghur",
+      "Noto Serif Oriya",
+      "Noto Serif Oriya Medium",
+      "Noto Serif Ottoman Siyaq",
+      "Noto Serif Sinhala",
+      "Noto Serif Sinhala Black",
+      "Noto Serif Sinhala Light",
+      "Noto Serif Sinhala Medium",
+      "Noto Serif Sinhala Thin",
+      "Noto Serif Tamil",
+      "Noto Serif Tamil Black",
+      "Noto Serif Tamil Light",
+      "Noto Serif Tamil Medium",
+      "Noto Serif Tamil Thin",
+      "Noto Serif Tangut",
+      "Noto Serif Telugu",
+      "Noto Serif Telugu Black",
+      "Noto Serif Telugu Light",
+      "Noto Serif Telugu Medium",
+      "Noto Serif Telugu Thin",
+      "Noto Serif Test",
+      "Noto Serif Thai",
+      "Noto Serif Thai Black",
+      "Noto Serif Thai Light",
+      "Noto Serif Thai Medium",
+      "Noto Serif Thai Thin",
+      "Noto Serif Thin",
+      "Noto Serif Tibetan",
+      "Noto Serif Tibetan Black",
+      "Noto Serif Tibetan Light",
+      "Noto Serif Tibetan Medium",
+      "Noto Serif Tibetan Thin",
+      "Noto Serif Todhri",
+      "Noto Serif Toto",
+      "Noto Serif Toto Medium",
+      "Noto Serif Vithkuqi",
+      "Noto Serif Vithkuqi Medium",
+      "Noto Serif Yezidi",
+      "Noto Serif Yezidi Medium",
+      "Noto Traditional Nushu",
+      "Noto Traditional Nushu Light",
+      "Noto Znamenny Musical Notation",
+      "Sans Serif",
+      "Serif",
+      "Twemoji"
+     ]
+    },
+    {
+     "label": "Grootte:",
+     "type": "number",
+     "range": [
+      1,
+      2000
+     ]
+    },
+    {
+     "label": "Eenheden:",
+     "type": "choice",
+     "choices": [
+      "Punten",
+      "Pixels"
+     ]
+    },
+    {
+     "label": "Vet",
+     "type": "check"
+    },
+    {
+     "label": "Cursief",
+     "type": "check"
+    },
+    {
+     "label": "Onderstreept",
+     "type": "check"
+    },
+    {
+     "label": "Uitlijning:",
+     "type": "choice",
+     "choices": [
+      "Links",
+      "Midden",
+      "Rechts"
+     ]
+    },
+    {
+     "label": "Lijnbreedte:",
+     "type": "number",
+     "range": [
+      0,
+      100
+     ]
+    },
+    {
+     "label": "Regelafstand:",
+     "type": "number",
+     "range": [
+      -100,
+      300
+     ]
+    },
+    {
+     "label": "Spatiëring:",
+     "type": "number",
+     "range": [
+      -50,
+      200
+     ]
+    },
+    {
+     "label": "Anti-alias",
+     "type": "check"
+    }
+   ]
+  },
+  {
+   "id": "d101",
+   "name": "Basisvorm",
+   "group": 17,
+   "glyph": "💬",
+   "key": "P",
+   "options": [
+    {
+     "label": "Vorm:",
+     "type": "choice",
+     "choices": [
+      "Pijl rechts",
+      "Pijl links",
+      "Pijl omhoog",
+      "Pijl omlaag",
+      "Ster",
+      "Hart",
+      "Tekstballon",
+      "Gedachtewolk",
+      "Bliksem",
+      "Kruis",
+      "Zeshoek",
+      "Starburst"
+     ]
+    },
+    {
+     "label": "Lijnbreedte:",
+     "type": "number",
+     "range": [
+      0,
+      200
+     ]
+    },
+    {
+     "label": "Anti-alias",
+     "type": "check"
+    },
+    {
+     "label": "Op vector maken",
+     "type": "check"
+    }
+   ]
+  },
+  {
+   "id": "d102",
+   "name": "Rechthoek",
+   "group": 17,
+   "glyph": "▭",
+   "key": "G",
+   "options": [
+    {
+     "label": "Hoekradius:",
+     "type": "number",
+     "range": [
+      0,
+      500
+     ]
+    },
+    {
+     "label": "Lijnbreedte:",
+     "type": "number",
+     "range": [
+      0,
+      200
+     ]
+    },
+    {
+     "label": "Anti-alias",
+     "type": "check"
+    },
+    {
+     "label": "Op vector maken",
+     "type": "check"
+    }
+   ]
+  },
+  {
+   "id": "d103",
+   "name": "Ovaal",
+   "group": 17,
+   "glyph": "⬭",
+   "key": "Q",
+   "options": [
+    {
+     "label": "Lijnbreedte:",
+     "type": "number",
+     "range": [
+      0,
+      200
+     ]
+    },
+    {
+     "label": "Anti-alias",
+     "type": "check"
+    },
+    {
+     "label": "Op vector maken",
+     "type": "check"
+    }
+   ]
+  },
+  {
+   "id": "d104",
+   "name": "Symmetrische vorm",
+   "group": 17,
+   "glyph": "✶",
+   "key": "H",
+   "options": [
+    {
+     "label": "Aantal zijden:",
+     "type": "number",
+     "range": [
+      3,
+      100
+     ]
+    },
+    {
+     "label": "Ster",
+     "type": "check"
+    },
+    {
+     "label": "Straal binnen:",
+     "type": "number",
+     "range": [
+      1,
+      99
+     ]
+    },
+    {
+     "label": "Lijnbreedte:",
+     "type": "number",
+     "range": [
+      0,
+      200
+     ]
+    },
+    {
+     "label": "Anti-alias",
+     "type": "check"
+    },
+    {
+     "label": "Op vector maken",
+     "type": "check"
+    }
+   ]
+  },
+  {
+   "id": "d110",
+   "name": "Pen",
+   "group": 18,
+   "glyph": "✒",
+   "key": "V",
+   "options": [
+    {
+     "label": "✓ Toepassen",
+     "type": "button"
+    },
+    {
+     "label": "Modus:",
+     "type": "choice",
+     "choices": [
+      "Bewerken",
+      "Lijnen en polylijnen",
+      "Punt tot punt (Bézier-krommen)",
+      "Uit de vrije hand"
+     ]
+    },
+    {
+     "label": "Tracking:",
+     "type": "number",
+     "range": [
+      0,
+      50
+     ]
+    },
+    {
+     "label": "Segmenten verbinden",
+     "type": "check"
+    },
+    {
+     "label": "Knooppunten tonen",
+     "type": "check"
+    },
+    {
+     "label": "Op vector maken",
+     "type": "check"
+    },
+    {
+     "label": "Lijnstijl:",
+     "type": "choice",
+     "choices": [
+      "Effen",
+      "Streepjes",
+      "Puntjes",
+      "Streep-punt",
+      "Streep-punt-punt"
+     ]
+    },
+    {
+     "label": "Breedte:",
+     "type": "number",
+     "range": [
+      0,
+      200
+     ]
+    },
+    {
+     "label": "Anti-alias",
+     "type": "check"
+    },
+    {
+     "label": "Verbinding:",
+     "type": "choice",
+     "choices": [
+      "Verstek",
+      "Rond",
+      "Schuin"
+     ]
+    },
+    {
+     "label": "Verstek:",
+     "type": "number",
+     "range": [
+      1,
+      50
+     ]
+    }
+   ]
+  },
+  {
+   "id": "d121",
+   "name": "Penseel Verwringen",
+   "group": 19,
+   "glyph": "warp",
+   "key": "",
+   "options": [
+    {
+     "label": "Modus:",
+     "type": "choice",
+     "choices": [
+      "Duwen",
+      "Uitzetten",
+      "Samentrekken",
+      "Rechtsom draaien",
+      "Linksom draaien",
+      "Ruis",
+      "Gladstrijken"
+     ]
+    },
+    {
+     "label": "Grootte:",
+     "type": "number",
+     "range": [
+      1,
+      999
+     ]
+    },
+    {
+     "label": "Hardheid:",
+     "type": "number",
+     "range": [
+      0,
+      100
+     ]
+    },
+    {
+     "label": "Sterkte:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Randmodus:",
+     "type": "choice",
+     "choices": [
+      "Herhalen",
+      "Transparant",
+      "Tegelen",
+      "Spiegelen"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "d122",
+   "name": "Maasvormig verwringen",
+   "group": 19,
+   "glyph": "mesh",
+   "key": "",
+   "options": [
+    {
+     "label": "Kolommen:",
+     "type": "number",
+     "range": [
+      1,
+      50
+     ]
+    },
+    {
+     "label": "Rijen:",
+     "type": "number",
+     "range": [
+      1,
+      50
+     ]
+    },
+    {
+     "label": "Herstellen",
+     "type": "button"
+    },
+    {
+     "label": "Toepassen",
+     "type": "button"
+    }
+   ]
+  },
+  {
+   "id": "d131",
+   "name": "Olieverfpenseel",
+   "group": 20,
+   "glyph": "oil",
+   "key": "",
+   "options": [
+    {
+     "label": "Grootte:",
+     "type": "number",
+     "range": [
+      1,
+      500
+     ]
+    },
+    {
+     "label": "Dekking:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Lading:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Viscositeit:",
+     "type": "number",
+     "range": [
+      0,
+      100
+     ]
+    }
+   ]
+  },
+  {
+   "id": "d132",
+   "name": "Krijt",
+   "group": 20,
+   "glyph": "chalk",
+   "key": "",
+   "options": [
+    {
+     "label": "Grootte:",
+     "type": "number",
+     "range": [
+      1,
+      500
+     ]
+    },
+    {
+     "label": "Dekking:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Korrel:",
+     "type": "number",
+     "range": [
+      0,
+      100
+     ]
+    }
+   ]
+  },
+  {
+   "id": "d133",
+   "name": "Pastel",
+   "group": 20,
+   "glyph": "pastel",
+   "key": "",
+   "options": [
+    {
+     "label": "Grootte:",
+     "type": "number",
+     "range": [
+      1,
+      500
+     ]
+    },
+    {
+     "label": "Dekking:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Korrel:",
+     "type": "number",
+     "range": [
+      0,
+      100
+     ]
+    }
+   ]
+  },
+  {
+   "id": "d134",
+   "name": "Kleurkrijt",
+   "group": 20,
+   "glyph": "crayon_wax",
+   "key": "",
+   "options": [
+    {
+     "label": "Grootte:",
+     "type": "number",
+     "range": [
+      1,
+      500
+     ]
+    },
+    {
+     "label": "Dekking:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Korrel:",
+     "type": "number",
+     "range": [
+      0,
+      100
+     ]
+    }
+   ]
+  },
+  {
+   "id": "d135",
+   "name": "Kleurpotlood",
+   "group": 20,
+   "glyph": "pencil",
+   "key": "",
+   "options": [
+    {
+     "label": "Grootte:",
+     "type": "number",
+     "range": [
+      1,
+      500
+     ]
+    },
+    {
+     "label": "Dekking:",
+     "type": "number",
+     "range": [
+      1,
+      100
+     ]
+    },
+    {
+     "label": "Korrel:",
+     "type": "number",
+     "range": [
+      0,
+      100
+     ]
+    }
+   ]
+  }
+ ],
+ "effects": [
+  {
+   "id": "82b3",
+   "name": "Achtergrondlicht",
+   "menu": [
+    "Aanpassen"
+   ],
+   "params": [
+    {
+     "label": "Sterkte",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    }
+   ]
+  },
+  {
+   "id": "818e",
+   "name": "Bolvormige vertekening corrigeren",
+   "menu": [
+    "Aanpassen"
+   ],
+   "params": [
+    {
+     "label": "Sterkte",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 25
+    }
+   ]
+  },
+  {
+   "id": "8240",
+   "name": "Eénstaps-fotocorrectie",
+   "menu": [
+    "Aanpassen"
+   ],
+   "params": []
+  },
+  {
+   "id": "82f1",
+   "name": "Eénstaps-grofkorreligheid verwijderen",
+   "menu": [
+    "Aanpassen"
+   ],
+   "params": []
+  },
+  {
+   "id": "82d9",
+   "name": "Eénstaps-paarse uitvloeiingscorrectie",
+   "menu": [
+    "Aanpassen"
+   ],
+   "params": []
+  },
+  {
+   "id": "82c1",
+   "name": "Grofkorreligheid van digitale camera verwijderen",
+   "menu": [
+    "Aanpassen"
+   ],
+   "params": [
+    {
+     "label": "Correctie (sterkte)",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Details behouden %",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Verscherpen",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 0
+    }
+   ]
+  },
+  {
+   "id": "8307",
+   "name": "Huid effenen",
+   "menu": [
+    "Aanpassen"
+   ],
+   "params": [
+    {
+     "label": "Mate",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    }
+   ]
+  },
+  {
+   "id": "82b1",
+   "name": "Invulflits",
+   "menu": [
+    "Aanpassen"
+   ],
+   "params": [
+    {
+     "label": "Sterkte",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    }
+   ]
+  },
+  {
+   "id": "82c4",
+   "name": "Kleurafwijking verwijderen",
+   "menu": [
+    "Aanpassen"
+   ],
+   "params": [
+    {
+     "label": "Straal",
+     "type": "int",
+     "range": [
+      1,
+      20
+     ],
+     "default": 4
+    },
+    {
+     "label": "Sterkte",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 60
+    }
+   ]
+  },
+  {
+   "id": "82dc",
+   "name": "Kleurbalans",
+   "menu": [
+    "Aanpassen"
+   ],
+   "params": [
+    {
+     "label": "Bereik",
+     "type": "choice",
+     "choices": [
+      "Schaduwen",
+      "Middentonen",
+      "Lichte tonen"
+     ]
+    },
+    {
+     "label": "Cyaan - rood",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Magenta - groen",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Geel - blauw",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Helderheid behouden",
+     "type": "bool"
+    }
+   ]
+  },
+  {
+   "id": "806e",
+   "name": "Rode ogen verwijderen",
+   "menu": [
+    "Aanpassen"
+   ],
+   "params": [
+    {
+     "label": "Sterkte",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 75
+    }
+   ]
+  },
+  {
+   "id": "82d8",
+   "name": "Slimme fotocorrectie",
+   "menu": [
+    "Aanpassen"
+   ],
+   "params": [
+    {
+     "label": "Helderheid algemeen",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Schaduwen",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Lichte delen",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Verzadiging",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Focus (verscherpen)",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Automatisch kleurbalans/niveaus",
+     "type": "bool"
+    }
+   ]
+  },
+  {
+   "id": "818c",
+   "name": "Speldenkussenvervorming corrigeren",
+   "menu": [
+    "Aanpassen"
+   ],
+   "params": [
+    {
+     "label": "Sterkte",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 10
+    }
+   ]
+  },
+  {
+   "id": "818d",
+   "name": "Tonvormige vertekening corrigeren",
+   "menu": [
+    "Aanpassen"
+   ],
+   "params": [
+    {
+     "label": "Sterkte",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 10
+    }
+   ]
+  },
+  {
+   "id": "82fb",
+   "name": "Velddiepte",
+   "menu": [
+    "Aanpassen"
+   ],
+   "params": [
+    {
+     "label": "Focusgrootte %",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Vervaging",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 40
+    },
+    {
+     "label": "Doezelen %",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    }
+   ]
+  },
+  {
+   "id": "806f",
+   "name": "Automatisch krasjes verwijderen",
+   "menu": [
+    "Aanpassen",
+    "Grofkorreligheid toevoegen/verwijderen"
+   ],
+   "params": [
+    {
+     "label": "Lichte krassen verwijderen",
+     "type": "bool"
+    },
+    {
+     "label": "Donkere krassen verwijderen",
+     "type": "bool"
+    },
+    {
+     "label": "Sterkte",
+     "type": "choice",
+     "choices": [
+      "Mild",
+      "Normaal",
+      "Sterk"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "806d",
+   "name": "De-interliniëring",
+   "menu": [
+    "Aanpassen",
+    "Grofkorreligheid toevoegen/verwijderen"
+   ],
+   "params": [
+    {
+     "label": "Behouden scanlijnen",
+     "type": "choice",
+     "choices": [
+      "Oneven",
+      "Even"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "8089",
+   "name": "Grofkorreligheid toevoegen",
+   "menu": [
+    "Aanpassen",
+    "Grofkorreligheid toevoegen/verwijderen"
+   ],
+   "params": [
+    {
+     "label": "Ruis %",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 10
+    },
+    {
+     "label": "Type",
+     "type": "choice",
+     "choices": [
+      "Willekeurig",
+      "Uniform"
+     ]
+    },
+    {
+     "label": "Kleur",
+     "type": "choice",
+     "choices": [
+      "Kleur",
+      "Monochroom"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "8066",
+   "name": "Mediaanfilter",
+   "menu": [
+    "Aanpassen",
+    "Grofkorreligheid toevoegen/verwijderen"
+   ],
+   "params": [
+    {
+     "label": "Straal",
+     "type": "int",
+     "range": [
+      1,
+      3
+     ],
+     "default": 1
+    }
+   ]
+  },
+  {
+   "id": "8074",
+   "name": "Peper-en-zoutfilter",
+   "menu": [
+    "Aanpassen",
+    "Grofkorreligheid toevoegen/verwijderen"
+   ],
+   "params": [
+    {
+     "label": "Vlekgrootte",
+     "type": "int",
+     "range": [
+      1,
+      7
+     ],
+     "default": 3
+    },
+    {
+     "label": "Gevoeligheid",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 30
+    }
+   ]
+  },
+  {
+   "id": "806b",
+   "name": "Verwijdering JPEG-artefact",
+   "menu": [
+    "Aanpassen",
+    "Grofkorreligheid toevoegen/verwijderen"
+   ],
+   "params": [
+    {
+     "label": "Sterkte",
+     "type": "choice",
+     "choices": [
+      "Laag",
+      "Normaal",
+      "Hoog",
+      "Maximaal"
+     ]
+    },
+    {
+     "label": "Scherpte",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 0
+    }
+   ]
+  },
+  {
+   "id": "806c",
+   "name": "Verwijdering moiré-patroon",
+   "menu": [
+    "Aanpassen",
+    "Grofkorreligheid toevoegen/verwijderen"
+   ],
+   "params": [
+    {
+     "label": "Fijne details",
+     "type": "int",
+     "range": [
+      0,
+      20
+     ],
+     "default": 2
+    },
+    {
+     "label": "Kleurbanden verwijderen",
+     "type": "int",
+     "range": [
+      0,
+      20
+     ],
+     "default": 0
+    }
+   ]
+  },
+  {
+   "id": "808a",
+   "name": "Vlekken verwijderen",
+   "menu": [
+    "Aanpassen",
+    "Grofkorreligheid toevoegen/verwijderen"
+   ],
+   "params": []
+  },
+  {
+   "id": "8068",
+   "name": "Vloeiend met behoud van rand",
+   "menu": [
+    "Aanpassen",
+    "Grofkorreligheid toevoegen/verwijderen"
+   ],
+   "params": [
+    {
+     "label": "Mate",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 10
+    }
+   ]
+  },
+  {
+   "id": "8067",
+   "name": "Vloeiend met behoud van textuur",
+   "menu": [
+    "Aanpassen",
+    "Grofkorreligheid toevoegen/verwijderen"
+   ],
+   "params": [
+    {
+     "label": "Mate",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 10
+    }
+   ]
+  },
+  {
+   "id": "8075",
+   "name": "Curven",
+   "menu": [
+    "Aanpassen",
+    "Helderheid en contrast"
+   ],
+   "params": [
+    {
+     "label": "Curve",
+     "type": "curve"
+    },
+    {
+     "label": "Kanaal",
+     "type": "choice",
+     "choices": [
+      "RGB",
+      "Rood",
+      "Groen",
+      "Blauw"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "8063",
+   "name": "Drempel",
+   "menu": [
+    "Aanpassen",
+    "Helderheid en contrast"
+   ],
+   "params": [
+    {
+     "label": "Drempel",
+     "type": "int",
+     "range": [
+      1,
+      255
+     ],
+     "default": 128
+    }
+   ]
+  },
+  {
+   "id": "8052",
+   "name": "Helderheid/contrast",
+   "menu": [
+    "Aanpassen",
+    "Helderheid en contrast"
+   ],
+   "params": [
+    {
+     "label": "Helderheid",
+     "type": "int",
+     "range": [
+      -255,
+      255
+     ],
+     "default": 0
+    },
+    {
+     "label": "Contrast",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    }
+   ]
+  },
+  {
+   "id": "8070",
+   "name": "Histogram aanpassen",
+   "menu": [
+    "Aanpassen",
+    "Helderheid en contrast"
+   ],
+   "params": [
+    {
+     "label": "Invoer laag",
+     "type": "int",
+     "range": [
+      0,
+      254
+     ],
+     "default": 0
+    },
+    {
+     "label": "Invoer hoog",
+     "type": "int",
+     "range": [
+      1,
+      255
+     ],
+     "default": 255
+    },
+    {
+     "label": "Gamma × 100",
+     "type": "int",
+     "range": [
+      10,
+      500
+     ],
+     "default": 100
+    },
+    {
+     "label": "Uitvoer min",
+     "type": "int",
+     "range": [
+      0,
+      255
+     ],
+     "default": 0
+    },
+    {
+     "label": "Uitvoer max",
+     "type": "int",
+     "range": [
+      0,
+      255
+     ],
+     "default": 255
+    }
+   ]
+  },
+  {
+   "id": "8056",
+   "name": "Histogram egaliseren",
+   "menu": [
+    "Aanpassen",
+    "Helderheid en contrast"
+   ],
+   "params": []
+  },
+  {
+   "id": "8057",
+   "name": "Histogram uitbreiden",
+   "menu": [
+    "Aanpassen",
+    "Helderheid en contrast"
+   ],
+   "params": []
+  },
+  {
+   "id": "8053",
+   "name": "Lichtste delen/middentonen/schaduwen",
+   "menu": [
+    "Aanpassen",
+    "Helderheid en contrast"
+   ],
+   "params": [
+    {
+     "label": "Schaduw",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Middentoon",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Lichte delen",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    }
+   ]
+  },
+  {
+   "id": "8060",
+   "name": "Niveaus",
+   "menu": [
+    "Aanpassen",
+    "Helderheid en contrast"
+   ],
+   "params": [
+    {
+     "label": "Invoer zwart",
+     "type": "int",
+     "range": [
+      0,
+      254
+     ],
+     "default": 0
+    },
+    {
+     "label": "Invoer wit",
+     "type": "int",
+     "range": [
+      1,
+      255
+     ],
+     "default": 255
+    },
+    {
+     "label": "Gamma × 100",
+     "type": "int",
+     "range": [
+      10,
+      500
+     ],
+     "default": 100
+    }
+   ]
+  },
+  {
+   "id": "806a",
+   "name": "Verhelderen",
+   "menu": [
+    "Aanpassen",
+    "Helderheid en contrast"
+   ],
+   "params": [
+    {
+     "label": "Sterkte",
+     "type": "int",
+     "range": [
+      1,
+      10
+     ],
+     "default": 5
+    }
+   ]
+  },
+  {
+   "id": "8062",
+   "name": "Kanaalmenger",
+   "menu": [
+    "Aanpassen",
+    "Kleur"
+   ],
+   "params": [
+    {
+     "label": "Uitvoerkanaal",
+     "type": "choice",
+     "choices": [
+      "Rood",
+      "Groen",
+      "Blauw"
+     ]
+    },
+    {
+     "label": "Rood %",
+     "type": "int",
+     "range": [
+      -200,
+      200
+     ],
+     "default": 100
+    },
+    {
+     "label": "Groen %",
+     "type": "int",
+     "range": [
+      -200,
+      200
+     ],
+     "default": 0
+    },
+    {
+     "label": "Blauw %",
+     "type": "int",
+     "range": [
+      -200,
+      200
+     ],
+     "default": 0
+    },
+    {
+     "label": "Constante %",
+     "type": "int",
+     "range": [
+      -200,
+      200
+     ],
+     "default": 0
+    },
+    {
+     "label": "Monochroom",
+     "type": "bool"
+    }
+   ]
+  },
+  {
+   "id": "8054",
+   "name": "Rood/groen/blauw",
+   "menu": [
+    "Aanpassen",
+    "Kleur"
+   ],
+   "params": [
+    {
+     "label": "Rood %",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Groen %",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Blauw %",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    }
+   ]
+  },
+  {
+   "id": "8064",
+   "name": "Vervagingscorrectie",
+   "menu": [
+    "Aanpassen",
+    "Kleur"
+   ],
+   "params": [
+    {
+     "label": "Mate",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 45
+    }
+   ]
+  },
+  {
+   "id": "804a",
+   "name": "Inkleuren",
+   "menu": [
+    "Aanpassen",
+    "Kleurtoon en verzadiging"
+   ],
+   "params": [
+    {
+     "label": "Kleurtoon",
+     "type": "int",
+     "range": [
+      0,
+      255
+     ],
+     "default": 21
+    },
+    {
+     "label": "Verzadiging",
+     "type": "int",
+     "range": [
+      0,
+      255
+     ],
+     "default": 128
+    }
+   ]
+  },
+  {
+   "id": "8076",
+   "name": "Kleurtoon/verzadiging/helderheid",
+   "menu": [
+    "Aanpassen",
+    "Kleurtoon en verzadiging"
+   ],
+   "params": [
+    {
+     "label": "Kleurtoon",
+     "type": "int",
+     "range": [
+      -180,
+      180
+     ],
+     "default": 0
+    },
+    {
+     "label": "Verzadiging",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Helderheid",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    }
+   ]
+  },
+  {
+   "id": "805f",
+   "name": "Kleurtoonverdeling",
+   "menu": [
+    "Aanpassen",
+    "Kleurtoon en verzadiging"
+   ],
+   "params": [
+    {
+     "label": "Bronkleurtoon",
+     "type": "int",
+     "range": [
+      0,
+      359
+     ],
+     "default": 0
+    },
+    {
+     "label": "Bereik",
+     "type": "int",
+     "range": [
+      1,
+      180
+     ],
+     "default": 30
+    },
+    {
+     "label": "Doelkleurtoon",
+     "type": "int",
+     "range": [
+      0,
+      359
+     ],
+     "default": 0
+    },
+    {
+     "label": "Verzadiging",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    }
+   ]
+  },
+  {
+   "id": "82db",
+   "name": "High-pass verscherpen",
+   "menu": [
+    "Aanpassen",
+    "Scherpte"
+   ],
+   "params": [
+    {
+     "label": "Straal",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 10
+    },
+    {
+     "label": "Sterkte",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Mengmodus",
+     "type": "choice",
+     "choices": [
+      "Bedekken",
+      "Zacht licht",
+      "Hard licht"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "8086",
+   "name": "Nog scherper",
+   "menu": [
+    "Aanpassen",
+    "Scherpte"
+   ],
+   "params": []
+  },
+  {
+   "id": "809b",
+   "name": "Onscherp masker",
+   "menu": [
+    "Aanpassen",
+    "Scherpte"
+   ],
+   "params": [
+    {
+     "label": "Straal",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 2
+    },
+    {
+     "label": "Sterkte",
+     "type": "int",
+     "range": [
+      1,
+      500
+     ],
+     "default": 100
+    },
+    {
+     "label": "Clip",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 5
+    }
+   ]
+  },
+  {
+   "id": "8085",
+   "name": "Verscherpen",
+   "menu": [
+    "Aanpassen",
+    "Scherpte"
+   ],
+   "params": []
+  },
+  {
+   "id": "808f",
+   "name": "Bewegingsvervaging",
+   "menu": [
+    "Aanpassen",
+    "Vervagen"
+   ],
+   "params": [
+    {
+     "label": "Hoek",
+     "type": "int",
+     "range": [
+      0,
+      359
+     ],
+     "default": 0
+    },
+    {
+     "label": "Sterkte (px)",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 10
+    }
+   ]
+  },
+  {
+   "id": "80b5",
+   "name": "Gaussiaanse vervaging",
+   "menu": [
+    "Aanpassen",
+    "Vervagen"
+   ],
+   "params": [
+    {
+     "label": "Straal",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 3
+    }
+   ]
+  },
+  {
+   "id": "8065",
+   "name": "Gemiddeld",
+   "menu": [
+    "Aanpassen",
+    "Vervagen"
+   ],
+   "params": [
+    {
+     "label": "Straal",
+     "type": "int",
+     "range": [
+      1,
+      50
+     ],
+     "default": 1
+    }
+   ]
+  },
+  {
+   "id": "8084",
+   "name": "Meer vervagen",
+   "menu": [
+    "Aanpassen",
+    "Vervagen"
+   ],
+   "params": []
+  },
+  {
+   "id": "8288",
+   "name": "Radiaal vervagen",
+   "menu": [
+    "Aanpassen",
+    "Vervagen"
+   ],
+   "params": [
+    {
+     "label": "Type",
+     "type": "choice",
+     "choices": [
+      "Draaien",
+      "Zoomen",
+      "Kronkelen"
+     ]
+    },
+    {
+     "label": "Sterkte",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 30
+    },
+    {
+     "label": "Horizontale verschuiving %",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Verticale verschuiving %",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Kronkelgraden",
+     "type": "int",
+     "range": [
+      -90,
+      90
+     ],
+     "default": 30
+    }
+   ]
+  },
+  {
+   "id": "8083",
+   "name": "Vervagen",
+   "menu": [
+    "Aanpassen",
+    "Vervagen"
+   ],
+   "params": []
+  },
+  {
+   "id": "8088",
+   "name": "Nog zachter",
+   "menu": [
+    "Aanpassen",
+    "Zachtheid"
+   ],
+   "params": []
+  },
+  {
+   "id": "8087",
+   "name": "Verzachten",
+   "menu": [
+    "Aanpassen",
+    "Zachtheid"
+   ],
+   "params": []
+  },
+  {
+   "id": "8192",
+   "name": "Zachte focus",
+   "menu": [
+    "Aanpassen",
+    "Zachtheid"
+   ],
+   "params": [
+    {
+     "label": "Zachtheid",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 35
+    },
+    {
+     "label": "Halo hoeveelheid",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 20
+    },
+    {
+     "label": "Halo grootte",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    }
+   ]
+  },
+  {
+   "id": "8079",
+   "name": "Grijswaarden",
+   "menu": [
+    "Afbeelding"
+   ],
+   "params": []
+  },
+  {
+   "id": "804b",
+   "name": "Negatief",
+   "menu": [
+    "Afbeelding"
+   ],
+   "params": []
+  },
+  {
+   "id": "807c",
+   "name": "Eigen filter",
+   "menu": [
+    "Effecten"
+   ],
+   "params": [
+    {
+     "label": "Rij 1 kol 1",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Rij 1 kol 2",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Rij 1 kol 3",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Rij 1 kol 4",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Rij 1 kol 5",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Rij 2 kol 1",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Rij 2 kol 2",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Rij 2 kol 3",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Rij 2 kol 4",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Rij 2 kol 5",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Rij 3 kol 1",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Rij 3 kol 2",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Rij 3 kol 3",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 1
+    },
+    {
+     "label": "Rij 3 kol 4",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Rij 3 kol 5",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Rij 4 kol 1",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Rij 4 kol 2",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Rij 4 kol 3",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Rij 4 kol 4",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Rij 4 kol 5",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Rij 5 kol 1",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Rij 5 kol 2",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Rij 5 kol 3",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Rij 5 kol 4",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Rij 5 kol 5",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Deler",
+     "type": "int",
+     "range": [
+      1,
+      999
+     ],
+     "default": 1
+    },
+    {
+     "label": "Basis",
+     "type": "int",
+     "range": [
+      -255,
+      255
+     ],
+     "default": 0
+    },
+    {
+     "label": "Absolute waarde (anders afkappen)",
+     "type": "bool"
+    },
+    {
+     "label": "Ook alfakanaal filteren",
+     "type": "bool"
+    }
+   ]
+  },
+  {
+   "id": "80b2",
+   "name": "Afschuining binnen",
+   "menu": [
+    "Effecten",
+    "3D-effecten"
+   ],
+   "params": [
+    {
+     "label": "Afschuining",
+     "type": "choice",
+     "choices": [
+      "Schuin",
+      "Rond",
+      "Hol",
+      "Dubbel",
+      "Rug",
+      "Getrapt"
+     ]
+    },
+    {
+     "label": "Breedte",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 20
+    },
+    {
+     "label": "Gladheid",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 20
+    },
+    {
+     "label": "Diepte",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 10
+    },
+    {
+     "label": "Omgevingslicht",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Glans",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Hoek",
+     "type": "int",
+     "range": [
+      0,
+      359
+     ],
+     "default": 315
+    },
+    {
+     "label": "Intensiteit",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Hoogte",
+     "type": "int",
+     "range": [
+      0,
+      90
+     ],
+     "default": 30
+    },
+    {
+     "label": "Kleur",
+     "type": "color"
+    }
+   ]
+  },
+  {
+   "id": "80b3",
+   "name": "Afschuining buiten",
+   "menu": [
+    "Effecten",
+    "3D-effecten"
+   ],
+   "params": [
+    {
+     "label": "Afschuining",
+     "type": "choice",
+     "choices": [
+      "Schuin",
+      "Rond",
+      "Hol",
+      "Dubbel",
+      "Rug",
+      "Getrapt"
+     ]
+    },
+    {
+     "label": "Breedte",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 20
+    },
+    {
+     "label": "Gladheid",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 20
+    },
+    {
+     "label": "Diepte",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 10
+    },
+    {
+     "label": "Omgevingslicht",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Glans",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Hoek",
+     "type": "int",
+     "range": [
+      0,
+      359
+     ],
+     "default": 315
+    },
+    {
+     "label": "Intensiteit",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Hoogte",
+     "type": "int",
+     "range": [
+      0,
+      90
+     ],
+     "default": 30
+    },
+    {
+     "label": "Kleur",
+     "type": "color"
+    }
+   ]
+  },
+  {
+   "id": "80a0",
+   "name": "Als knop",
+   "menu": [
+    "Effecten",
+    "3D-effecten"
+   ],
+   "params": [
+    {
+     "label": "Hoogte",
+     "type": "int",
+     "range": [
+      1,
+      250
+     ],
+     "default": 34
+    },
+    {
+     "label": "Breedte",
+     "type": "int",
+     "range": [
+      1,
+      250
+     ],
+     "default": 34
+    },
+    {
+     "label": "Dekking",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 75
+    },
+    {
+     "label": "Rand",
+     "type": "choice",
+     "choices": [
+      "Massief",
+      "Transparant"
+     ]
+    },
+    {
+     "label": "Kleur",
+     "type": "color"
+    }
+   ]
+  },
+  {
+   "id": "80a2",
+   "name": "Ciseleren",
+   "menu": [
+    "Effecten",
+    "3D-effecten"
+   ],
+   "params": [
+    {
+     "label": "Grootte",
+     "type": "int",
+     "range": [
+      1,
+      200
+     ],
+     "default": 20
+    },
+    {
+     "label": "Transparant",
+     "type": "bool"
+    },
+    {
+     "label": "Kleur",
+     "type": "color"
+    }
+   ]
+  },
+  {
+   "id": "809f",
+   "name": "Gestanst",
+   "menu": [
+    "Effecten",
+    "3D-effecten"
+   ],
+   "params": [
+    {
+     "label": "Verticaal",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 10
+    },
+    {
+     "label": "Horizontaal",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 10
+    },
+    {
+     "label": "Dekking",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 60
+    },
+    {
+     "label": "Vervaging",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 15
+    },
+    {
+     "label": "Schaduwkleur",
+     "type": "color"
+    },
+    {
+     "label": "Binnenkant opvullen met kleur",
+     "type": "bool"
+    },
+    {
+     "label": "Opvulkleur",
+     "type": "color"
+    }
+   ]
+  },
+  {
+   "id": "809e",
+   "name": "Slagschaduw",
+   "menu": [
+    "Effecten",
+    "3D-effecten"
+   ],
+   "params": [
+    {
+     "label": "Verticaal",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 10
+    },
+    {
+     "label": "Horizontaal",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 10
+    },
+    {
+     "label": "Dekking",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Vervaging",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 5
+    },
+    {
+     "label": "Kleur",
+     "type": "color"
+    }
+   ]
+  },
+  {
+   "id": "8188",
+   "name": "Naadloze herhaling",
+   "menu": [
+    "Effecten",
+    "Afbeeldingseffecten"
+   ],
+   "params": [
+    {
+     "label": "Methode",
+     "type": "choice",
+     "choices": [
+      "Rand",
+      "Hoekpunt",
+      "Spiegelen"
+     ]
+    },
+    {
+     "label": "Richting",
+     "type": "choice",
+     "choices": [
+      "Horizontaal",
+      "Verticaal",
+      "Bidirectioneel"
+     ]
+    },
+    {
+     "label": "Overgang (%)",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 50
+    }
+   ]
+  },
+  {
+   "id": "80c2",
+   "name": "Paginakrul",
+   "menu": [
+    "Effecten",
+    "Afbeeldingseffecten"
+   ],
+   "params": [
+    {
+     "label": "Hoek",
+     "type": "choice",
+     "choices": [
+      "Linksboven",
+      "Rechtsboven",
+      "Linksonder",
+      "Rechtsonder"
+     ]
+    },
+    {
+     "label": "Breedte (%)",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 40
+    },
+    {
+     "label": "Hoogte (%)",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 40
+    },
+    {
+     "label": "Straal",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 40
+    },
+    {
+     "label": "Kleur krul",
+     "type": "color"
+    },
+    {
+     "label": "Randmodus",
+     "type": "choice",
+     "choices": [
+      "Transparant",
+      "Achtergrondkleur"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "80bb",
+   "name": "Verschuiving",
+   "menu": [
+    "Effecten",
+    "Afbeeldingseffecten"
+   ],
+   "params": [
+    {
+     "label": "Horizontale verschuiving (%)",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Verticale verschuiving (%)",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Randmodus",
+     "type": "choice",
+     "choices": [
+      "Achtergrondkleur",
+      "Herhalen",
+      "Transparant",
+      "Omloop"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "804c",
+   "name": "Aantal niveaus beperken",
+   "menu": [
+    "Effecten",
+    "Artistieke effecten"
+   ],
+   "params": [
+    {
+     "label": "Niveaus",
+     "type": "int",
+     "range": [
+      2,
+      255
+     ],
+     "default": 4
+    }
+   ]
+  },
+  {
+   "id": "81f1",
+   "name": "Ballen en bellen",
+   "menu": [
+    "Effecten",
+    "Artistieke effecten"
+   ],
+   "params": [
+    {
+     "label": "Dekking van canvas",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 40
+    },
+    {
+     "label": "Gemiddelde grootte",
+     "type": "int",
+     "range": [
+      2,
+      500
+     ],
+     "default": 60
+    },
+    {
+     "label": "Grootte-variatie",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Type",
+     "type": "choice",
+     "choices": [
+      "Bellen",
+      "Ballen"
+     ]
+    },
+    {
+     "label": "Willekeurig getal",
+     "type": "int",
+     "range": [
+      0,
+      9999
+     ],
+     "default": 1
+    }
+   ]
+  },
+  {
+   "id": "80ab",
+   "name": "Chroom",
+   "menu": [
+    "Effecten",
+    "Artistieke effecten"
+   ],
+   "params": [
+    {
+     "label": "Vouwen",
+     "type": "int",
+     "range": [
+      0,
+      10
+     ],
+     "default": 2
+    },
+    {
+     "label": "Helderheid",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Oorspronkelijke kleur gebruiken",
+     "type": "bool"
+    },
+    {
+     "label": "Kleur",
+     "type": "color"
+    }
+   ]
+  },
+  {
+   "id": "80c9",
+   "name": "Contouren",
+   "menu": [
+    "Effecten",
+    "Artistieke effecten"
+   ],
+   "params": [
+    {
+     "label": "Afstand",
+     "type": "int",
+     "range": [
+      2,
+      128
+     ],
+     "default": 16
+    },
+    {
+     "label": "Lijnkleur",
+     "type": "color"
+    }
+   ]
+  },
+  {
+   "id": "80bf",
+   "name": "Email",
+   "menu": [
+    "Effecten",
+    "Artistieke effecten"
+   ],
+   "params": [
+    {
+     "label": "Detail",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 30
+    },
+    {
+     "label": "Dichtheid",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 40
+    },
+    {
+     "label": "Dikte",
+     "type": "int",
+     "range": [
+      1,
+      20
+     ],
+     "default": 5
+    },
+    {
+     "label": "Hoek",
+     "type": "int",
+     "range": [
+      0,
+      359
+     ],
+     "default": 315
+    },
+    {
+     "label": "Kleur",
+     "type": "color"
+    }
+   ]
+  },
+  {
+   "id": "80cc",
+   "name": "Gekleurde folie",
+   "menu": [
+    "Effecten",
+    "Artistieke effecten"
+   ],
+   "params": [
+    {
+     "label": "Vervaging",
+     "type": "int",
+     "range": [
+      0,
+      20
+     ],
+     "default": 5
+    },
+    {
+     "label": "Detail",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Dichtheid",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 50
+    }
+   ]
+  },
+  {
+   "id": "80c7",
+   "name": "Gekleurde randen",
+   "menu": [
+    "Effecten",
+    "Artistieke effecten"
+   ],
+   "params": [
+    {
+     "label": "Detail",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Intensiteit",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Kleur",
+     "type": "color"
+    }
+   ]
+  },
+  {
+   "id": "80a1",
+   "name": "Glanzende waslaag",
+   "menu": [
+    "Effecten",
+    "Artistieke effecten"
+   ],
+   "params": []
+  },
+  {
+   "id": "818b",
+   "name": "Halftoon",
+   "menu": [
+    "Effecten",
+    "Artistieke effecten"
+   ],
+   "params": [
+    {
+     "label": "Halftoonpatroon",
+     "type": "choice",
+     "choices": [
+      "Rond",
+      "Lijn",
+      "Vierkant"
+     ]
+    },
+    {
+     "label": "Grootte",
+     "type": "int",
+     "range": [
+      2,
+      100
+     ],
+     "default": 8
+    },
+    {
+     "label": "Rasterhoek",
+     "type": "int",
+     "range": [
+      0,
+      359
+     ],
+     "default": 45
+    },
+    {
+     "label": "Kleurenschema",
+     "type": "choice",
+     "choices": [
+      "Grijswaarden",
+      "RGB"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "80a8",
+   "name": "Neonkleuren",
+   "menu": [
+    "Effecten",
+    "Artistieke effecten"
+   ],
+   "params": [
+    {
+     "label": "Intensiteit",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Scherpte",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    }
+   ]
+  },
+  {
+   "id": "80a7",
+   "name": "Oplichtende randen",
+   "menu": [
+    "Effecten",
+    "Artistieke effecten"
+   ],
+   "params": [
+    {
+     "label": "Intensiteit",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Scherpte",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    }
+   ]
+  },
+  {
+   "id": "80c4",
+   "name": "Oude krant",
+   "menu": [
+    "Effecten",
+    "Artistieke effecten"
+   ],
+   "params": [
+    {
+     "label": "Aantal jaren",
+     "type": "int",
+     "range": [
+      10,
+      100
+     ],
+     "default": 80
+    }
+   ]
+  },
+  {
+   "id": "804d",
+   "name": "Solariseren",
+   "menu": [
+    "Effecten",
+    "Artistieke effecten"
+   ],
+   "params": [
+    {
+     "label": "Drempel",
+     "type": "int",
+     "range": [
+      0,
+      255
+     ],
+     "default": 128
+    }
+   ]
+  },
+  {
+   "id": "80bd",
+   "name": "Topografie",
+   "menu": [
+    "Effecten",
+    "Artistieke effecten"
+   ],
+   "params": [
+    {
+     "label": "Breedte",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 25
+    },
+    {
+     "label": "Dichtheid",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 40
+    },
+    {
+     "label": "Hoek",
+     "type": "int",
+     "range": [
+      0,
+      359
+     ],
+     "default": 315
+    },
+    {
+     "label": "Kleur",
+     "type": "color"
+    }
+   ]
+  },
+  {
+   "id": "81e5",
+   "name": "Vergrootglas",
+   "menu": [
+    "Effecten",
+    "Artistieke effecten"
+   ],
+   "params": [
+    {
+     "label": "Midden X %",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Midden Y %",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Straal %",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 30
+    },
+    {
+     "label": "Vergroting %",
+     "type": "int",
+     "range": [
+      100,
+      500
+     ],
+     "default": 200
+    }
+   ]
+  },
+  {
+   "id": "80c6",
+   "name": "Lampen",
+   "menu": [
+    "Effecten",
+    "Belichtingseffecten"
+   ],
+   "params": [
+    {
+     "label": "Duisternis",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 60
+    },
+    {
+     "label": "Lamp 1 aan",
+     "type": "bool"
+    },
+    {
+     "label": "Lamp 1 kleur",
+     "type": "color"
+    },
+    {
+     "label": "Lamp 1 horizontaal %",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 30
+    },
+    {
+     "label": "Lamp 1 verticaal %",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 15
+    },
+    {
+     "label": "Lamp 1 richting",
+     "type": "int",
+     "range": [
+      0,
+      359
+     ],
+     "default": 150
+    },
+    {
+     "label": "Lamp 1 kegelgrootte",
+     "type": "int",
+     "range": [
+      1,
+      89
+     ],
+     "default": 30
+    },
+    {
+     "label": "Lamp 1 intensiteit",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 70
+    },
+    {
+     "label": "Lamp 2 aan",
+     "type": "bool"
+    },
+    {
+     "label": "Lamp 2 kleur",
+     "type": "color"
+    },
+    {
+     "label": "Lamp 2 horizontaal %",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 75
+    },
+    {
+     "label": "Lamp 2 verticaal %",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 15
+    },
+    {
+     "label": "Lamp 2 richting",
+     "type": "int",
+     "range": [
+      0,
+      359
+     ],
+     "default": 210
+    },
+    {
+     "label": "Lamp 2 kegelgrootte",
+     "type": "int",
+     "range": [
+      1,
+      89
+     ],
+     "default": 30
+    },
+    {
+     "label": "Lamp 2 intensiteit",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 70
+    }
+   ]
+  },
+  {
+   "id": "80c5",
+   "name": "Zon",
+   "menu": [
+    "Effecten",
+    "Belichtingseffecten"
+   ],
+   "params": [
+    {
+     "label": "Kleur",
+     "type": "color"
+    },
+    {
+     "label": "Horizontaal %",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 70
+    },
+    {
+     "label": "Verticaal %",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 30
+    },
+    {
+     "label": "Helderheid lichtvlek",
+     "type": "int",
+     "range": [
+      0,
+      200
+     ],
+     "default": 100
+    },
+    {
+     "label": "Dichtheid stralen",
+     "type": "int",
+     "range": [
+      1,
+      200
+     ],
+     "default": 50
+    },
+    {
+     "label": "Helderheid stralen",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Helderheid cirkels",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    }
+   ]
+  },
+  {
+   "id": "8319",
+   "name": "Film en filters",
+   "menu": [
+    "Effecten",
+    "Foto-effecten"
+   ],
+   "params": [
+    {
+     "label": "Filmlook",
+     "type": "choice",
+     "choices": [
+      "Geen",
+      "Levendig",
+      "Levendige huidtinten",
+      "Gedempt rood",
+      "Versterkt rood",
+      "Weelderig gebladerte",
+      "Warme aardtinten",
+      "Glamour"
+     ]
+    },
+    {
+     "label": "Creatief filter",
+     "type": "choice",
+     "choices": [
+      "Geen",
+      "Nachteffect",
+      "Koeler",
+      "Warmer",
+      "Oranje",
+      "Champagne",
+      "Zonsondergang",
+      "Aangepast"
+     ]
+    },
+    {
+     "label": "Filterkleur",
+     "type": "color"
+    },
+    {
+     "label": "Dichtheid",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 25
+    },
+    {
+     "label": "Luminantie behouden",
+     "type": "bool"
+    }
+   ]
+  },
+  {
+   "id": "82e7",
+   "name": "Infrarode film",
+   "menu": [
+    "Effecten",
+    "Foto-effecten"
+   ],
+   "params": [
+    {
+     "label": "Sterkte",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 60
+    },
+    {
+     "label": "Gloed",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 30
+    },
+    {
+     "label": "Korrel",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 20
+    }
+   ]
+  },
+  {
+   "id": "80c3",
+   "name": "Sepiakleuring",
+   "menu": [
+    "Effecten",
+    "Foto-effecten"
+   ],
+   "params": [
+    {
+     "label": "Mate van veroudering",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 30
+    }
+   ]
+  },
+  {
+   "id": "82fe",
+   "name": "Tijdmachine",
+   "menu": [
+    "Effecten",
+    "Foto-effecten"
+   ],
+   "params": [
+    {
+     "label": "Stijl",
+     "type": "choice",
+     "choices": [
+      "Daguerreotypie",
+      "Albuminedruk",
+      "Cyanotypie",
+      "Platinadruk",
+      "Vroege kleurenfoto",
+      "Box camera",
+      "Cross processing"
+     ]
+    },
+    {
+     "label": "Intensiteit",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 100
+    }
+   ]
+  },
+  {
+   "id": "82e6",
+   "name": "Zwartwitfilm",
+   "menu": [
+    "Effecten",
+    "Foto-effecten"
+   ],
+   "params": [
+    {
+     "label": "Filterkleur",
+     "type": "color"
+    },
+    {
+     "label": "Sterkte",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Helderheid",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Helderheid details",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 0
+    }
+   ]
+  },
+  {
+   "id": "8096",
+   "name": "Cilinder - horizontaal",
+   "menu": [
+    "Effecten",
+    "Geometrische effecten"
+   ],
+   "params": [
+    {
+     "label": "Sterkte (%)",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 50
+    }
+   ]
+  },
+  {
+   "id": "8097",
+   "name": "Cilinder - verticaal",
+   "menu": [
+    "Effecten",
+    "Geometrische effecten"
+   ],
+   "params": [
+    {
+     "label": "Sterkte (%)",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 50
+    }
+   ]
+  },
+  {
+   "id": "8098",
+   "name": "Cirkel",
+   "menu": [
+    "Effecten",
+    "Geometrische effecten"
+   ],
+   "params": [
+    {
+     "label": "Randmodus",
+     "type": "choice",
+     "choices": [
+      "Achtergrondkleur",
+      "Herhalen",
+      "Transparant",
+      "Omloop"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "809c",
+   "name": "Perspectief - horizontaal",
+   "menu": [
+    "Effecten",
+    "Geometrische effecten"
+   ],
+   "params": [
+    {
+     "label": "Vervorming",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 30
+    },
+    {
+     "label": "Randmodus",
+     "type": "choice",
+     "choices": [
+      "Achtergrondkleur",
+      "Herhalen",
+      "Transparant",
+      "Omloop"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "809d",
+   "name": "Perspectief - verticaal",
+   "menu": [
+    "Effecten",
+    "Geometrische effecten"
+   ],
+   "params": [
+    {
+     "label": "Vervorming",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 30
+    },
+    {
+     "label": "Randmodus",
+     "type": "choice",
+     "choices": [
+      "Achtergrondkleur",
+      "Herhalen",
+      "Transparant",
+      "Omloop"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "809a",
+   "name": "Scheeftrekking",
+   "menu": [
+    "Effecten",
+    "Geometrische effecten"
+   ],
+   "params": [
+    {
+     "label": "Richting",
+     "type": "choice",
+     "choices": [
+      "Horizontaal",
+      "Verticaal"
+     ]
+    },
+    {
+     "label": "Hoek",
+     "type": "int",
+     "range": [
+      -45,
+      45
+     ],
+     "default": 20
+    },
+    {
+     "label": "Randmodus",
+     "type": "choice",
+     "choices": [
+      "Achtergrondkleur",
+      "Herhalen",
+      "Transparant",
+      "Omloop"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "8189",
+   "name": "Sferisch",
+   "menu": [
+    "Effecten",
+    "Geometrische effecten"
+   ],
+   "params": [
+    {
+     "label": "Sterkte",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Vorm",
+     "type": "choice",
+     "choices": [
+      "Cirkel",
+      "Ellips"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "8099",
+   "name": "Vijfhoek",
+   "menu": [
+    "Effecten",
+    "Geometrische effecten"
+   ],
+   "params": [
+    {
+     "label": "Randmodus",
+     "type": "choice",
+     "choices": [
+      "Achtergrondkleur",
+      "Herhalen",
+      "Transparant",
+      "Omloop"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "80aa",
+   "name": "Houtskool",
+   "menu": [
+    "Effecten",
+    "Kunstzinnige effecten"
+   ],
+   "params": [
+    {
+     "label": "Detail",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Dekking",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 50
+    }
+   ]
+  },
+  {
+   "id": "80a6",
+   "name": "Kleurkrijt",
+   "menu": [
+    "Effecten",
+    "Kunstzinnige effecten"
+   ],
+   "params": [
+    {
+     "label": "Detail",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Dekking",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 50
+    }
+   ]
+  },
+  {
+   "id": "80a9",
+   "name": "Kleurpotlood",
+   "menu": [
+    "Effecten",
+    "Kunstzinnige effecten"
+   ],
+   "params": [
+    {
+     "label": "Detail",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Dekking",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 50
+    }
+   ]
+  },
+  {
+   "id": "80bc",
+   "name": "Penseelstreken",
+   "menu": [
+    "Effecten",
+    "Kunstzinnige effecten"
+   ],
+   "params": [
+    {
+     "label": "Zachtheid",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 2
+    },
+    {
+     "label": "Haren",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 18
+    },
+    {
+     "label": "Breedte",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 5
+    },
+    {
+     "label": "Dekking",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 30
+    },
+    {
+     "label": "Lengte",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 10
+    },
+    {
+     "label": "Dichtheid",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Hoek",
+     "type": "int",
+     "range": [
+      0,
+      359
+     ],
+     "default": 315
+    },
+    {
+     "label": "Kleur",
+     "type": "color"
+    }
+   ]
+  },
+  {
+   "id": "80c8",
+   "name": "Potlood",
+   "menu": [
+    "Effecten",
+    "Kunstzinnige effecten"
+   ],
+   "params": [
+    {
+     "label": "Luminantie",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Detail",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Dekking",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 100
+    },
+    {
+     "label": "Kleur",
+     "type": "color"
+    }
+   ]
+  },
+  {
+   "id": "80a4",
+   "name": "Zwart potlood",
+   "menu": [
+    "Effecten",
+    "Kunstzinnige effecten"
+   ],
+   "params": [
+    {
+     "label": "Detail",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Dekking",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 50
+    }
+   ]
+  },
+  {
+   "id": "807d",
+   "name": "Accentueren",
+   "menu": [
+    "Effecten",
+    "Randeffecten"
+   ],
+   "params": []
+  },
+  {
+   "id": "807f",
+   "name": "Alle zoeken",
+   "menu": [
+    "Effecten",
+    "Randeffecten"
+   ],
+   "params": []
+  },
+  {
+   "id": "8082",
+   "name": "Contour overtrekken",
+   "menu": [
+    "Effecten",
+    "Randeffecten"
+   ],
+   "params": []
+  },
+  {
+   "id": "82da",
+   "name": "High-pass",
+   "menu": [
+    "Effecten",
+    "Randeffecten"
+   ],
+   "params": [
+    {
+     "label": "Straal",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 10
+    },
+    {
+     "label": "Kleur verwijderen",
+     "type": "bool"
+    }
+   ]
+  },
+  {
+   "id": "8080",
+   "name": "Horizontale zoeken",
+   "menu": [
+    "Effecten",
+    "Randeffecten"
+   ],
+   "params": []
+  },
+  {
+   "id": "808d",
+   "name": "Rembrandtiek donker",
+   "menu": [
+    "Effecten",
+    "Randeffecten"
+   ],
+   "params": []
+  },
+  {
+   "id": "808b",
+   "name": "Rembrandtiek licht",
+   "menu": [
+    "Effecten",
+    "Randeffecten"
+   ],
+   "params": []
+  },
+  {
+   "id": "807e",
+   "name": "Sterker accentueren",
+   "menu": [
+    "Effecten",
+    "Randeffecten"
+   ],
+   "params": []
+  },
+  {
+   "id": "8081",
+   "name": "Verticale zoeken",
+   "menu": [
+    "Effecten",
+    "Randeffecten"
+   ],
+   "params": []
+  },
+  {
+   "id": "80ad",
+   "name": "Caleidoscoop",
+   "menu": [
+    "Effecten",
+    "Reflectie-effecten"
+   ],
+   "params": [
+    {
+     "label": "Horizontale verschuiving",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Verticale verschuiving",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Draaihoek",
+     "type": "int",
+     "range": [
+      0,
+      359
+     ],
+     "default": 0
+    },
+    {
+     "label": "Schaalfactor",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Aantal bloembladen",
+     "type": "int",
+     "range": [
+      2,
+      31
+     ],
+     "default": 10
+    },
+    {
+     "label": "Aantal banen",
+     "type": "int",
+     "range": [
+      0,
+      5
+     ],
+     "default": 0
+    },
+    {
+     "label": "Radiale zuiging",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Randmodus",
+     "type": "choice",
+     "choices": [
+      "Achtergrondkleur",
+      "Herhalen",
+      "Transparant",
+      "Omloop"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "80af",
+   "name": "Patroon",
+   "menu": [
+    "Effecten",
+    "Reflectie-effecten"
+   ],
+   "params": [
+    {
+     "label": "Horizontale verschuiving",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Verticale verschuiving",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Draaihoek",
+     "type": "int",
+     "range": [
+      0,
+      359
+     ],
+     "default": 0
+    },
+    {
+     "label": "Schaalfactor",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Aantal kolommen",
+     "type": "int",
+     "range": [
+      1,
+      20
+     ],
+     "default": 2
+    },
+    {
+     "label": "Aantal rijen",
+     "type": "int",
+     "range": [
+      1,
+      20
+     ],
+     "default": 2
+    },
+    {
+     "label": "Horizontale opschuiving (%)",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Verticale opschuiving (%)",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    }
+   ]
+  },
+  {
+   "id": "80b7",
+   "name": "Roterende spiegel",
+   "menu": [
+    "Effecten",
+    "Reflectie-effecten"
+   ],
+   "params": [
+    {
+     "label": "Horizontale verschuiving",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Verticale verschuiving",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Draaihoek",
+     "type": "int",
+     "range": [
+      0,
+      359
+     ],
+     "default": 0
+    },
+    {
+     "label": "Randmodus",
+     "type": "choice",
+     "choices": [
+      "Achtergrondkleur",
+      "Herhalen",
+      "Transparant",
+      "Omloop"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "80ac",
+   "name": "Weerspiegeling",
+   "menu": [
+    "Effecten",
+    "Reflectie-effecten"
+   ],
+   "params": [
+    {
+     "label": "Dekking",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 100
+    },
+    {
+     "label": "Intensiteit",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Horizontale verschuiving (%)",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Verticale verschuiving (%)",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Elliptisch",
+     "type": "bool"
+    }
+   ]
+  },
+  {
+   "id": "80ca",
+   "name": "Bont",
+   "menu": [
+    "Effecten",
+    "Textuureffecten"
+   ],
+   "params": [
+    {
+     "label": "Vervaging",
+     "type": "int",
+     "range": [
+      0,
+      20
+     ],
+     "default": 0
+    },
+    {
+     "label": "Dichtheid",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Lengte",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 15
+    },
+    {
+     "label": "Transparantie",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 0
+    }
+   ]
+  },
+  {
+   "id": "808c",
+   "name": "Bosseleren",
+   "menu": [
+    "Effecten",
+    "Textuureffecten"
+   ],
+   "params": []
+  },
+  {
+   "id": "80ce",
+   "name": "Fijn leer",
+   "menu": [
+    "Effecten",
+    "Textuureffecten"
+   ],
+   "params": [
+    {
+     "label": "Lichtkleur",
+     "type": "color"
+    },
+    {
+     "label": "Hoek",
+     "type": "int",
+     "range": [
+      0,
+      359
+     ],
+     "default": 315
+    },
+    {
+     "label": "Vervaging",
+     "type": "int",
+     "range": [
+      0,
+      20
+     ],
+     "default": 1
+    },
+    {
+     "label": "Transparantie",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 40
+    },
+    {
+     "label": "Aantal groeven",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 40
+    },
+    {
+     "label": "Lengte groeven",
+     "type": "int",
+     "range": [
+      1,
+      50
+     ],
+     "default": 10
+    }
+   ]
+  },
+  {
+   "id": "80c1",
+   "name": "Gepolijste steen",
+   "menu": [
+    "Effecten",
+    "Textuureffecten"
+   ],
+   "params": [
+    {
+     "label": "Vervaging",
+     "type": "int",
+     "range": [
+      0,
+      20
+     ],
+     "default": 2
+    },
+    {
+     "label": "Detail",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 30
+    },
+    {
+     "label": "Polijsten",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Hoek",
+     "type": "int",
+     "range": [
+      0,
+      359
+     ],
+     "default": 315
+    },
+    {
+     "label": "Kleur",
+     "type": "color"
+    }
+   ]
+  },
+  {
+   "id": "80a5",
+   "name": "Lamellen",
+   "menu": [
+    "Effecten",
+    "Textuureffecten"
+   ],
+   "params": [
+    {
+     "label": "Breedte",
+     "type": "int",
+     "range": [
+      2,
+      100
+     ],
+     "default": 10
+    },
+    {
+     "label": "Dekking",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Kleur",
+     "type": "color"
+    },
+    {
+     "label": "Horizontaal",
+     "type": "bool"
+    },
+    {
+     "label": "Licht van links/boven",
+     "type": "bool"
+    }
+   ]
+  },
+  {
+   "id": "80b9",
+   "name": "Mozaïek - antiek",
+   "menu": [
+    "Effecten",
+    "Textuureffecten"
+   ],
+   "params": [
+    {
+     "label": "Aantal kolommen",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 20
+    },
+    {
+     "label": "Aantal rijen",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 20
+    },
+    {
+     "label": "Symmetrisch",
+     "type": "bool"
+    },
+    {
+     "label": "Tegeldiffusie",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 30
+    },
+    {
+     "label": "Voegbreedte",
+     "type": "int",
+     "range": [
+      0,
+      20
+     ],
+     "default": 3
+    },
+    {
+     "label": "Voegdekking",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 70
+    }
+   ]
+  },
+  {
+   "id": "80ba",
+   "name": "Mozaïek - glas",
+   "menu": [
+    "Effecten",
+    "Textuureffecten"
+   ],
+   "params": [
+    {
+     "label": "Aantal kolommen",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 20
+    },
+    {
+     "label": "Aantal rijen",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 20
+    },
+    {
+     "label": "Symmetrisch",
+     "type": "bool"
+    },
+    {
+     "label": "Glaskromming",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 40
+    },
+    {
+     "label": "Randkromming",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 30
+    },
+    {
+     "label": "Voegbreedte",
+     "type": "int",
+     "range": [
+      0,
+      20
+     ],
+     "default": 2
+    },
+    {
+     "label": "Voegdekking",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 70
+    }
+   ]
+  },
+  {
+   "id": "80b4",
+   "name": "Mozaïekstukjes",
+   "menu": [
+    "Effecten",
+    "Textuureffecten"
+   ],
+   "params": [
+    {
+     "label": "Tegelvorm",
+     "type": "choice",
+     "choices": [
+      "Driehoek",
+      "Vierkant",
+      "Zeshoek"
+     ]
+    },
+    {
+     "label": "Tegelgrootte",
+     "type": "int",
+     "range": [
+      4,
+      200
+     ],
+     "default": 24
+    },
+    {
+     "label": "Randgrootte",
+     "type": "int",
+     "range": [
+      0,
+      20
+     ],
+     "default": 2
+    },
+    {
+     "label": "Gladheid",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 20
+    },
+    {
+     "label": "Diepte",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 20
+    },
+    {
+     "label": "Omgevingslicht",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Glans",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 20
+    },
+    {
+     "label": "Kleur",
+     "type": "color"
+    },
+    {
+     "label": "Hoek",
+     "type": "int",
+     "range": [
+      0,
+      359
+     ],
+     "default": 315
+    },
+    {
+     "label": "Intensiteit",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Hoogte",
+     "type": "int",
+     "range": [
+      0,
+      90
+     ],
+     "default": 30
+    }
+   ]
+  },
+  {
+   "id": "80cd",
+   "name": "Ruw leer",
+   "menu": [
+    "Effecten",
+    "Textuureffecten"
+   ],
+   "params": [
+    {
+     "label": "Lichtkleur",
+     "type": "color"
+    },
+    {
+     "label": "Leerkleur",
+     "type": "color"
+    },
+    {
+     "label": "Hoek",
+     "type": "int",
+     "range": [
+      0,
+      359
+     ],
+     "default": 315
+    },
+    {
+     "label": "Luminantie",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Contrast",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Scherpte",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Vervaging",
+     "type": "int",
+     "range": [
+      0,
+      20
+     ],
+     "default": 1
+    }
+   ]
+  },
+  {
+   "id": "80b0",
+   "name": "Sculptuur",
+   "menu": [
+    "Effecten",
+    "Textuureffecten"
+   ],
+   "params": [
+    {
+     "label": "Patroon",
+     "type": "choice",
+     "choices": [
+      "Goud",
+      "Marmer",
+      "Hout",
+      "Graniet",
+      "Koper",
+      "Jade"
+     ]
+    },
+    {
+     "label": "Grootte %",
+     "type": "int",
+     "range": [
+      10,
+      400
+     ],
+     "default": 100
+    },
+    {
+     "label": "Gladheid",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 20
+    },
+    {
+     "label": "Diepte",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 10
+    },
+    {
+     "label": "Omgevingslicht",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Glans",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 20
+    },
+    {
+     "label": "Kleur",
+     "type": "color"
+    },
+    {
+     "label": "Hoek",
+     "type": "int",
+     "range": [
+      0,
+      359
+     ],
+     "default": 315
+    },
+    {
+     "label": "Intensiteit",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Hoogte",
+     "type": "int",
+     "range": [
+      0,
+      90
+     ],
+     "default": 30
+    }
+   ]
+  },
+  {
+   "id": "80cb",
+   "name": "Stro",
+   "menu": [
+    "Effecten",
+    "Textuureffecten"
+   ],
+   "params": [
+    {
+     "label": "Vervaging",
+     "type": "int",
+     "range": [
+      0,
+      20
+     ],
+     "default": 0
+    },
+    {
+     "label": "Dichtheid",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Lengte",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 30
+    },
+    {
+     "label": "Breedte",
+     "type": "int",
+     "range": [
+      1,
+      10
+     ],
+     "default": 2
+    },
+    {
+     "label": "Transparantie",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 20
+    }
+   ]
+  },
+  {
+   "id": "80b1",
+   "name": "Textuur",
+   "menu": [
+    "Effecten",
+    "Textuureffecten"
+   ],
+   "params": [
+    {
+     "label": "Textuur",
+     "type": "choice",
+     "choices": [
+      "Steen",
+      "Stof",
+      "Papier",
+      "Ruis",
+      "Bakstenen",
+      "Golven",
+      "Gekreukt"
+     ]
+    },
+    {
+     "label": "Grootte %",
+     "type": "int",
+     "range": [
+      10,
+      400
+     ],
+     "default": 100
+    },
+    {
+     "label": "Gladheid",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 20
+    },
+    {
+     "label": "Diepte",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 10
+    },
+    {
+     "label": "Omgevingslicht",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Glans",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Kleur",
+     "type": "color"
+    },
+    {
+     "label": "Hoek",
+     "type": "int",
+     "range": [
+      0,
+      359
+     ],
+     "default": 315
+    },
+    {
+     "label": "Intensiteit",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Hoogte",
+     "type": "int",
+     "range": [
+      0,
+      90
+     ],
+     "default": 30
+    }
+   ]
+  },
+  {
+   "id": "80a3",
+   "name": "Weefpatroon",
+   "menu": [
+    "Effecten",
+    "Textuureffecten"
+   ],
+   "params": [
+    {
+     "label": "Tussenruimte",
+     "type": "int",
+     "range": [
+      0,
+      50
+     ],
+     "default": 4
+    },
+    {
+     "label": "Breedte",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 12
+    },
+    {
+     "label": "Dekking",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Weefkleur",
+     "type": "color"
+    },
+    {
+     "label": "Kleur tussenruimte",
+     "type": "color"
+    },
+    {
+     "label": "Tussenruimte vullen",
+     "type": "bool"
+    }
+   ]
+  },
+  {
+   "id": "80c0",
+   "name": "Zacht plastic",
+   "menu": [
+    "Effecten",
+    "Textuureffecten"
+   ],
+   "params": [
+    {
+     "label": "Vervaging",
+     "type": "int",
+     "range": [
+      0,
+      20
+     ],
+     "default": 2
+    },
+    {
+     "label": "Detail",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 40
+    },
+    {
+     "label": "Dichtheid",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 40
+    },
+    {
+     "label": "Hoek",
+     "type": "int",
+     "range": [
+      0,
+      359
+     ],
+     "default": 315
+    },
+    {
+     "label": "Kleur",
+     "type": "color"
+    }
+   ]
+  },
+  {
+   "id": "80be",
+   "name": "Zandsteen",
+   "menu": [
+    "Effecten",
+    "Textuureffecten"
+   ],
+   "params": [
+    {
+     "label": "Vervaging",
+     "type": "int",
+     "range": [
+      0,
+      20
+     ],
+     "default": 1
+    },
+    {
+     "label": "Detail",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 40
+    },
+    {
+     "label": "Luminantie",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Hoek",
+     "type": "int",
+     "range": [
+      0,
+      359
+     ],
+     "default": 315
+    },
+    {
+     "label": "Kleur",
+     "type": "color"
+    }
+   ]
+  },
+  {
+   "id": "80b6",
+   "name": "Bolvorm",
+   "menu": [
+    "Effecten",
+    "Vervormingseffecten"
+   ],
+   "params": [
+    {
+     "label": "Horizontaal",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Verticaal",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Grootte (%)",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Sterkte",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 50
+    }
+   ]
+  },
+  {
+   "id": "8093",
+   "name": "Golf",
+   "menu": [
+    "Effecten",
+    "Vervormingseffecten"
+   ],
+   "params": [
+    {
+     "label": "Horizontale amplitude",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 10
+    },
+    {
+     "label": "Horizontale golflengte",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 40
+    },
+    {
+     "label": "Verticale amplitude",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 10
+    },
+    {
+     "label": "Verticale golflengte",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 40
+    },
+    {
+     "label": "Randmodus",
+     "type": "choice",
+     "choices": [
+      "Achtergrondkleur",
+      "Herhalen",
+      "Transparant",
+      "Omloop"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "8094",
+   "name": "Knijpen",
+   "menu": [
+    "Effecten",
+    "Vervormingseffecten"
+   ],
+   "params": [
+    {
+     "label": "Sterkte (%)",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 50
+    }
+   ]
+  },
+  {
+   "id": "80ae",
+   "name": "Krullen",
+   "menu": [
+    "Effecten",
+    "Vervormingseffecten"
+   ],
+   "params": [
+    {
+     "label": "Aantal kolommen",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 3
+    },
+    {
+     "label": "Aantal rijen",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 3
+    },
+    {
+     "label": "Symmetrisch",
+     "type": "bool"
+    },
+    {
+     "label": "Straal (%)",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Sterkte",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Met de klok mee",
+     "type": "bool"
+    }
+   ]
+  },
+  {
+   "id": "818f",
+   "name": "Lensvervorming",
+   "menu": [
+    "Effecten",
+    "Vervormingseffecten"
+   ],
+   "params": [
+    {
+     "label": "Vervormingstype",
+     "type": "choice",
+     "choices": [
+      "Ton",
+      "Visoog",
+      "Visoog (sferisch)",
+      "Kussen"
+     ]
+    },
+    {
+     "label": "Sterkte / gezichtsveld",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Horizontaal (%)",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Verticaal (%)",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Randmodus",
+     "type": "choice",
+     "choices": [
+      "Achtergrondkleur",
+      "Herhalen",
+      "Transparant",
+      "Omloop"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "808e",
+   "name": "Pixelvorming",
+   "menu": [
+    "Effecten",
+    "Vervormingseffecten"
+   ],
+   "params": [
+    {
+     "label": "Blokbreedte",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 10
+    },
+    {
+     "label": "Blokhoogte",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 10
+    },
+    {
+     "label": "Symmetrisch",
+     "type": "bool"
+    }
+   ]
+  },
+  {
+   "id": "8095",
+   "name": "Platslaan",
+   "menu": [
+    "Effecten",
+    "Vervormingseffecten"
+   ],
+   "params": [
+    {
+     "label": "Sterkte (%)",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 50
+    }
+   ]
+  },
+  {
+   "id": "818a",
+   "name": "Poolcoördinaten",
+   "menu": [
+    "Effecten",
+    "Vervormingseffecten"
+   ],
+   "params": [
+    {
+     "label": "Omzetting",
+     "type": "choice",
+     "choices": [
+      "Rechthoekig naar polair",
+      "Polair naar rechthoekig"
+     ]
+    },
+    {
+     "label": "Randmodus",
+     "type": "choice",
+     "choices": [
+      "Achtergrondkleur",
+      "Herhalen",
+      "Transparant",
+      "Omloop"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "8092",
+   "name": "Rimpeling",
+   "menu": [
+    "Effecten",
+    "Vervormingseffecten"
+   ],
+   "params": [
+    {
+     "label": "Horizontaal (%)",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Verticaal (%)",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Amplitude",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 10
+    },
+    {
+     "label": "Golflengte",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 20
+    },
+    {
+     "label": "Randmodus",
+     "type": "choice",
+     "choices": [
+      "Achtergrondkleur",
+      "Herhalen",
+      "Transparant",
+      "Omloop"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "8091",
+   "name": "Spiraal",
+   "menu": [
+    "Effecten",
+    "Vervormingseffecten"
+   ],
+   "params": [
+    {
+     "label": "Graden",
+     "type": "int",
+     "range": [
+      -720,
+      720
+     ],
+     "default": 180
+    }
+   ]
+  },
+  {
+   "id": "80b8",
+   "name": "Stralenkrans",
+   "menu": [
+    "Effecten",
+    "Vervormingseffecten"
+   ],
+   "params": [
+    {
+     "label": "Horizontaal",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Verticaal",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Amplitude",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 20
+    },
+    {
+     "label": "Frequentie",
+     "type": "int",
+     "range": [
+      1,
+      50
+     ],
+     "default": 5
+    },
+    {
+     "label": "Straal (%)",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 25
+    },
+    {
+     "label": "Randmodus",
+     "type": "choice",
+     "choices": [
+      "Achtergrondkleur",
+      "Herhalen",
+      "Transparant",
+      "Omloop"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "8287",
+   "name": "Verplaatsingstoewijzing",
+   "menu": [
+    "Effecten",
+    "Vervormingseffecten"
+   ],
+   "params": [
+    {
+     "label": "Toewijzing",
+     "type": "choice",
+     "choices": [
+      "Eigen helderheid",
+      "Ruistextuur"
+     ]
+    },
+    {
+     "label": "Sterkte",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 20
+    },
+    {
+     "label": "Schaal",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 20
+    },
+    {
+     "label": "Randmodus",
+     "type": "choice",
+     "choices": [
+      "Achtergrondkleur",
+      "Herhalen",
+      "Transparant",
+      "Omloop"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "8090",
+   "name": "Wind",
+   "menu": [
+    "Effecten",
+    "Vervormingseffecten"
+   ],
+   "params": [
+    {
+     "label": "Windrichting",
+     "type": "choice",
+     "choices": [
+      "Van links",
+      "Van rechts"
+     ]
+    },
+    {
+     "label": "Windsterkte",
+     "type": "int",
+     "range": [
+      1,
+      100
+     ],
+     "default": 50
+    }
+   ]
+  }
+ ],
+ "menus": [
+  {
+   "menu": "Bestand",
+   "items": [
+    {
+     "id": "e100",
+     "text": "Nieuw...",
+     "path": []
+    },
+    {
+     "id": "e101",
+     "text": "Openen...",
+     "path": []
+    },
+    {
+     "id": "e102",
+     "text": "Sluiten",
+     "path": []
+    },
+    {
+     "id": "e103",
+     "text": "Opslaan",
+     "path": []
+    },
+    {
+     "id": "e104",
+     "text": "Opslaan als...",
+     "path": []
+    },
+    {
+     "id": "e10b",
+     "text": "Kopie opslaan als...",
+     "path": []
+    },
+    {
+     "id": "814b",
+     "text": "JPEG-optimalisatie...",
+     "path": [
+      "Exporteren"
+     ]
+    },
+    {
+     "id": "812d",
+     "text": "GIF-optimalisatie...",
+     "path": [
+      "Exporteren"
+     ]
+    },
+    {
+     "id": "8012",
+     "text": "Algemene programmavoorkeuren...",
+     "path": [
+      "Voorkeuren"
+     ]
+    },
+    {
+     "id": "8151",
+     "text": "Instellingen voor automatisch opslaan...",
+     "path": [
+      "Voorkeuren"
+     ]
+    },
+    {
+     "id": "e141",
+     "text": "Afsluiten",
+     "path": []
+    }
+   ]
+  },
+  {
+   "menu": "Bewerken",
+   "items": [
+    {
+     "id": "e12b",
+     "text": "Ongedaan maken",
+     "path": []
+    },
+    {
+     "id": "e12c",
+     "text": "Opnieuw",
+     "path": []
+    },
+    {
+     "id": "e128",
+     "text": "Herhalen",
+     "path": []
+    },
+    {
+     "id": "e123",
+     "text": "Knippen",
+     "path": []
+    },
+    {
+     "id": "e122",
+     "text": "Kopiëren",
+     "path": []
+    },
+    {
+     "id": "8105",
+     "text": "Samengevoegd kopiëren",
+     "path": []
+    },
+    {
+     "id": "80e6",
+     "text": "Plakken als nieuwe afbeelding",
+     "path": []
+    },
+    {
+     "id": "810d",
+     "text": "Plakken als nieuwe laag",
+     "path": []
+    },
+    {
+     "id": "801e",
+     "text": "Plakken als nieuwe selectie",
+     "path": []
+    },
+    {
+     "id": "801f",
+     "text": "Plakken in selectie",
+     "path": []
+    },
+    {
+     "id": "e120",
+     "text": "Wissen",
+     "path": []
+    },
+    {
+     "id": "8020",
+     "text": "Klembord leegmaken",
+     "path": []
+    }
+   ]
+  },
+  {
+   "menu": "Beeld",
+   "items": [
+    {
+     "id": "8007",
+     "text": "Zoomen naar 100%",
+     "path": []
+    },
+    {
+     "id": "8132",
+     "text": "Inzoomen",
+     "path": []
+    },
+    {
+     "id": "8136",
+     "text": "Uitzoomen",
+     "path": []
+    },
+    {
+     "id": "801d",
+     "text": "Bewerking op volledig scherm",
+     "path": []
+    },
+    {
+     "id": "8021",
+     "text": "Raster",
+     "path": []
+    },
+    {
+     "id": "e800",
+     "text": "Standaard",
+     "path": [
+      "Werkbalken"
+     ]
+    },
+    {
+     "id": "e801",
+     "text": "Status",
+     "path": [
+      "Werkbalken"
+     ]
+    },
+    {
+     "id": "81f9",
+     "text": "Gereedschappen",
+     "path": [
+      "Werkbalken"
+     ]
+    },
+    {
+     "id": "8002",
+     "text": "Geschiedenis",
+     "path": [
+      "Paletten"
+     ]
+    },
+    {
+     "id": "81ae",
+     "text": "Lagen",
+     "path": [
+      "Paletten"
+     ]
+    },
+    {
+     "id": "8185",
+     "text": "Materialen",
+     "path": [
+      "Paletten"
+     ]
+    },
+    {
+     "id": "81ba",
+     "text": "Opties voor gereedschap",
+     "path": [
+      "Paletten"
+     ]
+    }
+   ]
+  },
+  {
+   "menu": "Afbeelding",
+   "items": [
+    {
+     "id": "8242",
+     "text": "Rechtsom roteren",
+     "path": []
+    },
+    {
+     "id": "8243",
+     "text": "Linksom roteren",
+     "path": []
+    },
+    {
+     "id": "800e",
+     "text": "Vrij roteren...",
+     "path": []
+    },
+    {
+     "id": "80d1",
+     "text": "Formaat wijzigen...",
+     "path": []
+    },
+    {
+     "id": "80d2",
+     "text": "Doekgrootte...",
+     "path": []
+    },
+    {
+     "id": "807a",
+     "text": "Randen toevoegen...",
+     "path": []
+    },
+    {
+     "id": "80cf",
+     "text": "Bijsnijden tot selectie",
+     "path": []
+    },
+    {
+     "id": "800d",
+     "text": "Spiegelen",
+     "path": []
+    },
+    {
+     "id": "800c",
+     "text": "Omdraaien",
+     "path": []
+    },
+    {
+     "id": "80ed",
+     "text": "Afbeeldingsgegevens...",
+     "path": []
+    },
+    {
+     "id": "823f",
+     "text": "Kleuren in afbeelding tellen",
+     "path": []
+    }
+   ]
+  },
+  {
+   "menu": "Effecten",
+   "items": [
+    {
+     "id": "807b",
+     "text": "Effecten zoeken...",
+     "path": []
+    }
+   ]
+  },
+  {
+   "menu": "Lagen",
+   "items": [
+    {
+     "id": "8140",
+     "text": "Nieuwe rasterlaag...",
+     "path": []
+    },
+    {
+     "id": "8141",
+     "text": "Nieuwe vectorlaag...",
+     "path": []
+    },
+    {
+     "id": "8191",
+     "text": "Nieuwe lagengroep...",
+     "path": []
+    },
+    {
+     "id": "8107",
+     "text": "Alles verbergen",
+     "path": [
+      "Nieuwe maskerlaag"
+     ]
+    },
+    {
+     "id": "8108",
+     "text": "Alles weergeven",
+     "path": [
+      "Nieuwe maskerlaag"
+     ]
+    },
+    {
+     "id": "8106",
+     "text": "Selectie verbergen",
+     "path": [
+      "Nieuwe maskerlaag"
+     ]
+    },
+    {
+     "id": "80e9",
+     "text": "Selectie weergeven",
+     "path": [
+      "Nieuwe maskerlaag"
+     ]
+    },
+    {
+     "id": "80e8",
+     "text": "Uit afbeelding...",
+     "path": [
+      "Nieuwe maskerlaag"
+     ]
+    },
+    {
+     "id": "8144",
+     "text": "Helderheid/contrast...",
+     "path": [
+      "Nieuwe aanpassingslaag"
+     ]
+    },
+    {
+     "id": "8147",
+     "text": "Kanaalmenger...",
+     "path": [
+      "Nieuwe aanpassingslaag"
+     ]
+    },
+    {
+     "id": "8145",
+     "text": "Kleurbalans...",
+     "path": [
+      "Nieuwe aanpassingslaag"
+     ]
+    },
+    {
+     "id": "8143",
+     "text": "Curven...",
+     "path": [
+      "Nieuwe aanpassingslaag"
+     ]
+    },
+    {
+     "id": "8146",
+     "text": "Kleurtoon/verzadiging/helderheid...",
+     "path": [
+      "Nieuwe aanpassingslaag"
+     ]
+    },
+    {
+     "id": "8148",
+     "text": "Omkeren...",
+     "path": [
+      "Nieuwe aanpassingslaag"
+     ]
+    },
+    {
+     "id": "8142",
+     "text": "Niveaus...",
+     "path": [
+      "Nieuwe aanpassingslaag"
+     ]
+    },
+    {
+     "id": "814a",
+     "text": "Aantal niveaus beperken...",
+     "path": [
+      "Nieuwe aanpassingslaag"
+     ]
+    },
+    {
+     "id": "8149",
+     "text": "Drempel...",
+     "path": [
+      "Nieuwe aanpassingslaag"
+     ]
+    },
+    {
+     "id": "80f7",
+     "text": "Dupliceren",
+     "path": []
+    },
+    {
+     "id": "80f6",
+     "text": "Verwijderen",
+     "path": []
+    },
+    {
+     "id": "8205",
+     "text": "Groepering van lagen opheffen",
+     "path": []
+    },
+    {
+     "id": "80fe",
+     "text": "Eigenschappen...",
+     "path": []
+    },
+    {
+     "id": "8101",
+     "text": "Vooraan",
+     "path": [
+      "Schikken"
+     ]
+    },
+    {
+     "id": "8104",
+     "text": "Omhoog verplaatsen",
+     "path": [
+      "Schikken"
+     ]
+    },
+    {
+     "id": "8102",
+     "text": "Omlaag verplaatsen",
+     "path": [
+      "Schikken"
+     ]
+    },
+    {
+     "id": "8103",
+     "text": "Achteraan",
+     "path": [
+      "Schikken"
+     ]
+    },
+    {
+     "id": "81d6",
+     "text": "In groep zetten",
+     "path": [
+      "Schikken"
+     ]
+    },
+    {
+     "id": "81d7",
+     "text": "Uit groep verwijderen",
+     "path": [
+      "Schikken"
+     ]
+    },
+    {
+     "id": "81d4",
+     "text": "Omlaag samenvoegen",
+     "path": [
+      "Samenvoegen"
+     ]
+    },
+    {
+     "id": "80f8",
+     "text": "Alle lagen samenvoegen",
+     "path": [
+      "Samenvoegen"
+     ]
+    },
+    {
+     "id": "8120",
+     "text": "Zichtbare lagen samenvoegen",
+     "path": [
+      "Samenvoegen"
+     ]
+    },
+    {
+     "id": "81d5",
+     "text": "Groep samenvoegen",
+     "path": [
+      "Samenvoegen"
+     ]
+    },
+    {
+     "id": "80ec",
+     "text": "Masker/aanpassing omkeren",
+     "path": []
+    },
+    {
+     "id": "821f",
+     "text": "Overlay weergeven",
+     "path": []
+    },
+    {
+     "id": "80ea",
+     "text": "Masker laden vanaf schijf...",
+     "path": [
+      "Masker laden/opslaan"
+     ]
+    },
+    {
+     "id": "80eb",
+     "text": "Masker opslaan op schijf...",
+     "path": [
+      "Masker laden/opslaan"
+     ]
+    },
+    {
+     "id": "80fa",
+     "text": "Omzetten in rasterlaag",
+     "path": []
+    },
+    {
+     "id": "815d",
+     "text": "Laag maken van achtergrondlaag",
+     "path": []
+    },
+    {
+     "id": "8051",
+     "text": "Laagkleuren tellen",
+     "path": []
+    }
+   ]
+  },
+  {
+   "menu": "Selecties",
+   "items": [
+    {
+     "id": "80dc",
+     "text": "Alles selecteren",
+     "path": []
+    },
+    {
+     "id": "80e2",
+     "text": "Niets selecteren",
+     "path": []
+    },
+    {
+     "id": "80f5",
+     "text": "Vanuit masker",
+     "path": []
+    },
+    {
+     "id": "80dd",
+     "text": "Omkeren",
+     "path": []
+    },
+    {
+     "id": "811b",
+     "text": "Uitbreiden...",
+     "path": [
+      "Wijzigen"
+     ]
+    },
+    {
+     "id": "811c",
+     "text": "Inkrimpen...",
+     "path": [
+      "Wijzigen"
+     ]
+    },
+    {
+     "id": "80e3",
+     "text": "Doezelen...",
+     "path": [
+      "Wijzigen"
+     ]
+    },
+    {
+     "id": "811a",
+     "text": "Selectiekader verbergen",
+     "path": []
+    },
+    {
+     "id": "8109",
+     "text": "Laag maken van selectie",
+     "path": []
+    }
+   ]
+  },
+  {
+   "menu": "Venster",
+   "items": [
+    {
+     "id": "e130",
+     "text": "Nieuw venster",
+     "path": []
+    },
+    {
+     "id": "82ce",
+     "text": "Documenten met tabs",
+     "path": []
+    },
+    {
+     "id": "e132",
+     "text": "Trapsgewijs",
+     "path": []
+    },
+    {
+     "id": "e133",
+     "text": "Onder elkaar",
+     "path": []
+    },
+    {
+     "id": "e134",
+     "text": "Naast elkaar",
+     "path": []
+    },
+    {
+     "id": "80d3",
+     "text": "Alles sluiten",
+     "path": []
+    },
+    {
+     "id": "80d4",
+     "text": "Dupliceren",
+     "path": []
+    },
+    {
+     "id": "80d5",
+     "text": "Aanpassen aan afbeelding",
+     "path": []
+    },
+    {
+     "id": "81d0",
+     "text": "Aanpassen aan venster",
+     "path": []
+    }
+   ]
+  },
+  {
+   "menu": "Help",
+   "items": [
+    {
+     "id": "e142",
+     "text": "Gebruikershandleiding...",
+     "path": []
+    },
+    {
+     "id": "8028",
+     "text": "Toetsenbordlayout...",
+     "path": []
+    },
+    {
+     "id": "e140",
+     "text": "Info...",
+     "path": []
+    }
+   ]
+  }
+ ]
+}

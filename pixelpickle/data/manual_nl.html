@@ -6,20 +6,24 @@ fotobewerkers: menu's, gereedschappen en sneltoetsen staan op de plek waar u ze 
 <ul>
 <li><b>Menubalk en standaardwerkbalk</b> bovenaan: bestanden, bewerken, aanpassen, effecten, lagen en selecties.</li>
 <li><b>Optiebalk</b> daaronder: de instellingen van het gekozen gereedschap, zoals grootte, hardheid en dekking.
-Met het knopje <i>Voorinstellingen</i> bewaart en laadt u eigen instellingen.</li>
+Vooraan staat het icoon van het gereedschap (de naam ziet u als u de muis erop houdt). Met het knopje
+<i>Voorinstellingen</i> bewaart en laadt u eigen instellingen.</li>
 <li><b>Gereedschapsbalk</b> links. Een knop met een pijltje bevat meer gereedschappen: klik op het pijltje
 om te kiezen. Zonder geopende afbeelding is de balk grijs; bij de eerste afbeelding is het laatst
 gebruikte gereedschap weer actief.</li>
 <li><b>Paletten</b> rechts: <i>Materialen</i>, <i>Lagen</i> en <i>Geschiedenis</i>. Aan- en uitzetten via
 <i>Beeld &gt; Paletten</i>.</li>
 <li>Met de <b>rechtermuisknop</b> op de afbeelding, een tabblad of een laag opent een snelmenu.</li>
+<li>Iconen en knoppen nemen de accentkleur van uw thema over, op een licht en een donker thema.</li>
 </ul>
 
 <h2>Afbeeldingen openen, maken en opslaan</h2>
 <ul>
 <li><i>Bestand &gt; Nieuw</i> maakt een lege afbeelding; <i>Bestand &gt; Openen</i> opent bestaande bestanden.</li>
-<li>Opslaan met lagen: <b>.pspimage</b> of <b>.ora</b> (OpenRaster). Gewone formaten zoals PNG, JPEG, TIFF,
-WebP en GIF slaan de afbeelding samengevoegd op; uw lagen blijven in PixelPickle bestaan.</li>
+<li>Opslaan met lagen: <b>.ora</b> (OpenRaster, een open standaard); ook vectorlagen blijven daarin bewerkbaar.
+Bestanden uit andere fotobewerkers in <b>.pspimage</b> kunt u openen en desgewenst ook zo opslaan. Gewone
+formaten zoals PNG, JPEG, TIFF, WebP en GIF slaan de afbeelding samengevoegd op; uw lagen blijven in
+PixelPickle bestaan.</li>
 <li>Meerdere afbeeldingen tegelijk open: wissel met Ctrl+Tab.</li>
 </ul>
 
@@ -30,10 +34,42 @@ WebP en GIF slaan de afbeelding samengevoegd op; uw lagen blijven in PixelPickle
 <ul>
 <li>Linkermuisknop tekent met de voorgrondkleur, rechtermuisknop met de achtergrondkleur.</li>
 <li>Houd de <b>spatiebalk</b> ingedrukt en sleep om de afbeelding te verschuiven.</li>
-<li>Bij selecteren schuift de afbeelding vanzelf mee als u bij de rand van het venster komt.</li>
+<li><b>Selecteren</b>: bij <i>Uit de vrije hand</i> met Punt tot punt, Slimme rand of Rand zoeken schuift de
+afbeelding vanzelf mee als u bij de rand van het venster komt. Met de modus Toevoegen of Verwijderen breidt u
+een selectie uit of haalt u er een stuk uit, ook als u binnen de selectie klikt.</li>
 <li><b>Bijsnijden</b>: trek een kader, pas het aan met de vierkantjes op hoeken en zijden en dubbelklik
 in het kader (of druk Enter) om bij te snijden.</li>
+<li><b>Perspectiefcorrectie</b> (bij Rechtzetten): sleep de vier hoeken van het kader langs randen die recht
+horen te zijn, zoals een gebouw of een schuin gefotografeerd document, en dubbelklik in het kader.</li>
+<li><b>Klonen</b>: kies de bron met de rechtermuisknop en schilder met de linker. Bij de bron loopt een cirkel
+mee, zodat u ziet wat er gekloond wordt.</li>
+<li><b>Krasjes verwijderen</b> (bij Klonen): trek een smal kader over een kras of haar; het wordt opgevuld
+vanuit de pixels ernaast.</li>
+<li><b>Retoucheerpenselen</b> zoals Verscherpen, Verzachten, Lichter/donkerder en Bosseleren werken één keer
+per streek; heen en weer gaan stapelt niet op. Zet <i>Doorlopend</i> aan om het effect op te bouwen.</li>
+<li><b>Kunstmedia</b>: olieverfpenseel, krijt, pastel, kleurkrijt en kleurpotlood, elk met een eigen streek.
+Bij krijt, pastel, kleurkrijt en kleurpotlood stelt u de papierkorrel in; olieverf mengt met de verf die er
+al ligt en raakt in de loop van een streek op.</li>
+<li><b>Verwringen</b>: met het penseel Verwringen duwt, vergroot, verkleint of draait u pixels, en zet u ze
+met Gladstrijken terug. Met Maasvormig verwringen versleept u de punten van een raster (Shift: hele rij,
+Ctrl: hele kolom).</li>
 <li><b>Tekst</b>: klik om tekst te maken, of klik op bestaande tekst om die opnieuw te bewerken.</li>
+</ul>
+
+<h2>De pen en vectorlagen</h2>
+<ul>
+<li>De <b>pen</b> heeft vier modi: <i>Lijnen en polylijnen</i> (rechte lijnen, Shift voor stappen van 45°),
+<i>Punt tot punt (Bézier-krommen)</i> (klik voor een hoekpunt, houd ingedrukt en sleep voor een kromme; klik
+op het eerste punt om te sluiten), <i>Uit de vrije hand</i> (Tracking maakt de lijn gladder) en
+<i>Bewerken</i> (knooppunten en handvatten verslepen; Ctrl + slepen vanaf een knooppunt maakt er een kromme
+van).</li>
+<li>De lijn blijft bewerkbaar tot u op <b>✓ Toepassen</b> of Enter drukt; Esc gooit hem weg. Lijnstijl,
+breedte, verbinding en verstek stelt u in de optiebalk in.</li>
+<li>Met <b>Op vector maken</b> (bij de pen en de vormen) komt wat u tekent als bewerkbaar object op een
+<b>vectorlaag</b>. Later aanpassen: kies de pen in de modus Bewerken en klik op de lijn of vorm. U kunt dan de
+knooppunten, de kleuren en de lijn wijzigen; Delete verwijdert het object.</li>
+<li>Vectorlagen blijven vector bij verplaatsen, spiegelen, roteren en formaat wijzigen, en in .ora. Wilt u
+erop schilderen of een effect gebruiken, dan zet PixelPickle de laag eerst om in een rasterlaag.</li>
 </ul>
 
 <h2>Materialen: kleur, verloop en patroon</h2>
@@ -41,7 +77,8 @@ in het kader (of druk Enter) om bij te snijden.</li>
 <li>Het bovenste vak is de <b>voorgrond</b> (en de rand van vormen), het onderste de <b>achtergrond</b>
 (en de vulling). Klik op een vak om het venster <i>Materiaaleigenschappen</i> te openen.</li>
 <li>Daar kiest u een <b>kleur</b>, een <b>verloop</b> (lineair, rechthoekig, zonnestraal of radiaal, met hoek
-en herhalingen) of een <b>patroon</b> (met hoek en schaal; ook een geopende afbeelding of een eigen bestand).</li>
+en herhalingen) of een <b>patroon</b> (met hoek en schaal; ook een geopende afbeelding of een eigen bestand).
+Er zijn tientallen verlopen en patronen meegeleverd.</li>
 <li>De knopjes onder een vak schakelen snel tussen kleur, verloop en patroon; ⊘ maakt het transparant
 (geen rand of geen vulling). ⇅ wisselt voorgrond en achtergrond.</li>
 <li>Verlopen en patronen werken met de vulemmer, penselen en vormen.</li>
@@ -49,16 +86,18 @@ en herhalingen) of een <b>patroon</b> (met hoek en schaal; ook een geopende afbe
 
 <h2>Lagen</h2>
 <ul>
-<li>Nieuwe lagen, groepen, maskers en aanpassingslagen maakt u via het menu <i>Lagen</i> of de knoppen in het
-palet <i>Lagen</i>.</li>
+<li>Nieuwe lagen, vectorlagen, groepen, maskers en aanpassingslagen maakt u via het menu <i>Lagen</i> of de
+knoppen in het palet <i>Lagen</i>.</li>
 <li>Per laag stelt u dekking en mengmodus in. Een aanpassingslaag (bijvoorbeeld Curven) verandert alles
 eronder zonder de pixels zelf aan te passen; met een masker bepaalt u waar.</li>
-<li>Dubbelklik op een laag voor de laageigenschappen.</li>
+<li>Dubbelklik op een laag voor de laageigenschappen. Op het tabblad <i>Mengbereiken</i> bepaalt u per kanaal
+waar de laag zichtbaar is, op basis van de laag zelf en van wat eronder ligt.</li>
 </ul>
 
 <h2>Aanpassen en effecten</h2>
 <ul>
 <li>Elk venster toont een voor- en navoorbeeld; in het voorbeeld kunt u zoomen en verschuiven.</li>
+<li>Is er een selectie actief, dan werkt het effect alleen daarbinnen en meldt het venster dat.</li>
 <li>Bewaar instellingen als voorinstelling om ze later snel terug te halen.</li>
 <li><i>Effecten &gt; Effecten zoeken</i> laat de effecten met een voorbeeld naast elkaar zien.</li>
 </ul>
@@ -69,8 +108,8 @@ op een eerdere stap om terug te gaan.</p>
 
 <h2>Voorkeuren</h2>
 <ul>
-<li><i>Bestand &gt; Voorkeuren &gt; Algemene programmavoorkeuren</i>: de taal (Nederlands of Engels).</li>
+<li><i>Bestand &gt; Voorkeuren &gt; Algemene programmavoorkeuren</i>: de taal. PixelPickle is er in het
+Engels, Nederlands, Duits, Frans, Spaans, Italiaans, Russisch, Chinees en Arabisch.</li>
 <li><i>Bestand &gt; Voorkeuren &gt; Instellingen voor automatisch opslaan</i>: bewaart gewijzigde afbeeldingen
-elke paar minuten in een herstelmap. Sluit PixelPickle onverwacht af, dan biedt het programma bij de
-volgende start aan ze terug te halen. Uw eigen bestanden worden daarbij niet overschreven.</li>
+op een instelbaar interval in een herstelmap. Uw eigen bestanden worden daarbij niet overschreven.</li>
 </ul>

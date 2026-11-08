@@ -59,7 +59,6 @@ Totaal: 7 gereedschappen en 202 menu-opdrachten.
 |  | Opname opslaan... | Save Recording... | Bestand > Script |  | `8024` |
 |  | Een stap | Single Step | Bestand > Script |  | `82bc` |
 |  | Recent script | Recent Script | Bestand > Script |  | `8217` |
-|  | Corel Snapfire starten | Start Corel Snapfire | Bestand |  | `81fe` |
 |  | Batchverwerking... | Batch Process... | Bestand |  | `801b` |
 |  | Namen in batch wijzigen... | Batch Rename... | Bestand |  | `81ad` |
 |  | Lexar actief geheugensysteem... | Lexar Active Memory System... | Bestand |  | `82fa` |
@@ -214,6 +213,7 @@ Totaal: 7 gereedschappen en 202 menu-opdrachten.
 |  | Stippen en gaten verwijderen... | Remove Specks and Holes... | Selecties > Wijzigen |  | `81f6` |
 |  | Vloeiend... | Smooth... | Selecties > Wijzigen |  | `81f5` |
 |  | Selectieranden selecteren... | Select Selection Borders... | Selecties > Wijzigen |  | `81ec` |
+|  | Afknippen tot doek | Crop to Canvas | Selecties |  | `8283` |
 |  | Selectie laden vanaf schijf... | Load Selection from Disk... | Selecties > Selectie laden/opslaan |  | `80de` |
 |  | Selectie laden uit alfakanaal... | Load Selection from Alpha Channel... | Selecties > Selectie laden/opslaan |  | `810e` |
 |  | Selectie opslaan op schijf... | Save Selection to Disk... | Selecties > Selectie laden/opslaan |  | `80df` |
@@ -248,6 +248,9 @@ Totaal: 7 gereedschappen en 202 menu-opdrachten.
 
 Wat al gebouwd is, met de versie waarin het verscheen.
 
+- [x] Zeven extra talen (Duits, Frans, Spaans, Italiaans, Russisch, Chinees, Arabisch), handleiding in elke taal;
+  .ora als standaardformaat met lagen; broncirkel bij Klonen; uitgebreide handleiding in alle talen;
+  selectie verschuiven met de pijltoetsen; Vervagen/Verzachten, Gemiddelde en Filmkorrel verbeterd (0.9.0)
 - [x] Vernieuwde optiebalk: vaste hoogte, strak uitgelijnd, groot gereedschapsicoon, kleine vinkjes (0.8.0)
 - [x] Vectorlagen: pen en vormen blijven bewerkbaar (oppakken met de Pen in Bewerken), ook in .ora (0.7.0)
 - [x] Pen met modi Bewerken, Lijnen en polylijnen, Punt tot punt (Bézier) en Uit de vrije hand, met lijnstijl,
