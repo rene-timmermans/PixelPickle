@@ -84,7 +84,25 @@ def default_pattern():
     return {"kind": "pattern", "name": "Bakstenen", "image": pattern_image("Bakstenen"), "angle": 0, "scale": 100}
 
 
+# eigen verlopen (verloopbewerker), bewaard in de instellingen: {naam: [[positie, spec], ...]}
+USER_PREFIX = "user:"
+USER_GRADIENTS = {}
+
+
+def set_user_gradients(d):
+    USER_GRADIENTS.clear()
+    for k, v in (d or {}).items():
+        try:
+            USER_GRADIENTS[str(k)] = [(float(p), str(c)) for p, c in v]
+        except (TypeError, ValueError):
+            continue
+
+
 def _rgba(spec, fg, bg):
+    if ":" in spec and spec.split(":")[0] in (FG, BG):  # voor- of achtergrondkleur met eigen dekking
+        src, alpha = spec.split(":", 1)
+        c = QColor(fg if src == FG else bg)
+        return (c.red(), c.green(), c.blue(), max(0, min(255, int(float(alpha)))))
     if spec in (FG, FG0, BG, BG0):
         c = QColor(fg if spec in (FG, FG0) else bg)
         return (c.red(), c.green(), c.blue(), 0 if spec.endswith("0") else c.alpha())
@@ -133,8 +151,18 @@ def gradient_lut(name, fg, bg):
         alpha = _interp(x, [a[0] for a in astops], [[a[2]] for a in astops], [a[1] for a in astops]) \
             if astops else np.full((256, 1), 255, np.float32)
         return np.concatenate([rgb, alpha], axis=1)
-    entries = GRADIENTS.get(name, GRADIENTS["Voorgrond-achtergrond"])
-    if all(isinstance(e, tuple) for e in entries):
+    if name and name.startswith(USER_PREFIX) and name[len(USER_PREFIX):] in USER_GRADIENTS:
+        entries = USER_GRADIENTS[name[len(USER_PREFIX):]]
+    else:
+        entries = GRADIENTS.get(name, GRADIENTS["Voorgrond-achtergrond"])
+    return stops_lut(entries, fg, bg)
+
+
+def stops_lut(entries, fg, bg):
+    """256 x 4 tabel uit kleurpunten: specs op gelijke afstand of [(positie, spec)]."""
+    x = np.linspace(0, 1, 256)
+    if all(isinstance(e, (tuple, list)) for e in entries):
+        entries = sorted(entries, key=lambda e: float(e[0]))
         pos = [float(e[0]) for e in entries]
         stops = [_rgba(e[1], fg, bg) for e in entries]
     else:
@@ -144,13 +172,35 @@ def gradient_lut(name, fg, bg):
 
 
 def gradient_names():
-    """Sleutels van alle verlopen: eerst de eigen, dan die uit PSP."""
-    return list(GRADIENTS) + list(psp_gradients())
+    """Sleutels van alle verlopen: ingebouwd, zelf gemaakt, dan die uit een eigen installatie."""
+    return list(GRADIENTS) + [USER_PREFIX + n for n in USER_GRADIENTS] + list(psp_gradients())
 
 
 def gradient_label(key):
     from .i18n import tr
+    if key.startswith(USER_PREFIX):
+        return key[len(USER_PREFIX):]
     return tr(key[4:]) if key.startswith("psp:") else tr(key)
+
+
+def gradient_stops(name):
+    """Kleurpunten van een verloop om te bewerken: [(positie, spec)], specs als in GRADIENTS."""
+    if name.startswith(USER_PREFIX):
+        return list(USER_GRADIENTS.get(name[len(USER_PREFIX):], []))
+    psp = psp_gradients().get(name)
+    if psp is not None:  # PSP-verloop: kleuren en (vereenvoudigd) dekking per kleurpunt
+        cstops, astops = psp
+        out = []
+        for pos, _, rgb, typ in cstops:
+            a = int(_interp([pos], [p[0] for p in astops], [[p[2]] for p in astops])[0][0]) if astops else 255
+            spec = f"{FG}:{a}" if typ == 1 else f"{BG}:{a}" if typ == 2 else "#%02x%02x%02x%02x" % (*rgb, a)
+            out.append((float(pos), spec))
+        return out
+    entries = GRADIENTS.get(name, GRADIENTS["Voorgrond-achtergrond"])
+    if all(isinstance(e, tuple) for e in entries):
+        return [(float(p), c) for p, c in entries]
+    n = len(entries)
+    return [(i / max(n - 1, 1), c) for i, c in enumerate(entries)]
 
 
 # ---------------------------------------------------------------- verlopen en patronen uit PSP
@@ -264,11 +314,13 @@ def _gradient_name(name):
 
 
 def psp_patterns():
-    """[(naam, pad)] van de patronen uit PSP (Corel_08) en de map Patronen/Patterns van de gebruiker."""
+    """[(naam, pad)] van de patronen uit een eigen installatie, de map Patronen/Patterns van de gebruiker en
+    de eigen map met patronen (Bestand > Voorkeuren > Bestandslocaties)."""
     global _psp_pat
     if _psp_pat is None:
         import glob
         _psp_pat, seen = [], set()
+        exts = (".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff")
         for d in psp_dirs():
             cands = glob.glob(os.path.join(glob.escape(d), "Corel_08", "**", "*"), recursive=True)
             for sub in ("Patronen", "Patterns"):
@@ -278,9 +330,20 @@ def psp_patterns():
                 name = _pattern_name(stem)
                 if name in PATTERNS:  # zelfde naam als een eigen patroon: apart houden
                     name += " 2"
-                if ext.lower() in (".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff") and name not in seen:
+                if ext.lower() in exts and name not in seen:
                     seen.add(name)
                     _psp_pat.append((name, f))
+        try:  # eigen map met patronen
+            from . import userdata
+            own = userdata.folder("patterns", create=False)
+            if os.path.isdir(own):
+                for f in sorted(glob.glob(os.path.join(glob.escape(own), "**", "*"), recursive=True)):
+                    stem, ext = os.path.splitext(os.path.basename(f))
+                    if ext.lower() in exts and stem not in seen and stem not in PATTERNS:
+                        seen.add(stem)
+                        _psp_pat.append((stem, f))
+        except Exception:  # noqa: BLE001 - een onleesbare map mag de patronen niet breken
+            pass
     return _psp_pat
 
 

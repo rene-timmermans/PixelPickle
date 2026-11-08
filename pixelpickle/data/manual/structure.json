@@ -3413,6 +3413,15 @@
       100
      ],
      "default": 75
+    },
+    {
+     "label": "Max. oogdiameter (%)",
+     "type": "int",
+     "range": [
+      1,
+      15
+     ],
+     "default": 4
     }
    ]
   },
@@ -7481,7 +7490,50 @@
       "Hout",
       "Graniet",
       "Koper",
-      "Jade"
+      "Jade",
+      "Bakstenen",
+      "Schaakbord",
+      "Strepen",
+      "Diagonaal",
+      "Stippen",
+      "Ruitjes",
+      "Tegels",
+      "Zigzag",
+      "Golven",
+      "Honingraat",
+      "Hout",
+      "Marmer",
+      "Wolken",
+      "Zand",
+      "Linnen",
+      "Luipaard",
+      "Zebra",
+      "Tijger",
+      "Giraf",
+      "Slangenhuid",
+      "Craquelé",
+      "Papier",
+      "Pakpapier",
+      "Spijkerstof",
+      "Schotse ruit",
+      "Ruitpatroon",
+      "Visgraat",
+      "Kurk",
+      "Graniet",
+      "Leer",
+      "Golfkarton",
+      "Bubbels",
+      "Confetti",
+      "Sterrenhemel",
+      "Hartjes",
+      "Bloemetjes",
+      "Mozaïek",
+      "Terrazzo",
+      "Camouflage",
+      "Roest",
+      "Beton",
+      "Gras",
+      "Donker hout"
      ]
     },
     {
@@ -7635,7 +7687,50 @@
       "Ruis",
       "Bakstenen",
       "Golven",
-      "Gekreukt"
+      "Gekreukt",
+      "Bakstenen",
+      "Schaakbord",
+      "Strepen",
+      "Diagonaal",
+      "Stippen",
+      "Ruitjes",
+      "Tegels",
+      "Zigzag",
+      "Golven",
+      "Honingraat",
+      "Hout",
+      "Marmer",
+      "Wolken",
+      "Zand",
+      "Linnen",
+      "Luipaard",
+      "Zebra",
+      "Tijger",
+      "Giraf",
+      "Slangenhuid",
+      "Craquelé",
+      "Papier",
+      "Pakpapier",
+      "Spijkerstof",
+      "Schotse ruit",
+      "Ruitpatroon",
+      "Visgraat",
+      "Kurk",
+      "Graniet",
+      "Leer",
+      "Golfkarton",
+      "Bubbels",
+      "Confetti",
+      "Sterrenhemel",
+      "Hartjes",
+      "Bloemetjes",
+      "Mozaïek",
+      "Terrazzo",
+      "Camouflage",
+      "Roest",
+      "Beton",
+      "Gras",
+      "Donker hout"
      ]
     },
     {
@@ -8410,6 +8505,11 @@
      "path": []
     },
     {
+     "id": "8019",
+     "text": "Naar vorige versie...",
+     "path": []
+    },
+    {
      "id": "e103",
      "text": "Opslaan",
      "path": []
@@ -8423,6 +8523,44 @@
      "id": "e10b",
      "text": "Kopie opslaan als...",
      "path": []
+    },
+    {
+     "id": "80d6",
+     "text": "Verwijderen",
+     "path": []
+    },
+    {
+     "id": "82ec",
+     "text": "Afdrukken...",
+     "path": []
+    },
+    {
+     "id": "812e",
+     "text": "Afdrukweergave...",
+     "path": []
+    },
+    {
+     "id": "80e0",
+     "text": "Instellingen...",
+     "path": [
+      "Importeren",
+      "Schermopname"
+     ]
+    },
+    {
+     "id": "80e1",
+     "text": "Starten",
+     "path": [
+      "Importeren",
+      "Schermopname"
+     ]
+    },
+    {
+     "id": "8203",
+     "text": "Aangepast penseel",
+     "path": [
+      "Importeren"
+     ]
     },
     {
      "id": "814b",
@@ -8439,6 +8577,51 @@
      ]
     },
     {
+     "id": "815b",
+     "text": "PNG-optimalisatie...",
+     "path": [
+      "Exporteren"
+     ]
+    },
+    {
+     "id": "8174",
+     "text": "Afbeelding met hyperlinks...",
+     "path": [
+      "Exporteren"
+     ]
+    },
+    {
+     "id": "8201",
+     "text": "Aangepast penseel...",
+     "path": [
+      "Exporteren"
+     ]
+    },
+    {
+     "id": "822c",
+     "text": "Fotolijst...",
+     "path": [
+      "Exporteren"
+     ]
+    },
+    {
+     "id": "815c",
+     "text": "Vorm...",
+     "path": [
+      "Exporteren"
+     ]
+    },
+    {
+     "id": "801b",
+     "text": "Batchverwerking...",
+     "path": []
+    },
+    {
+     "id": "81ad",
+     "text": "Namen in batch wijzigen...",
+     "path": []
+    },
+    {
      "id": "8012",
      "text": "Algemene programmavoorkeuren...",
      "path": [
@@ -8446,8 +8629,29 @@
      ]
     },
     {
+     "id": "8014",
+     "text": "Voorkeuren bestandsindelingen...",
+     "path": [
+      "Voorkeuren"
+     ]
+    },
+    {
+     "id": "8152",
+     "text": "Bestandslocaties...",
+     "path": [
+      "Voorkeuren"
+     ]
+    },
+    {
      "id": "8151",
      "text": "Instellingen voor automatisch opslaan...",
+     "path": [
+      "Voorkeuren"
+     ]
+    },
+    {
+     "id": "8204",
+     "text": "Voorkeuren herstellen...",
      "path": [
       "Voorkeuren"
      ]
@@ -8508,8 +8712,18 @@
      "path": []
     },
     {
+     "id": "80f0",
+     "text": "Plakken als transparante selectie",
+     "path": []
+    },
+    {
      "id": "801f",
      "text": "Plakken in selectie",
+     "path": []
+    },
+    {
+     "id": "8023",
+     "text": "Plakken als nieuwe vectorselectie",
      "path": []
     },
     {
@@ -8548,9 +8762,53 @@
      "path": []
     },
     {
+     "id": "80ef",
+     "text": "Schermvullend voorbeeld",
+     "path": []
+    },
+    {
+     "id": "810a",
+     "text": "Linialen",
+     "path": []
+    },
+    {
      "id": "8021",
      "text": "Raster",
      "path": []
+    },
+    {
+     "id": "817c",
+     "text": "Hulplijnen",
+     "path": []
+    },
+    {
+     "id": "817a",
+     "text": "Uitlijnen op raster",
+     "path": []
+    },
+    {
+     "id": "817b",
+     "text": "Uitlijnen op hulplijnen",
+     "path": []
+    },
+    {
+     "id": "8155",
+     "text": "Eigenschappen Raster, Hulplijn en Uitlijnen wijzigen...",
+     "path": []
+    },
+    {
+     "id": "821d",
+     "text": "Effecten",
+     "path": [
+      "Werkbalken"
+     ]
+    },
+    {
+     "id": "821c",
+     "text": "Foto",
+     "path": [
+      "Werkbalken"
+     ]
     },
     {
      "id": "e800",
@@ -8571,6 +8829,20 @@
      "text": "Gereedschappen",
      "path": [
       "Werkbalken"
+     ]
+    },
+    {
+     "id": "822d",
+     "text": "Penseelvariantie",
+     "path": [
+      "Paletten"
+     ]
+    },
+    {
+     "id": "8022",
+     "text": "Histogram",
+     "path": [
+      "Paletten"
      ]
     },
     {
@@ -8595,11 +8867,23 @@
      ]
     },
     {
+     "id": "8159",
+     "text": "Overzicht",
+     "path": [
+      "Paletten"
+     ]
+    },
+    {
      "id": "81ba",
      "text": "Opties voor gereedschap",
      "path": [
       "Paletten"
      ]
+    },
+    {
+     "id": "8216",
+     "text": "Vergrootglas",
+     "path": []
     }
    ]
   },
@@ -8642,6 +8926,11 @@
      "path": []
     },
     {
+     "id": "012f",
+     "text": "Fotolijst...",
+     "path": []
+    },
+    {
      "id": "800d",
      "text": "Spiegelen",
      "path": []
@@ -8657,8 +8946,102 @@
      "path": []
     },
     {
+     "id": "8058",
+     "text": "2-kleurenpalet...",
+     "path": [
+      "Kleurdiepte verminderen"
+     ]
+    },
+    {
+     "id": "8059",
+     "text": "16-kleurenpalet...",
+     "path": [
+      "Kleurdiepte verminderen"
+     ]
+    },
+    {
+     "id": "805a",
+     "text": "256-kleurenpalet...",
+     "path": [
+      "Kleurdiepte verminderen"
+     ]
+    },
+    {
+     "id": "805b",
+     "text": "32.000 kleuren (8 bits/kanaal)...",
+     "path": [
+      "Kleurdiepte verminderen"
+     ]
+    },
+    {
+     "id": "805c",
+     "text": "64.000 kleuren (8 bits/kanaal)...",
+     "path": [
+      "Kleurdiepte verminderen"
+     ]
+    },
+    {
+     "id": "805d",
+     "text": "X kleuren (4/8 bits)...",
+     "path": [
+      "Kleurdiepte verminderen"
+     ]
+    },
+    {
      "id": "823f",
      "text": "Kleuren in afbeelding tellen",
+     "path": []
+    },
+    {
+     "id": "80f3",
+     "text": "Splitsen in RGB",
+     "path": [
+      "Splitsen in kanalen"
+     ]
+    },
+    {
+     "id": "8116",
+     "text": "Splitsen in HSL",
+     "path": [
+      "Splitsen in kanalen"
+     ]
+    },
+    {
+     "id": "8118",
+     "text": "Splitsen in CMYK",
+     "path": [
+      "Splitsen in kanalen"
+     ]
+    },
+    {
+     "id": "80f4",
+     "text": "Combineren vanuit RGB...",
+     "path": [
+      "Kanalen combineren"
+     ]
+    },
+    {
+     "id": "8117",
+     "text": "Combineren vanuit HSL...",
+     "path": [
+      "Kanalen combineren"
+     ]
+    },
+    {
+     "id": "8123",
+     "text": "Combineren vanuit CMYK...",
+     "path": [
+      "Kanalen combineren"
+     ]
+    },
+    {
+     "id": "81e4",
+     "text": "Alfakanaal verwijderen...",
+     "path": []
+    },
+    {
+     "id": "80f2",
+     "text": "Berekeningen...",
      "path": []
     }
    ]
@@ -8852,6 +9235,48 @@
      ]
     },
     {
+     "id": "80ff",
+     "text": "Alleen huidige laag",
+     "path": [
+      "Beeld"
+     ]
+    },
+    {
+     "id": "8100",
+     "text": "Alle lagen",
+     "path": [
+      "Beeld"
+     ]
+    },
+    {
+     "id": "8177",
+     "text": "Geen",
+     "path": [
+      "Beeld"
+     ]
+    },
+    {
+     "id": "8176",
+     "text": "Omkeren",
+     "path": [
+      "Beeld"
+     ]
+    },
+    {
+     "id": "8178",
+     "text": "Koppelingset weergeven",
+     "path": [
+      "Beeld"
+     ]
+    },
+    {
+     "id": "8179",
+     "text": "Koppelingset verbergen",
+     "path": [
+      "Beeld"
+     ]
+    },
+    {
      "id": "81d4",
      "text": "Omlaag samenvoegen",
      "path": [
@@ -8897,8 +9322,22 @@
      ]
     },
     {
+     "id": "8110",
+     "text": "Masker laden uit alfakanaal...",
+     "path": [
+      "Masker laden/opslaan"
+     ]
+    },
+    {
      "id": "80eb",
      "text": "Masker opslaan op schijf...",
+     "path": [
+      "Masker laden/opslaan"
+     ]
+    },
+    {
+     "id": "8111",
+     "text": "Masker opslaan in alfakanaal...",
      "path": [
       "Masker laden/opslaan"
      ]
@@ -8921,6 +9360,440 @@
    ]
   },
   {
+   "menu": "Objecten",
+   "items": [
+    {
+     "id": "8163",
+     "text": "Boven",
+     "path": [
+      "Uitlijnen"
+     ]
+    },
+    {
+     "id": "815e",
+     "text": "Onder",
+     "path": [
+      "Uitlijnen"
+     ]
+    },
+    {
+     "id": "8160",
+     "text": "Links",
+     "path": [
+      "Uitlijnen"
+     ]
+    },
+    {
+     "id": "815f",
+     "text": "Rechts",
+     "path": [
+      "Uitlijnen"
+     ]
+    },
+    {
+     "id": "8161",
+     "text": "Verticaal centreren",
+     "path": [
+      "Uitlijnen"
+     ]
+    },
+    {
+     "id": "8162",
+     "text": "Horizontaal centreren",
+     "path": [
+      "Uitlijnen"
+     ]
+    },
+    {
+     "id": "8172",
+     "text": "Centreren op doek",
+     "path": [
+      "Uitlijnen"
+     ]
+    },
+    {
+     "id": "816e",
+     "text": "Horizontaal centreren op doek",
+     "path": [
+      "Uitlijnen"
+     ]
+    },
+    {
+     "id": "8170",
+     "text": "Verticaal centreren op doek",
+     "path": [
+      "Uitlijnen"
+     ]
+    },
+    {
+     "id": "816c",
+     "text": "Verticaal boven",
+     "path": [
+      "Verdelen"
+     ]
+    },
+    {
+     "id": "8164",
+     "text": "Verticaal gecentreerd",
+     "path": [
+      "Verdelen"
+     ]
+    },
+    {
+     "id": "8166",
+     "text": "Verticaal onder",
+     "path": [
+      "Verdelen"
+     ]
+    },
+    {
+     "id": "8165",
+     "text": "Horizontaal links",
+     "path": [
+      "Verdelen"
+     ]
+    },
+    {
+     "id": "8168",
+     "text": "Horizontaal midden",
+     "path": [
+      "Verdelen"
+     ]
+    },
+    {
+     "id": "8167",
+     "text": "Horizontaal rechts",
+     "path": [
+      "Verdelen"
+     ]
+    },
+    {
+     "id": "816f",
+     "text": "Horizontaal gelijkmatig verdelen",
+     "path": [
+      "Verdelen"
+     ]
+    },
+    {
+     "id": "8171",
+     "text": "Verticaal gelijkmatig verdelen",
+     "path": [
+      "Verdelen"
+     ]
+    },
+    {
+     "id": "8169",
+     "text": "Horizontaal",
+     "path": [
+      "Even groot maken"
+     ]
+    },
+    {
+     "id": "816a",
+     "text": "Verticaal",
+     "path": [
+      "Even groot maken"
+     ]
+    },
+    {
+     "id": "816b",
+     "text": "Beide",
+     "path": [
+      "Even groot maken"
+     ]
+    },
+    {
+     "id": "8139",
+     "text": "Vooraan",
+     "path": [
+      "Schikken"
+     ]
+    },
+    {
+     "id": "813a",
+     "text": "Omhoog verplaatsen",
+     "path": [
+      "Schikken"
+     ]
+    },
+    {
+     "id": "813b",
+     "text": "Omlaag verplaatsen",
+     "path": [
+      "Schikken"
+     ]
+    },
+    {
+     "id": "813c",
+     "text": "Achteraan",
+     "path": [
+      "Schikken"
+     ]
+    },
+    {
+     "id": "8154",
+     "text": "Groeperen",
+     "path": []
+    },
+    {
+     "id": "8156",
+     "text": "Groep opheffen",
+     "path": []
+    },
+    {
+     "id": "81e6",
+     "text": "Eigenschappen...",
+     "path": []
+    },
+    {
+     "id": "813d",
+     "text": "Tekst inpassen in pad",
+     "path": []
+    },
+    {
+     "id": "1793",
+     "text": "Object loskoppelen van pad",
+     "path": []
+    },
+    {
+     "id": "814c",
+     "text": "Als één vorm",
+     "path": [
+      "Tekst omzetten in curven"
+     ]
+    },
+    {
+     "id": "814d",
+     "text": "Als afzonderlijke lettervormen",
+     "path": [
+      "Tekst omzetten in curven"
+     ]
+    },
+    {
+     "id": "82a8",
+     "text": "Omzetten in pad",
+     "path": []
+    },
+    {
+     "id": "1770",
+     "text": "Knippen",
+     "path": [
+      "Bewerken"
+     ]
+    },
+    {
+     "id": "1771",
+     "text": "Kopiëren",
+     "path": [
+      "Bewerken"
+     ]
+    },
+    {
+     "id": "1772",
+     "text": "Plakken",
+     "path": [
+      "Bewerken"
+     ]
+    },
+    {
+     "id": "1773",
+     "text": "Verwijderen",
+     "path": [
+      "Bewerken"
+     ]
+    },
+    {
+     "id": "1774",
+     "text": "Alles selecteren",
+     "path": [
+      "Bewerken"
+     ]
+    },
+    {
+     "id": "1775",
+     "text": "Niets selecteren",
+     "path": [
+      "Bewerken"
+     ]
+    },
+    {
+     "id": "1776",
+     "text": "Selectie omkeren",
+     "path": [
+      "Bewerken"
+     ]
+    },
+    {
+     "id": "1777",
+     "text": "Verbinden",
+     "path": [
+      "Bewerken"
+     ]
+    },
+    {
+     "id": "1778",
+     "text": "Samenvoegen",
+     "path": [
+      "Bewerken"
+     ]
+    },
+    {
+     "id": "1779",
+     "text": "Verbreken",
+     "path": [
+      "Bewerken"
+     ]
+    },
+    {
+     "id": "177a",
+     "text": "Sluiten",
+     "path": [
+      "Bewerken"
+     ]
+    },
+    {
+     "id": "177b",
+     "text": "Contour omkeren",
+     "path": [
+      "Bewerken"
+     ]
+    },
+    {
+     "id": "177c",
+     "text": "Pad omkeren",
+     "path": [
+      "Bewerken"
+     ]
+    },
+    {
+     "id": "177d",
+     "text": "Dupliceren en verschuiven",
+     "path": [
+      "Bewerken"
+     ]
+    },
+    {
+     "id": "177e",
+     "text": "Dupliceren",
+     "path": [
+      "Bewerken"
+     ]
+    },
+    {
+     "id": "177f",
+     "text": "Asymmetrisch",
+     "path": [
+      "Tekenpunttype"
+     ]
+    },
+    {
+     "id": "1780",
+     "text": "Symmetrisch",
+     "path": [
+      "Tekenpunttype"
+     ]
+    },
+    {
+     "id": "1781",
+     "text": "Vectorhoek",
+     "path": [
+      "Tekenpunttype"
+     ]
+    },
+    {
+     "id": "1782",
+     "text": "Vloeiend/raaklijn",
+     "path": [
+      "Tekenpunttype"
+     ]
+    },
+    {
+     "id": "1783",
+     "text": "Omzetten in lijn",
+     "path": [
+      "Tekenpunttype"
+     ]
+    },
+    {
+     "id": "1784",
+     "text": "Lijn vóór",
+     "path": [
+      "Tekenpunttype"
+     ]
+    },
+    {
+     "id": "1785",
+     "text": "Lijn na",
+     "path": [
+      "Tekenpunttype"
+     ]
+    },
+    {
+     "id": "1786",
+     "text": "Curve vóór",
+     "path": [
+      "Tekenpunttype"
+     ]
+    },
+    {
+     "id": "1787",
+     "text": "Curve na",
+     "path": [
+      "Tekenpunttype"
+     ]
+    },
+    {
+     "id": "1788",
+     "text": "Omdraaien",
+     "path": [
+      "Geselecteerde tekenpunten transformeren"
+     ]
+    },
+    {
+     "id": "1789",
+     "text": "Spiegelen",
+     "path": [
+      "Geselecteerde tekenpunten transformeren"
+     ]
+    },
+    {
+     "id": "178a",
+     "text": "Roteren",
+     "path": [
+      "Geselecteerde tekenpunten transformeren"
+     ]
+    },
+    {
+     "id": "178b",
+     "text": "X scheeftrekken",
+     "path": [
+      "Geselecteerde tekenpunten transformeren"
+     ]
+    },
+    {
+     "id": "178c",
+     "text": "Y scheeftrekken",
+     "path": [
+      "Geselecteerde tekenpunten transformeren"
+     ]
+    },
+    {
+     "id": "178d",
+     "text": "Inkrimpen",
+     "path": [
+      "Geselecteerde tekenpunten transformeren"
+     ]
+    },
+    {
+     "id": "178e",
+     "text": "Uitbreiden",
+     "path": [
+      "Geselecteerde tekenpunten transformeren"
+     ]
+    }
+   ]
+  },
+  {
    "menu": "Selecties",
    "items": [
     {
@@ -8936,6 +9809,11 @@
     {
      "id": "80f5",
      "text": "Vanuit masker",
+     "path": []
+    },
+    {
+     "id": "8001",
+     "text": "Vanuit vectorobject",
      "path": []
     },
     {
@@ -8958,6 +9836,20 @@
      ]
     },
     {
+     "id": "8114",
+     "text": "Alles met dezelfde kleur selecteren...",
+     "path": [
+      "Wijzigen"
+     ]
+    },
+    {
+     "id": "81eb",
+     "text": "Kleurbereik selecteren...",
+     "path": [
+      "Wijzigen"
+     ]
+    },
+    {
      "id": "80e3",
      "text": "Doezelen...",
      "path": [
@@ -8965,13 +9857,110 @@
      ]
     },
     {
+     "id": "8193",
+     "text": "Binnen/buiten doezelen...",
+     "path": [
+      "Wijzigen"
+     ]
+    },
+    {
+     "id": "81ee",
+     "text": "Doezelen opheffen...",
+     "path": [
+      "Wijzigen"
+     ]
+    },
+    {
+     "id": "81e8",
+     "text": "Op vorm gebaseerde anti-alias...",
+     "path": [
+      "Wijzigen"
+     ]
+    },
+    {
+     "id": "81e7",
+     "text": "Anti-alias herstellen...",
+     "path": [
+      "Wijzigen"
+     ]
+    },
+    {
+     "id": "81f6",
+     "text": "Stippen en gaten verwijderen...",
+     "path": [
+      "Wijzigen"
+     ]
+    },
+    {
+     "id": "81f5",
+     "text": "Vloeiend...",
+     "path": [
+      "Wijzigen"
+     ]
+    },
+    {
+     "id": "81ec",
+     "text": "Selectieranden selecteren...",
+     "path": [
+      "Wijzigen"
+     ]
+    },
+    {
+     "id": "8283",
+     "text": "Afknippen tot doek",
+     "path": []
+    },
+    {
      "id": "811a",
      "text": "Selectiekader verbergen",
      "path": []
     },
     {
+     "id": "80de",
+     "text": "Selectie laden vanaf schijf...",
+     "path": [
+      "Selectie laden/opslaan"
+     ]
+    },
+    {
+     "id": "810e",
+     "text": "Selectie laden uit alfakanaal...",
+     "path": [
+      "Selectie laden/opslaan"
+     ]
+    },
+    {
+     "id": "80df",
+     "text": "Selectie opslaan op schijf...",
+     "path": [
+      "Selectie laden/opslaan"
+     ]
+    },
+    {
+     "id": "810f",
+     "text": "Selectie opslaan in alfakanaal...",
+     "path": [
+      "Selectie laden/opslaan"
+     ]
+    },
+    {
+     "id": "81f4",
+     "text": "Selectie bewerken",
+     "path": []
+    },
+    {
      "id": "8109",
      "text": "Laag maken van selectie",
+     "path": []
+    },
+    {
+     "id": "80e4",
+     "text": "Zwevend",
+     "path": []
+    },
+    {
+     "id": "80e5",
+     "text": "Niet-zwevend",
      "path": []
     }
    ]
@@ -9022,6 +10011,11 @@
     {
      "id": "81d0",
      "text": "Aanpassen aan venster",
+     "path": []
+    },
+    {
+     "id": "8202",
+     "text": "Schermvullend maken",
      "path": []
     }
    ]

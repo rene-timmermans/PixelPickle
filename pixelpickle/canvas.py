@@ -162,6 +162,23 @@ class Canvas(QWidget):
             self.oy += dy
 
     # ------------------------------------------------------------ tekenen
+    def _ruby(self):
+        """Rode laag voor Selectie bewerken: hoe minder geselecteerd, hoe roder (half doorzichtig)."""
+        lay = self.doc.seledit_layer() if hasattr(self.doc, "seledit_layer") else None
+        if lay is None or not lay.visible:
+            return None
+        key = lay.image.cacheKey()
+        if getattr(self, "_ruby_key", None) != key:
+            import numpy as np
+            from . import imageops as ops
+            a = ops.qimage_to_rgba(lay.image).astype(np.float32)
+            v = (a[..., 0] * 0.299 + a[..., 1] * 0.587 + a[..., 2] * 0.114) * a[..., 3] / 255
+            out = np.zeros(v.shape + (4,), np.uint8)
+            out[..., 0] = 255
+            out[..., 3] = np.clip((255 - v) * 0.5, 0, 255).astype(np.uint8)
+            self._ruby_img, self._ruby_key = ops.rgba_to_qimage(out), key
+        return self._ruby_img
+
     def paintEvent(self, e):
         p = QPainter(self)
         p.fillRect(self.rect(), QColor(98, 98, 98))
@@ -176,25 +193,15 @@ class Canvas(QWidget):
             p.drawImage(vis, self.cache, src)
             if getattr(self, "overlay_img", None) is not None:
                 p.drawImage(vis, self.overlay_img, src)
+            ruby = self._ruby()
+            if ruby is not None:  # selectie bewerken: niet geselecteerde delen rood
+                p.drawImage(vis, ruby, src)
         p.setPen(QPen(QColor(40, 40, 40), 1))
         p.drawRect(target.adjusted(-1, -1, 0, 0))
 
-        if getattr(self, "show_grid", False) and z >= 0.25:
-            p.save()
-            p.setClipRect(vis)
-            p.setPen(QPen(QColor(120, 120, 255, 140), 0))
-            step = 50
-            x = 0
-            while x <= d.w:
-                wx = self.ox + x * z
-                p.drawLine(QPointF(wx, vis.top()), QPointF(wx, vis.bottom()))
-                x += step
-            y = 0
-            while y <= d.h:
-                wy = self.oy + y * z
-                p.drawLine(QPointF(vis.left(), wy), QPointF(vis.right(), wy))
-                y += step
-            p.restore()
+        from .viewaids import paint_grid, paint_guides, paint_rulers
+        paint_grid(self, p, vis)
+        paint_guides(self, p, vis)
 
         if d.sel is not None and d.sel_lines and not getattr(self, "hide_marquee", False):
             p.save()
@@ -213,6 +220,8 @@ class Canvas(QWidget):
         if tool is not None:
             p.setRenderHint(QPainter.RenderHint.Antialiasing)
             tool.overlay(self, p)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing, False)
+        paint_rulers(self, p)
         p.end()
 
     # ------------------------------------------------------------ invoer
@@ -220,8 +229,84 @@ class Canvas(QWidget):
         return (e.button() == Qt.MouseButton.MiddleButton
                 or (e.button() == Qt.MouseButton.LeftButton and (self.space or self.main.tool.is_pan)))
 
+    # ------------------------------------------------------------ linialen, hulplijnen en uitlijnen
+    RULER = 18  # breedte van de linialen in pixels
+
+    def rulers_on(self):
+        return bool(self.main.view_opts.get("rulers"))
+
+    def tool_point(self, pos):
+        """Documentpunt voor het gereedschap, uitgelijnd op raster of hulplijnen als dat aan staat."""
+        pt = self.to_doc(pos)
+        if getattr(self.main.tool, "snaps", False):
+            from .viewaids import snap
+            pt = snap(self, pt)
+        return pt
+
+    def _guide_at(self, pos):
+        """Hulplijn waarvan de greep op de liniaal onder de muis ligt: ("h"|"v", index) of None."""
+        if not self.rulers_on():
+            return None
+        g = self.doc.guides
+        if pos.y() < self.RULER:
+            for i, x in enumerate(g["v"]):
+                if abs(self.ox + x * self.zoom - pos.x()) <= 5:
+                    return ("v", i)
+        if pos.x() < self.RULER:
+            for i, y in enumerate(g["h"]):
+                if abs(self.oy + y * self.zoom - pos.y()) <= 5:
+                    return ("h", i)
+        return None
+
+    def _ruler_press(self, e):
+        """Slepen vanuit een liniaal maakt een hulplijn; een bestaande greep versleept die hulplijn."""
+        if not self.rulers_on() or e.button() != Qt.MouseButton.LeftButton:
+            return False
+        pos = e.position()
+        hit = self._guide_at(pos)
+        if hit is None:
+            if pos.y() < self.RULER and pos.x() >= self.RULER:
+                self.doc.guides["h"].append((pos.y() - self.oy) / self.zoom)
+                hit = ("h", len(self.doc.guides["h"]) - 1)
+            elif pos.x() < self.RULER and pos.y() >= self.RULER:
+                self.doc.guides["v"].append((pos.x() - self.ox) / self.zoom)
+                hit = ("v", len(self.doc.guides["v"]) - 1)
+            else:
+                return pos.x() < self.RULER and pos.y() < self.RULER  # hoekje: niets
+        self._guide_drag = hit
+        self.main.view_opts["guides"] = True
+        self.main.sync_view_checks()
+        self.update()
+        return True
+
+    def _ruler_move(self, e):
+        drag = getattr(self, "_guide_drag", None)
+        if drag is None:
+            return False
+        kind, i = drag
+        pt = self.to_doc(e.position())
+        self.doc.guides[kind][i] = round(pt.y() if kind == "h" else pt.x())
+        self.update()
+        return True
+
+    def _ruler_release(self, e):
+        drag = getattr(self, "_guide_drag", None)
+        if drag is None:
+            return False
+        kind, i = drag
+        self._guide_drag = None
+        pos = e.position()
+        # terug in de liniaal (of buiten het beeld) gesleept: hulplijn weg
+        if (kind == "h" and (pos.y() < self.RULER or not 0 <= self.doc.guides["h"][i] <= self.doc.h)) or \
+                (kind == "v" and (pos.x() < self.RULER or not 0 <= self.doc.guides["v"][i] <= self.doc.w)):
+            del self.doc.guides[kind][i]
+        self.update()
+        return True
+
     def mousePressEvent(self, e):
         self.setFocus()
+        if self._ruler_press(e):
+            return
         if self._panning_button(e):
             self._pan = (e.position(), self.ox, self.oy)
             self.setCursor(Qt.CursorShape.ClosedHandCursor)
@@ -244,13 +329,19 @@ class Canvas(QWidget):
             self.main.statusBar().showMessage("Dit is een lagengroep. Kies een laag in de groep om op te werken.", 4000)
             return
         try:
-            self.main.tool.press(self, self.to_doc(e.position()), e)
+            self.main.tool.press(self, self.tool_point(e.position()), e)
         except Exception as ex:  # nooit het programma laten crashen
             self.main.report_error(ex)
 
     def mouseMoveEvent(self, e):
         pt = self.to_doc(e.position())
         self.mouse_doc = pt
+        if self._ruler_move(e):
+            return
+        if not e.buttons() and self._guide_at(e.position()) is not None:
+            kind = self._guide_at(e.position())[0]
+            self.setCursor(Qt.CursorShape.SplitVCursor if kind == "h" else Qt.CursorShape.SplitHCursor)
+            return
         rc = getattr(self, "_rc", None)
         if rc is not None and not self._rc_drag:
             start, mods = rc
@@ -273,7 +364,7 @@ class Canvas(QWidget):
             if not self.autoscroll.isActive():
                 self.autoscroll.start()
         try:
-            self.main.tool.move(self, pt, e)
+            self.main.tool.move(self, self.tool_point(e.position()), e)
             if not e.buttons() and not self.space:  # muisaanwijzer laat zien wat slepen zal doen
                 c = self.main.tool.hover_cursor(self, pt)
                 self.setCursor(c if c is not None else self.main.tool.cursor)
@@ -348,11 +439,15 @@ class Canvas(QWidget):
         self.update()
 
     def mouseReleaseEvent(self, e):
+        if self._ruler_release(e):
+            return
         self._as_buttons = e.buttons()
         rc = getattr(self, "_rc", None)
         if rc is not None and e.button() == Qt.MouseButton.RightButton:
             self._rc = None
             if not self._rc_drag:
+                if self.main.tool.right_click(self, self.to_doc(e.position())):
+                    return  # het gereedschap gebruikt de rechtsklik zelf (bijvoorbeeld selectie opheffen)
                 self.main.show_canvas_menu(self, e.position())
                 return
         if self._pan is not None:
@@ -361,12 +456,12 @@ class Canvas(QWidget):
             self.apply_cursor()
             return
         try:
-            self.main.tool.release(self, self.to_doc(e.position()), e)
+            self.main.tool.release(self, self.tool_point(e.position()), e)
         except Exception as ex:
             self.main.report_error(ex)
 
     def mouseDoubleClickEvent(self, e):
-        self.main.tool.double_click(self, self.to_doc(e.position()), e)
+        self.main.tool.double_click(self, self.tool_point(e.position()), e)
 
     def leaveEvent(self, e):
         self.mouse_doc = None

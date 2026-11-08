@@ -11,16 +11,23 @@ niet hoeft te zoeken.
 - Optiebalk met de instellingen van het gekozen gereedschap: bij elk gereedschap even hoog en strak
   uitgelijnd, met eigen voorinstellingen per gereedschap. Elk invoerveld heeft een schuifbalk om snel
   grote stappen te maken.
-- Paletten Materialen, Lagen en Geschiedenis, los te maken en vrij te plaatsen.
+- Paletten Materialen, Lagen, Geschiedenis, Histogram, Overzicht en Penseelvariantie, los te maken en vrij
+  te plaatsen; werkbalken Standaard, Gereedschappen, Effecten en Foto.
+- Linialen, hulplijnen (sleep ze uit de linialen), raster en uitlijnen op raster of hulplijnen; Vergrootglas
+  en schermvullend voorbeeld.
 - Meerdere afbeeldingen tegelijk, als tabbladen of als losse vensters.
-- Snelmenu's met de rechtermuisknop op de afbeelding, de tabbladen en de lagen.
+- Snelmenu's met de rechtermuisknop op de afbeelding, het lege werkvlak, de tabbladen, de lagen, de Pen en
+  vectorobjecten.
 - Strakke lijniconen in de accentkleur van je eigen thema; ziet er goed uit op licht en donker.
 - In negen talen: Engels, Nederlands, Duits, Frans, Spaans, Italiaans, Russisch, Chinees en Arabisch.
 
 **Gereedschappen**
 - Pannen en zoomen, selecteren en verplaatsen.
 - Selecties: rechthoek, ovaal en andere vormen, uit de vrije hand (ook punt tot punt en Slimme rand)
-  en de toverstaf met overeenkomstmodi en tolerantie. Bij puntsgewijs selecteren schuift het beeld
+  en de toverstaf met overeenkomstmodi en tolerantie. Het menu Selecties heeft alles om een selectie bij te
+  werken: kleurbereik, dezelfde kleur, doezelen naar binnen of buiten, anti-alias, stippen en gaten
+  verwijderen, selectieranden, zwevend, opslaan in alfakanalen of op schijf, en Selectie bewerken (schilder
+  de selectie zelf, met een rode laag voor wat niet geselecteerd is). Bij puntsgewijs selecteren schuift het beeld
   vanzelf mee als je bij de rand van het venster komt. Met de pijltoetsen schuif je een selectie per pixel
   (Shift: 10 pixels, Ctrl: alleen het kader); houd je de toets vast, dan gaat het steeds sneller.
 - Bijsnijden met een aanpasbaar kader: grepen op hoeken en zijden, vaste verhoudingen, maten in te
@@ -28,19 +35,25 @@ niet hoeft te zoeken.
 - Rechtzetten, perspectiefcorrectie, rode ogen verwijderen, klonen en krasjes verwijderen.
 - Makeover voor portretten (vlekken verwijderen, tanden witter, oogwit helderder, zonnebruin, slanker
   maken) en Object verwijderen: trek een lijn om iets, kies een bron en het verdwijnt naadloos.
-- Penseel, airbrush, wisser, vlakvulling en kleurwisselaar.
+- Penseel, airbrush, wisser, vlakvulling en kleurwisselaar; eigen penselen te maken uit een selectie of
+  een afbeelding, en penseelvariantie voor een natuurlijke streek.
 - Retoucheerpenselen: lichter/donkerder, tegenhouden, doordrukken, vegen, duwen, verzachten,
   verscherpen, reliëf, verzadiging, tint en meer.
 - Kunstmedia: olieverfpenseel, paletmes, krijt, pastel, kleurkrijt, kleurpotlood en markering, elk met een
   eigen streek.
 - Verwringen met een penseel (duwen, uitzetten, samentrekken, draaien, gladstrijken) en met een raster.
-- Pen met rechte lijnen, Bézier-krommen en vrije lijnen; knooppunten blijven bewerkbaar tot Toepassen.
-- Vormen (rechthoek, ovaal, symmetrische vormen, basisvormen) en bewerkbare tekst.
+- Pen met rechte lijnen, Bézier-krommen en vrije lijnen; knooppunten selecteren, verbinden, samenvoegen,
+  onderbreken, knooppunttypen en transformeren.
+- Vormen (rechthoek, ovaal, symmetrische vormen, basisvormen en eigen vormen).
+- Bewerkbare tekst met opmaak per woord, verloop of patroon in de letters, tekst langs een pad en tekst
+  omzetten in curven.
+- Menu Objecten voor vectorobjecten: kiezen, uitlijnen, verdelen, even groot maken, schikken, groeperen
+  en eigenschappen.
 
 **Materialen**
 - Kleur, verloop (lineair, rechthoekig, zonnestraal, radiaal; met hoek, herhalingen en middelpunt) en
   patroon (met hoek en schaal; ook een geopende afbeelding of een eigen bestand).
-- Werkt met de vulemmer, de penselen en de vormen.
+- Werkt met de vulemmer, de penselen, de vormen en tekst; eigen verlopen maken met de verloopbewerker.
 - 45 verlopen en 43 patronen meegeleverd: van metaal, neon en landschappen tot hout, marmer,
   stoffen en dierenprints.
 
@@ -49,18 +62,23 @@ niet hoeft te zoeken.
 - Vectorlagen: lijnen en vormen blijven bewerkbaar zolang je met de afbeelding bezig bent (en in .ora).
 - Mengbereiken: bepaal per kanaal waar een laag zichtbaar is, op basis van de laag zelf en van wat
   eronder ligt.
-- Koppelingssets, transparantie vergrendelen en lagen markeren met een kleur.
+- Koppelingssets, transparantie vergrendelen en lagen markeren met een kleur; snel lagen tonen of verbergen
+  via Lagen > Beeld.
 
 **Aanpassen en effecten**
 - 142 aanpassingen en effecten met een Vóór/Na voorbeeld waarin je kunt zoomen en schuiven, een
   voorbeeld op de afbeelding zelf en voorinstellingen.
 - Effecten zoeken met voorbeelden naast elkaar, en snelle fotocorrecties via Foto verbeteren.
+- Afbeelding: kleurdiepte verminderen, kanalen splitsen en combineren (RGB, HSL, CMYK), berekeningen
+  tussen twee afbeeldingen en fotolijsten.
 
 **Bestanden en veiligheid**
 - Openen en opslaan: PNG, JPEG, TIFF, BMP, WebP, GIF (ook transparant, via GIF-optimalisatie),
   OpenRaster (.ora, de open standaard waarin lagen en vectoren bewaard blijven) en .pspimage
   (openen van bestaande bestanden, en opslaan als extra keuze).
-- Ongedaan maken en opnieuw, met alle stappen in het palet Geschiedenis.
+- PNG-optimalisatie, afbeelding met hyperlinks (HTML), afdrukken met voorbeeld en schermopname.
+- Batchverwerking (omzetten en verkleinen) en namen in batch wijzigen.
+- Ongedaan maken en opnieuw, met alle stappen in het palet Geschiedenis; naar de vorige versie terug.
 - Automatisch opslaan naar een herstelmap, op een instelbaar interval.
 
 **Hulp**
@@ -90,6 +108,14 @@ Arabisch (van rechts naar links). Bij de eerste start is de taal Engels. Kies ee
 **File > Preferences > General Program Preferences**; de gebruikershandleiding is er in elke taal.
 
 ## Wat er nieuw is
+
+**1.0.0** Compleet: alle gereedschappen en menu-opdrachten zijn er. Nieuw in deze versie zijn onder meer
+tekst met opmaak per woord, verloop en patroon in tekst, tekst langs een pad en tekst in curven; het menu
+Objecten voor vectorobjecten; uitgebreide pen-bewerkingen; alfakanalen; het hele menu Selecties (onder meer
+kleurbereik, zwevend en Selectie bewerken); linialen, hulplijnen en uitlijnen; de paletten Histogram,
+Overzicht en Penseelvariantie; de werkbalken Effecten en Foto; kleurdiepte verminderen, kanalen splitsen en
+combineren, berekeningen en fotolijsten; eigen penselen, vormen, lijsten en verlopen; afdrukken,
+schermopname, batchverwerking en snelmenu's zoals je ze gewend bent.
 
 **0.10.0** Alle gereedschappen zijn er: Makeover (vlekken verwijderen, tanden witter, oogwit helderder,
 zonnebruin en slanker maken), Object verwijderen, Markering en Paletmes. De Kleurwisselaar verandert alle

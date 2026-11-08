@@ -183,7 +183,7 @@ def to_effect_params(eff, flat):
             out[p["key"]] = v
         elif t == "choice" and isinstance(v, bool) and len(p["options"]) == 2:
             out[p["key"]] = int(v)
-        elif t == "choice" and _numeric(v) and 0 <= v < len(p["options"]):
+        elif t == "choice" and _numeric(v) and 0 <= v < len(_all_options(p)):
             out[p["key"]] = int(v)
         elif t == "color" and isinstance(v, (list, tuple)) and len(v) >= 3 and all(_numeric(c) for c in v[:3]):
             out[p["key"]] = tuple(int(c) for c in v[:3])
@@ -204,3 +204,8 @@ def to_effect_params(eff, flat):
 def usable(eff, flat):
     prm, hits, n = to_effect_params(eff, flat)
     return prm if n and hits / n >= 0.5 else None
+
+
+def _all_options(p):
+    from .effects import all_options
+    return all_options(p)

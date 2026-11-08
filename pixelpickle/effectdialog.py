@@ -317,8 +317,9 @@ class EffectDialog(QDialog):
             self.widgets[prm["key"]] = (t, sp)
             return wrap
         if t == "choice":
+            from .effects import all_options
             c = QComboBox()
-            c.addItems(prm["options"])
+            c.addItems(all_options(prm))
             c.currentIndexChanged.connect(self.changed)
             self.widgets[prm["key"]] = (t, c)
             return c

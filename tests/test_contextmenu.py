@@ -34,10 +34,18 @@ def drag(a, b, btn):
         cv.mouseMoveEvent(mouse(QEvent.Type.MouseMove, QPointF(a.x() + (b.x() - a.x()) * k / 5, a.y() + (b.y() - a.y()) * k / 5), btn))
     cv.mouseReleaseEvent(mouse(QEvent.Type.MouseButtonRelease, b, btn)); app.processEvents()
 
-# 1. rechtsklik met Selectie: menu
+# 1. rechtsklik met Selectie zonder selectie: het (korte) menu, zoals PSP
 w.select_tool(T[0xd021]); n = len(shown); click(QPointF(50, 50), R)
-assert len(shown) == n + 1 and "Knippen" in shown[-1] and "Lagen" in shown[-1], shown[-1:]
-print("1 selectie: menu ->", [x for x in shown[-1] if x != "---"][:8], "...")
+items = [x for x in shown[-1] if x != "---"]
+assert len(shown) == n + 1 and "Knippen" in items and "Plakken als nieuwe laag" in items, shown[-1:]
+for gone in ("Samengevoegd kopiëren", "Wissen", "Alles selecteren", "Niets selecteren", "Selecties", "Lagen",
+             "Afbeelding", "Aanpassen", "Effecten", "Inzoomen", "Uitzoomen"):
+    assert gone not in items, gone
+print("1 menu op de afbeelding:", items)
+# 1b. met een selectie heft een rechtsklik de selectie op (geen menu)
+doc.select_all(); n = len(shown); click(QPointF(50, 50), R)
+assert len(shown) == n and doc.sel is None
+print("1b selectiegereedschap: rechtsklik heft de selectie op")
 # 2. rechts slepen in een selectie verplaatst het kader (geen menu)
 drag(QPointF(20, 20), QPointF(80, 80), L); bb = doc.selection_bbox()
 n = len(shown); drag(QPointF(50, 50), QPointF(70, 60), R)
@@ -76,5 +84,25 @@ bar.customContextMenuRequested.emit(QPoint(5, 5)); app.processEvents()
 assert any("Sluiten" in x for x in shown[-1]); print("8 tabblad:", [x for x in shown[-1] if x != "---"])
 w.layers.context_menu(QPoint(5, 5)); assert any("Dupliceren" in x for x in shown[-1]) and any("Eigenschappen" in x for x in shown[-1])
 print("9 lagenpalet:", len([x for x in shown[-1] if x != "---"]), "items, o.a. Dupliceren en Eigenschappen")
+# 10. lege werkruimte
+w.show_workspace_menu(QPoint(5, 5))
+items = [x for x in shown[-1] if x != "---"]
+assert items == ["Nieuw...", "Openen...", "Alles sluiten", "Plakken als nieuwe afbeelding", "Klembord leegmaken",
+                 "Vergrootglas", "Algemene programmavoorkeuren..."], items
+print("10 lege werkruimte:", items)
+# 11. vergrootglas aan en uit, vinkje volgt
+w.toggle_magnifier(); app.processEvents()
+assert w.magnifier.isVisible() and w.actions_by_id[0x8216].isChecked()
+w.toggle_magnifier(); app.processEvents()
+assert not w.magnifier.isVisible() and not w.actions_by_id[0x8216].isChecked()
+print("11 vergrootglas aan en uit")
+# 12. tekstinvoervenster: alleen knippen, kopiëren, plakken
+w.select_tool(T[0xd0f0]); T[0xd0f0].press(cv, QPointF(200, 50), mouse(QEvent.Type.MouseButtonPress, QPointF(200, 50), L))
+import PySide6.QtWidgets as QW
+orig = QW.QMenu; QW.QMenu = RecordingMenu
+T[0xd0f0].dlg._context_menu(QPoint(3, 3)); QW.QMenu = orig
+assert [x for x in shown[-1] if x != "---"] == ["Knippen", "Kopiëren", "Plakken"], shown[-1]
+T[0xd0f0].dlg.reject(); app.processEvents()
+print("12 tekstinvoer: Knippen, Kopiëren, Plakken")
 print("ALLES OK")
 for s in w.mdi.subWindowList(): s.canvas.doc.set_modified(False)

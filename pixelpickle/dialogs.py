@@ -592,18 +592,67 @@ class LayerPropertiesDialog(QDialog):
 
 
 class TextEntryDialog(QDialog):
-    """Niet-modaal tekstinvoervenster met live voorbeeld (zoals 'Tekst invoeren' in PSP)."""
+    """Niet-modaal tekstinvoervenster met live voorbeeld (zoals 'Tekst invoeren' in PSP).
+    De optiebalk bepaalt de opmaak van de hele tekst; met het werkbalkje in dit venster geef je geselecteerde
+    woorden een eigen opmaak (vet, cursief, onderstreept, kleur, lettertype, grootte). Alleen wat afwijkt
+    wordt per stuk bewaard (zie runs())."""
     textChanged = Signal()
+    SIZE = 1  # eigen eigenschap in de tekstopmaak: grootte in de eenheden van de tekst
 
-    def __init__(self, parent, text=""):
+    def __init__(self, parent, text="", t=None):
         super().__init__(parent)
-        from PySide6.QtWidgets import QPlainTextEdit
+        from PySide6.QtWidgets import QFontComboBox, QTextEdit, QToolBar
+        from PySide6.QtGui import QAction
         self.setWindowTitle("Tekst invoeren")
         self.setModal(False)
         v = QVBoxLayout(self)
         v.addWidget(QLabel("Tekst invoeren"))
-        self.edit = QPlainTextEdit(text)
+        tb = QToolBar()
+        tb.setIconSize(tb.iconSize() * 0.8)
+        self.edit = QTextEdit()
+        self.edit.setAcceptRichText(False)  # plakken: alleen tekst
+        self.edit.setTabChangesFocus(True)
+        self.edit.document().setDefaultFont(self.edit.font())
+        self.edit.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.edit.customContextMenuRequested.connect(self._context_menu)
+        self.base_pt = self.edit.font().pointSizeF() if self.edit.font().pointSizeF() > 0 else 10.0
+
+        def act(text, tip, fn, checkable=True, bold=False, italic=False, underline=False):
+            a = QAction(text, self)
+            a.setToolTip(tip)
+            a.setCheckable(checkable)
+            f = a.font()
+            f.setBold(bold)
+            f.setItalic(italic)
+            f.setUnderline(underline)
+            a.setFont(f)
+            a.triggered.connect(fn)
+            tb.addAction(a)
+            return a
+        self.a_bold = act("B", "Vet", lambda on: self._merge(bold=on), bold=True)
+        self.a_italic = act("I", "Cursief", lambda on: self._merge(italic=on), italic=True)
+        self.a_under = act("U", "Onderstreept", lambda on: self._merge(underline=on), underline=True)
+        tb.addSeparator()
+        self.a_color = act("●", "Kleur van de geselecteerde tekst", self._pick_color, checkable=False)
+        tb.addSeparator()
+        self.font_box = QFontComboBox()
+        self.font_box.setToolTip("Lettertype van de geselecteerde tekst")
+        self.font_box.setMaximumWidth(170)
+        self.font_box.activated.connect(lambda *_: self._merge(family=self.font_box.currentFont().family()))
+        tb.addWidget(self.font_box)
+        self.size_box = QSpinBox()
+        self.size_box.setRange(1, 2000)
+        self.size_box.setToolTip("Grootte van de geselecteerde tekst")
+        self.size_box.editingFinished.connect(lambda: self._merge(size=self.size_box.value()))
+        tb.addWidget(self.size_box)
+        tb.addSeparator()
+        act("⌫", "Opmaak van de selectie wissen (terug naar de optiebalk)", self._clear_format, checkable=False)
+        v.addWidget(tb)
+        self.base = dict(t) if t else None
+        self._fill_editor(text, t)
         self.edit.textChanged.connect(self.textChanged)
+        self.edit.currentCharFormatChanged.connect(self._sync_buttons)
+        self.edit.cursorPositionChanged.connect(self._sync_buttons)
         v.addWidget(self.edit)
         h = QHBoxLayout()
         self.rem = QCheckBox("Tekst onthouden")
@@ -616,10 +665,186 @@ class TextEntryDialog(QDialog):
         bb.rejected.connect(self.reject)
         h.addWidget(bb)
         v.addLayout(h)
-        self.resize(380, 170)
+        self.resize(520, 230)
+        self._sync_buttons()
 
+    def _context_menu(self, pos):
+        """Zoals PSP: alleen knippen, kopiëren en plakken."""
+        from PySide6.QtWidgets import QApplication, QMenu
+        m = QMenu(self)
+        sel = self.edit.textCursor().hasSelection()
+        m.addAction("Knippen", self.edit.cut).setEnabled(sel)
+        m.addAction("Kopiëren", self.edit.copy).setEnabled(sel)
+        m.addAction("Plakken", self.edit.paste).setEnabled(bool(QApplication.clipboard().text()))
+        m.exec(self.edit.mapToGlobal(pos))
+
+    # ------------------------------------------------------------ opmaak in de editor
+    def set_base(self, t):
+        """De opmaak uit de optiebalk (wordt bij elke wijziging bijgewerkt)."""
+        self.base = dict(t)
+        self._sync_buttons()
+
+    def _base(self, key, default=None):
+        return (self.base or {}).get(key, default)
+
+    def _merge(self, bold=None, italic=None, underline=None, color=None, family=None, size=None):
+        from PySide6.QtGui import QFont, QTextCharFormat
+        fmt = QTextCharFormat()
+        if bold is not None:
+            fmt.setFontWeight(QFont.Weight.Bold if bold else QFont.Weight.Normal)
+        if italic is not None:
+            fmt.setFontItalic(italic)
+        if underline is not None:
+            fmt.setFontUnderline(underline)
+        if color is not None:
+            fmt.setForeground(color)
+        if family is not None:
+            fmt.setFontFamilies([family])
+        if size is not None:
+            fmt.setProperty(QTextCharFormat.Property.UserProperty + self.SIZE, float(size))
+            base = max(1.0, float(self._base("size", 12)))
+            fmt.setFontPointSize(max(6.0, min(40.0, self.base_pt * size / base)))  # alleen voor de weergave
+        cur = self.edit.textCursor()
+        if not cur.hasSelection():
+            self.edit.mergeCurrentCharFormat(fmt)  # geldt voor wat je hierna typt
+        else:
+            cur.mergeCharFormat(fmt)
+        self.edit.setFocus()
+        self.textChanged.emit()
+
+    def _pick_color(self):
+        from PySide6.QtWidgets import QColorDialog
+        cur = self.edit.currentCharFormat()
+        start = cur.foreground().color() if cur.hasProperty(cur.Property.ForegroundBrush) else \
+            QColor(*(self._base("fill") or (0, 0, 0)))
+        c = QColorDialog.getColor(start, self, "Kleur")
+        if c.isValid():
+            self._merge(color=c)
+
+    def _clear_format(self):
+        from PySide6.QtGui import QTextCharFormat
+        cur = self.edit.textCursor()
+        if cur.hasSelection():
+            cur.setCharFormat(QTextCharFormat())
+        else:
+            self.edit.setCurrentCharFormat(QTextCharFormat())
+        self.textChanged.emit()
+        self._sync_buttons()
+
+    def _sync_buttons(self, *_):
+        from PySide6.QtGui import QFont, QTextCharFormat
+        f = self.edit.currentCharFormat()
+        P = QTextCharFormat.Property
+        self.a_bold.setChecked(f.fontWeight() >= QFont.Weight.DemiBold if f.hasProperty(P.FontWeight) else bool(self._base("bold")))
+        self.a_italic.setChecked(f.fontItalic() if f.hasProperty(P.FontItalic) else bool(self._base("italic")))
+        self.a_under.setChecked(f.fontUnderline() if f.hasProperty(P.TextUnderlineStyle) else bool(self._base("underline")))
+        fam = f.fontFamilies()[0] if f.hasProperty(P.FontFamilies) and f.fontFamilies() else self._base("family")
+        if fam:
+            self.font_box.blockSignals(True)
+            self.font_box.setCurrentFont(QFont(fam))
+            self.font_box.blockSignals(False)
+        from PySide6.QtGui import QIcon, QPainter as _QP, QPixmap
+        col = f.foreground().color() if f.hasProperty(P.ForegroundBrush) else QColor(*(self._base("fill") or (0, 0, 0)))
+        pm = QPixmap(16, 16)
+        pm.fill(QColor(0, 0, 0, 0))
+        q = _QP(pm)
+        q.setRenderHint(_QP.RenderHint.Antialiasing)
+        q.setBrush(col)
+        q.setPen(self.palette().mid().color())
+        q.drawEllipse(2, 2, 12, 12)
+        q.end()
+        self.a_color.setIcon(QIcon(pm))
+        size = f.property(P.UserProperty + self.SIZE) if f.hasProperty(P.UserProperty + self.SIZE) else self._base("size", 12)
+        self.size_box.blockSignals(True)
+        self.size_box.setValue(int(round(float(size or 12))))
+        self.size_box.blockSignals(False)
+
+    def _fill_editor(self, text, t):
+        """Editor vullen: platte tekst, of de opmaakdelen van een bestaande tekst (afwijkingen van de basis)."""
+        from PySide6.QtGui import QFont, QTextCharFormat, QTextCursor
+        runs = (t or {}).get("runs")
+        if not runs:
+            self.edit.setPlainText(text)
+            return
+        base = t if "family" in t else runs[0][0]
+        cur = QTextCursor(self.edit.document())
+        for style, stroke, fill, chunk in runs:
+            fmt = QTextCharFormat()
+            if style.get("family") and style.get("family") != base.get("family"):
+                fmt.setFontFamilies([style["family"]])
+            if style.get("size") and abs(float(style["size"]) - float(base.get("size", style["size"]))) > 1e-6:
+                fmt.setProperty(QTextCharFormat.Property.UserProperty + self.SIZE, float(style["size"]))
+                fmt.setFontPointSize(max(6.0, min(40.0, self.base_pt * float(style["size"]) / max(1.0, float(base.get("size", 12))))))
+            b = style.get("bold", style.get("weight", 400) >= 600)
+            if b != base.get("bold", base.get("weight", 400) >= 600):
+                fmt.setFontWeight(QFont.Weight.Bold if b else QFont.Weight.Normal)
+            if bool(style.get("italic")) != bool(base.get("italic")):
+                fmt.setFontItalic(bool(style.get("italic")))
+            if bool(style.get("underline")) != bool(base.get("underline")):
+                fmt.setFontUnderline(bool(style.get("underline")))
+            base_fill = t.get("fill") if "fill" in t else runs[0][2]
+            if fill is not None and tuple(fill) != tuple(base_fill or ()):
+                fmt.setForeground(QColor(*fill))
+            cur.insertText(chunk.replace("\r\n", "\n").replace("\r", "\n"), fmt)
+
+    # ------------------------------------------------------------ uitkomst
     def text(self):
         return self.edit.toPlainText()
+
+    def runs(self, t):
+        """Opmaakdelen voor tekstgegevens t (zie textlayer): [[stijl, rand, vulling, tekst], ...], of None
+        als niets afwijkt van de optiebalk (dan geldt die voor de hele tekst)."""
+        from PySide6.QtGui import QFont, QTextCharFormat
+        P = QTextCharFormat.Property
+        keys = ("family", "size", "units", "bold", "italic", "underline", "tracking", "stroke_width")
+        out, any_override = [], False
+        doc = self.edit.document()
+        block = doc.begin()
+        first = True
+        while block.isValid():
+            if not first:
+                out.append(None)  # regeleinde
+            first = False
+            it = block.begin()
+            while not it.atEnd():
+                frag = it.fragment()
+                if frag.isValid():
+                    f = frag.charFormat()
+                    style = {k: t.get(k) for k in keys}
+                    fill = t.get("fill")
+                    if f.hasProperty(P.FontWeight):
+                        style["bold"] = f.fontWeight() >= QFont.Weight.DemiBold
+                    if f.hasProperty(P.FontItalic):
+                        style["italic"] = f.fontItalic()
+                    if f.hasProperty(P.TextUnderlineStyle):
+                        style["underline"] = f.fontUnderline()
+                    if f.hasProperty(P.FontFamilies) and f.fontFamilies():
+                        style["family"] = f.fontFamilies()[0]
+                    if f.hasProperty(P.UserProperty + self.SIZE):
+                        style["size"] = float(f.property(P.UserProperty + self.SIZE))
+                    if f.hasProperty(P.ForegroundBrush) and fill is not None:
+                        c = f.foreground().color()
+                        fill = (c.red(), c.green(), c.blue())
+                    if any(style[k] != t.get(k) for k in keys) or (fill is not None and tuple(fill) != tuple(t.get("fill") or ())):
+                        any_override = True
+                    out.append([style, t.get("stroke"), list(fill) if fill is not None else None, frag.text()])
+                it += 1
+            block = block.next()
+        if not any_override:
+            return None
+        runs = []
+        for r in out:  # regeleinden aan het vorige deel toevoegen en gelijke delen samenvoegen
+            if r is None:
+                if runs:
+                    runs[-1][3] += "\n"
+                else:
+                    runs.append([{k: t.get(k) for k in keys}, t.get("stroke"), t.get("fill"), "\n"])
+                continue
+            if runs and runs[-1][0] == r[0] and runs[-1][2] == r[2] and not runs[-1][3].endswith("\n"):
+                runs[-1][3] += r[3]
+            else:
+                runs.append(r)
+        return runs
 
     def remember(self):
         return self.rem.isChecked()
@@ -887,3 +1112,704 @@ class AboutDialog(QDialog):
         bb = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
         bb.accepted.connect(self.accept)
         v.addWidget(bb)
+
+
+class AlphaChannelDialog(QDialog):
+    """Alfakanalen: opslaan (naam kiezen; een bestaand kanaal kan overschreven worden), laden (kanaal
+    kiezen met voorbeeld, omkeren en bij selecties de bewerking) of verwijderen."""
+
+    def __init__(self, parent, title, doc, mode, default_name="", selection_ops=False):
+        from PySide6.QtWidgets import QLineEdit, QListWidget, QListWidgetItem
+        super().__init__(parent)
+        self.setWindowTitle(title)
+        self.doc, self.mode = doc, mode
+        v = QVBoxLayout(self)
+        top = QHBoxLayout()
+        v.addLayout(top)
+        left = QVBoxLayout()
+        top.addLayout(left)
+        left.addWidget(QLabel("Alfakanalen in deze afbeelding:" if doc.channels else "Deze afbeelding heeft nog geen alfakanalen."))
+        self.list = QListWidget()
+        self.list.setProperty("pp_notr", True)
+        self.list.setMinimumWidth(220)
+        for n in doc.channel_names():
+            self.list.addItem(QListWidgetItem(n))
+        if mode == "delete":
+            self.list.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
+        left.addWidget(self.list)
+        self.preview = QLabel()
+        self.preview.setFixedSize(160, 160)
+        self.preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.preview.setStyleSheet("background: #000; border: 1px solid palette(mid);")
+        top.addWidget(self.preview, 0, Qt.AlignmentFlag.AlignTop)
+        f = QFormLayout()
+        v.addLayout(f)
+        self.name = self.op = self.invert = self.all = None
+        if mode == "save":
+            self.name = QLineEdit(default_name)
+            self.name.setProperty("pp_notr", True)
+            f.addRow("Naam:", self.name)
+            hint = QLabel("Kies een bestaand kanaal om het te overschrijven.")
+            hint.setStyleSheet("color: gray;")
+            f.addRow(hint)
+            # alleen een bewuste klik neemt de naam over (de lijst kiest bij het tonen soms zelf een rij)
+            self.list.itemClicked.connect(lambda it: self.name.setText(it.text()))
+            self.list.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        elif mode == "load":
+            if selection_ops:
+                self.op = QComboBox()
+                self.op.addItems(["Vervangen", "Toevoegen", "Verwijderen"])
+                f.addRow("Bewerking:", self.op)
+            self.invert = QCheckBox("Omkeren")
+            self.invert.toggled.connect(self._show_preview)
+            f.addRow(self.invert)
+        else:
+            self.all = QCheckBox("Alle alfakanalen verwijderen")
+            self.all.toggled.connect(lambda on: self.list.setEnabled(not on))
+            f.addRow(self.all)
+        self.list.currentRowChanged.connect(self._show_preview)
+        if self.list.count() and mode != "save":
+            self.list.setCurrentRow(self.list.count() - 1)
+        bb = _buttons(self)
+        self.ok = bb.button(QDialogButtonBox.StandardButton.Ok)
+        v.addWidget(bb)
+        self.list.itemSelectionChanged.connect(self._update_ok)
+        if self.name is not None:
+            self.name.textChanged.connect(self._update_ok)
+        if self.all is not None:
+            self.all.toggled.connect(self._update_ok)
+        self._update_ok()
+        self._show_preview()
+
+    def _update_ok(self):
+        if self.mode == "save":
+            ok = bool(self.name.text().strip())
+        elif self.mode == "delete":
+            ok = bool(self.doc.channels) and (self.all.isChecked() or bool(self.list.selectedItems()))
+        else:
+            ok = self.list.currentRow() >= 0
+        self.ok.setEnabled(ok)
+
+    def _show_preview(self, *_):
+        from PySide6.QtGui import QPixmap
+        i = self.list.currentRow()
+        if i < 0 or i >= len(self.doc.channels):
+            self.preview.clear()
+            return
+        arr = self.doc.channel_mask(i)
+        if self.invert is not None and self.invert.isChecked():
+            arr = 255 - arr
+        img = QImage(arr.data, arr.shape[1], arr.shape[0], arr.strides[0], QImage.Format.Format_Grayscale8).copy()
+        self.preview.setPixmap(QPixmap.fromImage(img).scaled(156, 156, Qt.AspectRatioMode.KeepAspectRatio,
+                                                             Qt.TransformationMode.SmoothTransformation))
+
+    def values(self):
+        if self.mode == "save":
+            return self.name.text().strip()
+        if self.mode == "delete":
+            if self.all.isChecked():
+                return list(range(len(self.doc.channels)))
+            return sorted(self.list.row(it) for it in self.list.selectedItems())
+        op = ["replace", "add", "sub"][self.op.currentIndex()] if self.op is not None else "replace"
+        return self.list.currentRow(), op, self.invert.isChecked()
+
+
+class Magnifier(QWidget):
+    """Vergrootglas: zwevend venster met een uitvergroting van de afbeelding onder de muis (zoals PSP).
+    Het muiswiel in het venster kiest de vergroting; een kruisje markeert het punt onder de muis."""
+    closed = Signal()
+
+    def __init__(self, main):
+        super().__init__(main, Qt.WindowType.Tool)
+        self.main = main
+        self.setWindowTitle("Vergrootglas")
+        self.resize(240, 240)
+        self.zoom = 5
+        self._last = None
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self._poll)
+
+    def showEvent(self, e):
+        self.timer.start(40)
+        super().showEvent(e)
+
+    def hideEvent(self, e):
+        self.timer.stop()
+        self.closed.emit()
+        super().hideEvent(e)
+
+    def _canvas_under_mouse(self):
+        from PySide6.QtGui import QCursor
+        from PySide6.QtWidgets import QApplication
+        from .canvas import Canvas
+        w = QApplication.widgetAt(QCursor.pos())
+        while w is not None and not isinstance(w, Canvas):
+            w = w.parentWidget()
+        return w
+
+    def _poll(self):
+        from PySide6.QtGui import QCursor
+        cv = self._canvas_under_mouse()
+        if cv is None:
+            return
+        pt = cv.to_doc(cv.mapFromGlobal(QCursor.pos()).toPointF())
+        key = (id(cv), round(pt.x(), 1), round(pt.y(), 1), cv.cache.cacheKey() if cv.cache is not None else 0, self.zoom)
+        if key != self._last:
+            self._last = key
+            self._cv, self._pt = cv, pt
+            self.update()
+
+    def wheelEvent(self, e):
+        self.zoom = max(2, min(16, self.zoom + (1 if e.angleDelta().y() > 0 else -1)))
+        self._last = None
+        self.setWindowTitle(f"{self.main_title()} {self.zoom}×")
+        self.update()
+
+    def main_title(self):
+        from .i18n import tr
+        return tr("Vergrootglas")
+
+    def paintEvent(self, e):
+        from PySide6.QtGui import QPainter, QPen
+        from PySide6.QtCore import QRectF
+        p = QPainter(self)
+        p.fillRect(self.rect(), QColor(112, 112, 112))
+        cv = getattr(self, "_cv", None)
+        if cv is not None and cv.cache is not None:
+            z = self.zoom
+            w, h = self.width() / z, self.height() / z
+            src = QRectF(self._pt.x() - w / 2, self._pt.y() - h / 2, w, h)
+            p.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform, False)
+            p.drawImage(QRectF(self.rect()), cv.cache, src)
+            c = self.rect().center()
+            p.setPen(QPen(QColor(255, 255, 255, 200), 1))
+            p.drawLine(c.x() - 8, c.y(), c.x() + 8, c.y())
+            p.drawLine(c.x(), c.y() - 8, c.x(), c.y() + 8)
+        p.end()
+
+
+class VectorPropertiesDialog(QDialog):
+    """Eigenschappen van vectorobjecten: naam, lijn en vulling (kleur of geen), breedte, lijnstijl,
+    verbinding en anti-alias. Bij meer objecten tegelijk geldt de wijziging voor alle gekozen objecten."""
+    STYLES = ["Effen", "Streepjes", "Puntjes", "Streep-punt", "Streep-punt-punt"]
+    JOINS = ["Verstek", "Rond", "Schuin"]
+
+    def __init__(self, parent, objs):
+        from PySide6.QtWidgets import QLineEdit, QPushButton
+        super().__init__(parent)
+        self.setWindowTitle("Eigenschappen")
+        self.objs = objs
+        first = objs[0]
+        f = QFormLayout(self)
+        self.name = QLineEdit(first.get("name", "") if len(objs) == 1 else "")
+        self.name.setProperty("pp_notr", True)
+        self.name.setEnabled(len(objs) == 1)
+        f.addRow("Naam:", self.name)
+        self.colors = {}
+        for key, label in (("stroke", "Lijn:"), ("fill", "Vulling:")):
+            row = QHBoxLayout()
+            btn = QPushButton()
+            btn.setFixedWidth(70)
+            none = QCheckBox("Geen")
+            c = first.get(key)
+            self.colors[key] = [QColor(*c[:3]) if c else QColor(0, 0, 0) if key == "stroke" else QColor(255, 255, 255),
+                                btn, none]
+            none.setChecked(c is None)
+            btn.clicked.connect(lambda _=False, k=key: self._pick(k))
+            none.toggled.connect(lambda on, b=btn: b.setEnabled(not on))
+            btn.setEnabled(c is not None)
+            row.addWidget(btn)
+            row.addWidget(none)
+            row.addStretch()
+            f.addRow(label, row)
+            self._paint(key)
+        from PySide6.QtWidgets import QDoubleSpinBox
+        self.width = QDoubleSpinBox()
+        self.width.setRange(0, 500)
+        self.width.setDecimals(1)
+        self.width.setValue(float(first.get("width", 1)))
+        f.addRow("Breedte:", self.width)
+        self.style = QComboBox()
+        self.style.addItems(self.STYLES)
+        self.style.setCurrentIndex(int(first.get("style", 0)))
+        f.addRow("Lijnstijl:", self.style)
+        self.join = QComboBox()
+        self.join.addItems(self.JOINS)
+        self.join.setCurrentIndex(int(first.get("join", 0)))
+        f.addRow("Verbinding:", self.join)
+        self.aa = QCheckBox("Anti-alias")
+        self.aa.setChecked(bool(first.get("aa", True)))
+        f.addRow(self.aa)
+        f.addRow(_buttons(self))
+
+    def _paint(self, key):
+        from PySide6.QtGui import QIcon, QPixmap
+        col, btn, _ = self.colors[key]
+        pm = QPixmap(50, 14)
+        pm.fill(col)
+        btn.setIcon(QIcon(pm))
+
+    def _pick(self, key):
+        from PySide6.QtWidgets import QColorDialog
+        c = QColorDialog.getColor(self.colors[key][0], self, "Kleur")
+        if c.isValid():
+            self.colors[key][0] = c
+            self._paint(key)
+
+    def apply(self):
+        for o in self.objs:
+            if len(self.objs) == 1:
+                name = self.name.text().strip()
+                if name:
+                    o["name"] = name
+                else:
+                    o.pop("name", None)
+            for key in ("stroke", "fill"):
+                col, _, none = self.colors[key]
+                o[key] = None if none.isChecked() else [col.red(), col.green(), col.blue(), 255]
+            o["width"] = float(self.width.value())
+            o["style"] = self.style.currentIndex()
+            o["join"] = self.join.currentIndex()
+            o["aa"] = self.aa.isChecked()
+
+
+def ask_form(parent, title, fields, note=None):
+    """Klein invulvenster. fields: [(sleutel, label, soort, ...)] met soort
+    "int" (laag, hoog, standaard[, achtervoegsel]), "choice" (opties, standaard), "bool" (standaard) of
+    "color" (standaard QColor). Geeft {sleutel: waarde} terug, of None bij Annuleren."""
+    from PySide6.QtGui import QIcon, QPixmap
+    from PySide6.QtWidgets import QColorDialog, QPushButton
+    dlg = QDialog(parent)
+    dlg.setWindowTitle(title)
+    f = QFormLayout(dlg)
+    if note:
+        lab = QLabel(note)
+        lab.setWordWrap(True)
+        lab.setMinimumWidth(300)
+        f.addRow(lab)
+    getters = {}
+    for key, label, kind, *a in fields:
+        if kind == "int":
+            w = _spin(a[0], a[1], a[2], a[3] if len(a) > 3 else "")
+            getters[key] = w.value
+            f.addRow(label, w)
+        elif kind == "choice":
+            w = QComboBox()
+            w.addItems(a[0])
+            w.setCurrentIndex(a[1] if len(a) > 1 else 0)
+            getters[key] = w.currentIndex
+            f.addRow(label, w)
+        elif kind == "bool":
+            w = QCheckBox(label)
+            w.setChecked(bool(a[0]) if a else False)
+            getters[key] = w.isChecked
+            f.addRow(w)
+        elif kind == "color":
+            box = {"c": QColor(a[0])}
+            w = QPushButton()
+            w.setFixedWidth(80)
+
+            def paint(b=w, bx=box):
+                pm = QPixmap(56, 14)
+                pm.fill(bx["c"])
+                b.setIcon(QIcon(pm))
+
+            def pick(_=False, bx=box, p=paint):
+                c = QColorDialog.getColor(bx["c"], dlg, "Kleur")
+                if c.isValid():
+                    bx["c"] = c
+                    p()
+            w.clicked.connect(pick)
+            paint()
+            getters[key] = (lambda bx=box: QColor(bx["c"]))
+            f.addRow(label, w)
+    f.addRow(_buttons(dlg))
+    if not dlg.exec():
+        return None
+    return {k: g() for k, g in getters.items()}
+
+
+# ================================================================ Bestand: export en batch
+class PngOptimizerDialog(QDialog):
+    """PNG-optimalisatie: kleurtype (32 bits met transparantie, 24 bits, 8 bits palet), aantal kleuren en
+    compressie, met de verwachte bestandsgrootte."""
+
+    def __init__(self, parent, rgba):
+        super().__init__(parent)
+        self.setWindowTitle("PNG-optimalisatie")
+        self.rgba = rgba
+        f = QFormLayout(self)
+        self.kind = QComboBox()
+        self.kind.addItems(["32 bits (met transparantie)", "24 bits (zonder transparantie)", "8 bits (palet)"])
+        self.colors = _spin(2, 256, 256)
+        self.level = _spin(0, 9, 9)
+        self.size = QLabel()
+        self.size.setProperty("pp_notr", True)
+        f.addRow("Kleurtype:", self.kind)
+        f.addRow("Aantal kleuren:", self.colors)
+        f.addRow("Compressie:", self.level)
+        f.addRow("Bestandsgrootte:", self.size)
+        f.addRow(_buttons(self))
+        self.timer = QTimer(self, singleShot=True, interval=250)
+        self.timer.timeout.connect(self._estimate)
+        for w in (self.kind, self.colors, self.level):
+            (w.currentIndexChanged if isinstance(w, QComboBox) else w.valueChanged).connect(lambda *_: self.timer.start())
+        self.kind.currentIndexChanged.connect(lambda i: self.colors.setEnabled(i == 2))
+        self.colors.setEnabled(False)
+        self._estimate()
+
+    def pil_image(self):
+        from PIL import Image
+        a = self.rgba
+        k = self.kind.currentIndex()
+        if k == 0:
+            return Image.fromarray(a, "RGBA")
+        if k == 1:
+            return Image.fromarray(a[..., :3].copy(), "RGB")
+        img = Image.fromarray(a, "RGBA")
+        return img.quantize(colors=self.colors.value(), method=Image.Quantize.FASTOCTREE,
+                            dither=Image.Dither.FLOYDSTEINBERG)
+
+    def save(self, target):
+        self.pil_image().save(target, "PNG", optimize=self.level.value() >= 9, compress_level=self.level.value())
+
+    def _estimate(self):
+        import io
+        buf = io.BytesIO()
+        self.save(buf)
+        n = buf.tell()
+        self.size.setText(f"{n / 1024:.1f} kB" if n < 1024 * 1024 else f"{n / 1024 / 1024:.2f} MB")
+
+
+class ImageMapDialog(QDialog):
+    """Afbeelding met hyperlinks: sleep rechthoeken of cirkels over het voorbeeld, geef elk gebied een
+    adres (URL), een alternatieve tekst en een doel, en bewaar een HTML-pagina met de afbeelding."""
+
+    def __init__(self, parent, image):
+        from PySide6.QtWidgets import QLineEdit, QListWidget, QPushButton
+        super().__init__(parent)
+        self.setWindowTitle("Afbeelding met hyperlinks")
+        self.image = image
+        self.areas = []  # [{"shape": "rect"|"circle", "r": QRect (afbeeldingscoördinaten), "url", "alt", "target"}]
+        v = QHBoxLayout(self)
+        self.view = _MapView(self)
+        v.addWidget(self.view, 1)
+        side = QVBoxLayout()
+        v.addLayout(side)
+        self.shape = QComboBox()
+        self.shape.addItems(["Rechthoek", "Cirkel"])
+        side.addWidget(QLabel("Vorm voor nieuwe gebieden:"))
+        side.addWidget(self.shape)
+        side.addWidget(QLabel("Gebieden:"))
+        self.list = QListWidget()
+        self.list.setProperty("pp_notr", True)
+        self.list.currentRowChanged.connect(self._show)
+        side.addWidget(self.list, 1)
+        f = QFormLayout()
+        self.url = QLineEdit()
+        self.alt = QLineEdit()
+        self.target = QComboBox()
+        self.target.setEditable(True)
+        self.target.addItems(["", "_blank", "_self", "_parent", "_top"])
+        for w in (self.url, self.alt):
+            w.setProperty("pp_notr", True)
+            w.textChanged.connect(self._edit)
+        self.target.currentTextChanged.connect(self._edit)
+        f.addRow("URL:", self.url)
+        f.addRow("Alternatieve tekst:", self.alt)
+        f.addRow("Doel:", self.target)
+        side.addLayout(f)
+        rm = QPushButton("Gebied verwijderen")
+        rm.clicked.connect(self._remove)
+        side.addWidget(rm)
+        bb = QDialogButtonBox(QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel)
+        bb.button(QDialogButtonBox.StandardButton.Save).setText("Opslaan...")
+        bb.button(QDialogButtonBox.StandardButton.Cancel).setText("Annuleren")
+        bb.accepted.connect(self.accept)
+        bb.rejected.connect(self.reject)
+        side.addWidget(bb)
+        self.resize(900, 560)
+
+    def add_area(self, shape, r):
+        self.areas.append({"shape": shape, "r": r, "url": "", "alt": "", "target": ""})
+        self.list.addItem(f"{len(self.areas)}. {shape}")
+        self.list.setCurrentRow(len(self.areas) - 1)
+        self.url.setFocus()
+
+    def _show(self, i):
+        if 0 <= i < len(self.areas):
+            a = self.areas[i]
+            for w, k in ((self.url, "url"), (self.alt, "alt")):
+                w.blockSignals(True)
+                w.setText(a[k])
+                w.blockSignals(False)
+            self.target.blockSignals(True)
+            self.target.setCurrentText(a["target"])
+            self.target.blockSignals(False)
+        self.view.update()
+
+    def _edit(self, *_):
+        i = self.list.currentRow()
+        if 0 <= i < len(self.areas):
+            self.areas[i].update(url=self.url.text(), alt=self.alt.text(), target=self.target.currentText())
+            self.list.item(i).setText(f"{i + 1}. {self.areas[i]['shape']}  {self.areas[i]['url']}")
+
+    def _remove(self):
+        i = self.list.currentRow()
+        if 0 <= i < len(self.areas):
+            del self.areas[i]
+            self.list.takeItem(i)
+            self.view.update()
+
+    def html(self, image_name):
+        import html as H
+        parts = [f'<img src="{H.escape(image_name)}" width="{self.image.width()}" height="{self.image.height()}" '
+                 f'usemap="#pixelpickle" alt="">', '<map name="pixelpickle">']
+        for a in self.areas:
+            r = a["r"]
+            if a["shape"] == "circle":
+                c = r.center()
+                coords, shape = f"{c.x()},{c.y()},{max(r.width(), r.height()) // 2}", "circle"
+            else:
+                coords, shape = f"{r.left()},{r.top()},{r.right() + 1},{r.bottom() + 1}", "rect"
+            tgt = f' target="{H.escape(a["target"])}"' if a["target"] else ""
+            parts.append(f'  <area shape="{shape}" coords="{coords}" href="{H.escape(a["url"])}" '
+                         f'alt="{H.escape(a["alt"])}"{tgt}>')
+        parts.append("</map>")
+        return "<!DOCTYPE html>\n<html>\n<head><meta charset=\"utf-8\"><title>" + H.escape(image_name) + \
+            "</title></head>\n<body>\n" + "\n".join(parts) + "\n</body>\n</html>\n"
+
+
+class _MapView(QWidget):
+    """Voorbeeld voor Afbeelding met hyperlinks: sleep om een gebied te maken."""
+
+    def __init__(self, dlg):
+        super().__init__()
+        self.dlg = dlg
+        self.drag = None
+        self.setMinimumSize(400, 300)
+
+    def _geom(self):
+        img = self.dlg.image
+        s = min(self.width() / img.width(), self.height() / img.height())
+        return s, (self.width() - img.width() * s) / 2, (self.height() - img.height() * s) / 2
+
+    def _to_img(self, pos):
+        s, ox, oy = self._geom()
+        img = self.dlg.image
+        return (max(0, min(img.width() - 1, int((pos.x() - ox) / s))),
+                max(0, min(img.height() - 1, int((pos.y() - oy) / s))))
+
+    def paintEvent(self, e):
+        from PySide6.QtCore import QRectF
+        from PySide6.QtGui import QPainter, QPen
+        p = QPainter(self)
+        s, ox, oy = self._geom()
+        img = self.dlg.image
+        p.drawImage(QRectF(ox, oy, img.width() * s, img.height() * s), img)
+        cur = self.dlg.list.currentRow()
+        for i, a in enumerate(self.dlg.areas + ([self.drag] if self.drag else [])):
+            r = a["r"]
+            rr = QRectF(ox + r.x() * s, oy + r.y() * s, r.width() * s, r.height() * s)
+            p.setPen(QPen(QColor(255, 60, 60) if i == cur else QColor(40, 160, 255), 2))
+            p.setBrush(QColor(40, 160, 255, 50))
+            p.drawEllipse(rr) if a["shape"] == "circle" else p.drawRect(rr)
+        p.end()
+
+    def mousePressEvent(self, e):
+        x, y = self._to_img(e.position())
+        self.start = (x, y)
+        self.drag = {"shape": "circle" if self.dlg.shape.currentIndex() == 1 else "rect", "r": QRect(x, y, 1, 1)}
+
+    def mouseMoveEvent(self, e):
+        if self.drag:
+            x, y = self._to_img(e.position())
+            self.drag["r"] = QRect(min(x, self.start[0]), min(y, self.start[1]),
+                                   abs(x - self.start[0]) + 1, abs(y - self.start[1]) + 1)
+            self.update()
+
+    def mouseReleaseEvent(self, e):
+        if self.drag:
+            if self.drag["r"].width() > 3 and self.drag["r"].height() > 3:
+                self.dlg.add_area(self.drag["shape"], self.drag["r"])
+            self.drag = None
+            self.update()
+
+
+class BatchDialog(QDialog):
+    """Batchverwerking: een lijst bestanden in één keer omzetten naar een andere indeling, eventueel verkleind,
+    naar een map naar keuze."""
+    FORMATS = [("PNG", ".png"), ("JPEG", ".jpg"), ("WebP", ".webp"), ("TIFF", ".tif"), ("BMP", ".bmp"),
+               ("GIF", ".gif"), ("OpenRaster (.ora)", ".ora")]
+
+    def __init__(self, parent, files=()):
+        from PySide6.QtWidgets import QLineEdit, QListWidget, QPushButton
+        super().__init__(parent)
+        self.setWindowTitle("Batchverwerking")
+        v = QVBoxLayout(self)
+        v.addWidget(QLabel("Bestanden:"))
+        self.list = QListWidget()
+        self.list.setProperty("pp_notr", True)
+        self.list.addItems(list(files))
+        v.addWidget(self.list, 1)
+        row = QHBoxLayout()
+        add = QPushButton("Toevoegen...")
+        add.clicked.connect(self._add)
+        rm = QPushButton("Verwijderen")
+        rm.clicked.connect(lambda: [self.list.takeItem(self.list.row(i)) for i in self.list.selectedItems()])
+        self.list.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
+        row.addWidget(add)
+        row.addWidget(rm)
+        row.addStretch()
+        v.addLayout(row)
+        f = QFormLayout()
+        self.fmt = QComboBox()
+        self.fmt.addItems([n for n, _ in self.FORMATS])
+        self.quality = _spin(1, 100, 90)
+        self.maxsize = _spin(0, 20000, 0, " px")
+        self.outdir = QLineEdit()
+        self.outdir.setProperty("pp_notr", True)
+        self.outdir.setPlaceholderText("Zelfde map als het origineel")
+        browse = QPushButton("Bladeren...")
+        browse.clicked.connect(self._browse)
+        orow = QHBoxLayout()
+        orow.addWidget(self.outdir, 1)
+        orow.addWidget(browse)
+        f.addRow("Opslaan als:", self.fmt)
+        f.addRow("Kwaliteit (JPEG/WebP):", self.quality)
+        f.addRow("Langste zijde hoogstens (0 = niet verkleinen):", self.maxsize)
+        f.addRow("Map:", orow)
+        self.overwrite = QCheckBox("Bestaande bestanden overschrijven")
+        f.addRow(self.overwrite)
+        v.addLayout(f)
+        bb = _buttons(self)
+        bb.button(QDialogButtonBox.StandardButton.Ok).setText("Starten")
+        v.addWidget(bb)
+        self.resize(560, 480)
+
+    def _add(self):
+        from PySide6.QtWidgets import QFileDialog
+        from . import fileio
+        paths, _ = QFileDialog.getOpenFileNames(self, "Bestanden toevoegen", "", fileio.OPEN_FILTER)
+        self.list.addItems(paths)
+
+    def _browse(self):
+        from PySide6.QtWidgets import QFileDialog
+        d = QFileDialog.getExistingDirectory(self, "Map kiezen", self.outdir.text())
+        if d:
+            self.outdir.setText(d)
+
+    def values(self):
+        return dict(files=[self.list.item(i).text() for i in range(self.list.count())],
+                    ext=self.FORMATS[self.fmt.currentIndex()][1], quality=self.quality.value(),
+                    maxsize=self.maxsize.value(), outdir=self.outdir.text().strip(), overwrite=self.overwrite.isChecked())
+
+
+class BatchRenameDialog(QDialog):
+    """Namen in batch wijzigen: nieuwe namen uit vaste tekst, een volgnummer en de oude naam, met voorbeeld."""
+
+    def __init__(self, parent):
+        from PySide6.QtWidgets import QLineEdit, QListWidget, QPushButton
+        super().__init__(parent)
+        self.setWindowTitle("Namen in batch wijzigen")
+        v = QVBoxLayout(self)
+        row = QHBoxLayout()
+        add = QPushButton("Bestanden toevoegen...")
+        add.clicked.connect(self._add)
+        row.addWidget(add)
+        row.addStretch()
+        v.addLayout(row)
+        self.list = QListWidget()
+        self.list.setProperty("pp_notr", True)
+        v.addWidget(self.list, 1)
+        f = QFormLayout()
+        self.prefix = QLineEdit()
+        self.suffix = QLineEdit()
+        for w in (self.prefix, self.suffix):
+            w.setProperty("pp_notr", True)
+            w.textChanged.connect(self._preview)
+        self.keep = QCheckBox("Oude naam behouden")
+        self.keep.toggled.connect(self._preview)
+        self.number = QCheckBox("Volgnummer")
+        self.number.setChecked(True)
+        self.number.toggled.connect(self._preview)
+        self.start = _spin(0, 1000000, 1)
+        self.digits = _spin(1, 8, 3)
+        for w in (self.start, self.digits):
+            w.valueChanged.connect(self._preview)
+        f.addRow("Tekst vooraan:", self.prefix)
+        f.addRow(self.keep)
+        f.addRow(self.number)
+        f.addRow("Beginnen bij:", self.start)
+        f.addRow("Aantal cijfers:", self.digits)
+        f.addRow("Tekst achteraan:", self.suffix)
+        v.addLayout(f)
+        bb = _buttons(self)
+        bb.button(QDialogButtonBox.StandardButton.Ok).setText("Hernoemen")
+        v.addWidget(bb)
+        self.files = []
+        self.resize(560, 480)
+
+    def _add(self):
+        from PySide6.QtWidgets import QFileDialog
+        paths, _ = QFileDialog.getOpenFileNames(self, "Bestanden toevoegen", "")
+        self.files += [p for p in paths if p not in self.files]
+        self._preview()
+
+    def new_names(self):
+        import os
+        out = []
+        for k, path in enumerate(self.files):
+            stem, ext = os.path.splitext(os.path.basename(path))
+            name = self.prefix.text() + (stem if self.keep.isChecked() else "")
+            if self.number.isChecked():
+                name += str(self.start.value() + k).zfill(self.digits.value())
+            name += self.suffix.text()
+            out.append((path, os.path.join(os.path.dirname(path), (name or stem) + ext)))
+        return out
+
+    def _preview(self, *_):
+        import os
+        self.list.clear()
+        for old, new in self.new_names():
+            self.list.addItem(f"{os.path.basename(old)}  →  {os.path.basename(new)}")
+
+
+class FileLocationsDialog(QDialog):
+    """Bestandslocaties: de mappen voor eigen penselen, vormen, fotolijsten en patronen."""
+
+    def __init__(self, parent):
+        from PySide6.QtWidgets import QLineEdit, QPushButton
+        from . import userdata
+        super().__init__(parent)
+        self.setWindowTitle("Bestandslocaties")
+        f = QFormLayout(self)
+        self.edits = {}
+        for kind, label in (("brushes", "Penselen:"), ("shapes", "Vormen:"), ("frames", "Fotolijsten:"),
+                            ("patterns", "Patronen:")):
+            e = QLineEdit(userdata.folder(kind, create=False))
+            e.setProperty("pp_notr", True)
+            e.setMinimumWidth(340)
+            b = QPushButton("Bladeren...")
+            b.clicked.connect(lambda _=False, ed=e: self._browse(ed))
+            row = QHBoxLayout()
+            row.addWidget(e, 1)
+            row.addWidget(b)
+            f.addRow(label, row)
+            self.edits[kind] = e
+        reset = QPushButton("Standaardmappen")
+        reset.clicked.connect(lambda: [e.setText(userdata.default_folder(k)) for k, e in self.edits.items()])
+        f.addRow(reset)
+        f.addRow(_buttons(self))
+
+    def _browse(self, ed):
+        from PySide6.QtWidgets import QFileDialog
+        d = QFileDialog.getExistingDirectory(self, "Map kiezen", ed.text())
+        if d:
+            ed.setText(d)
+
+    def apply(self):
+        from . import userdata
+        for kind, e in self.edits.items():
+            path = e.text().strip()
+            userdata.set_folder(kind, "" if path == userdata.default_folder(kind) else path)

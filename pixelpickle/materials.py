@@ -2,12 +2,15 @@
 import math
 
 from PySide6.QtCore import QPointF, QRect, QRectF, QSize, Qt, Signal
-from PySide6.QtGui import QColor, QConicalGradient, QIcon, QImage, QLinearGradient, QPainter, QPen, QPixmap
+import numpy as np
+from PySide6.QtGui import (QColor, QConicalGradient, QIcon, QImage, QLinearGradient, QPainter, QPen, QPixmap,
+                           QPolygonF)
 from PySide6.QtWidgets import (QButtonGroup, QCheckBox, QDialog, QDialogButtonBox, QFileDialog, QGridLayout,
                                QHBoxLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem, QPushButton,
                                QSpinBox, QTabWidget, QToolButton, QVBoxLayout, QWidget)
 
 from . import icons
+from . import imageops as ops
 from . import material as M
 
 BASIC = [
@@ -221,6 +224,15 @@ class MaterialDialog(QDialog):
         self.glist.setCurrentRow(names.index(self.grad["preset"]) if self.grad["preset"] in names else 0)
         self.glist.currentRowChanged.connect(self._grad_changed)
         v.addWidget(self.glist, 1)
+        brow = QHBoxLayout()
+        for text, fn in (("Nieuw...", self._grad_new), ("Bewerken...", self._grad_edit), ("Verwijderen", self._grad_delete)):
+            b = QPushButton(text)
+            b.clicked.connect(fn)
+            brow.addWidget(b)
+            if text == "Verwijderen":
+                self.gdel = b
+        brow.addStretch()
+        v.addLayout(brow)
         row = QHBoxLayout()
         row.addWidget(QLabel("Stijl:"))
         self.gstyle = QButtonGroup(self)
@@ -261,6 +273,46 @@ class MaterialDialog(QDialog):
             self.gsp[k].setEnabled(self.grad["style"] != 0)
         return page
 
+    def _grad_reload(self, select=None):
+        names = M.gradient_names()
+        self.glist.blockSignals(True)
+        self.glist.clear()
+        for name in names:
+            it = QListWidgetItem(M.gradient_label(name))
+            it.setData(Qt.ItemDataRole.UserRole, name)
+            self.glist.addItem(it)
+        self._gradient_icons()
+        self.glist.blockSignals(False)
+        key = select if select in names else self.grad["preset"]
+        self.glist.setCurrentRow(names.index(key) if key in names else 0)
+        self._grad_changed()
+
+    def _grad_edit_dialog(self, name, stops):
+        dlg = GradientEditor(self, name, stops, self.fgc, self.bgc)
+        if dlg.exec():
+            new_name, new_stops = dlg.result_gradient()
+            save_user_gradient(new_name, new_stops)
+            self._grad_reload(M.USER_PREFIX + new_name)
+
+    def _grad_new(self):
+        self._grad_edit_dialog(_free_name(), [(0.0, "fg:255"), (1.0, "bg:255")])
+
+    def _grad_edit(self):
+        it = self.glist.currentItem()
+        if it is None:
+            return
+        key = it.data(Qt.ItemDataRole.UserRole)
+        # een ingebouwd verloop (of een uit een eigen installatie) wordt als kopie bewerkt
+        name = key[len(M.USER_PREFIX):] if key.startswith(M.USER_PREFIX) else _free_name(M.gradient_label(key))
+        self._grad_edit_dialog(name, M.gradient_stops(key))
+
+    def _grad_delete(self):
+        it = self.glist.currentItem()
+        if it is None or not it.data(Qt.ItemDataRole.UserRole).startswith(M.USER_PREFIX):
+            return
+        delete_user_gradient(it.data(Qt.ItemDataRole.UserRole)[len(M.USER_PREFIX):])
+        self._grad_reload("Voorgrond-achtergrond")
+
     def _gradient_icons(self):
         for i in range(self.glist.count()):
             it = self.glist.item(i)
@@ -273,6 +325,8 @@ class MaterialDialog(QDialog):
         self.grad.update(preset=it.data(Qt.ItemDataRole.UserRole) if it else "Voorgrond-achtergrond",
                          style=max(self.gstyle.checkedId(), 0), invert=self.ginv.isChecked(),
                          **{k: sp.value() for k, sp in self.gsp.items()})
+        if hasattr(self, "gdel"):
+            self.gdel.setEnabled(bool(it) and it.data(Qt.ItemDataRole.UserRole).startswith(M.USER_PREFIX))
         centered = self.grad["style"] != 0
         self.gsp["cx"].setEnabled(centered)
         self.gsp["cy"].setEnabled(centered)
@@ -416,6 +470,270 @@ class MaterialDialog(QDialog):
 
     def color(self):
         return QColor(self.cur)
+
+
+# ---------------------------------------------------------------- verloopbewerker
+def load_user_gradients():
+    """Eigen verlopen uit de instellingen inlezen (bij het starten)."""
+    import json
+    from PySide6.QtCore import QSettings
+    try:
+        M.set_user_gradients(json.loads(QSettings("PixelPickle", "PixelPickle").value("user_gradients", "{}") or "{}"))
+    except (ValueError, TypeError):
+        M.set_user_gradients({})
+
+
+def _store_user_gradients():
+    import json
+    from PySide6.QtCore import QSettings
+    QSettings("PixelPickle", "PixelPickle").setValue(
+        "user_gradients", json.dumps({k: [[p, c] for p, c in v] for k, v in M.USER_GRADIENTS.items()}))
+
+
+def save_user_gradient(name, stops):
+    M.USER_GRADIENTS[name] = [(float(p), c) for p, c in sorted(stops, key=lambda s: s[0])]
+    _store_user_gradients()
+
+
+def delete_user_gradient(name):
+    M.USER_GRADIENTS.pop(name, None)
+    _store_user_gradients()
+
+
+def _free_name(base=None):
+    from .i18n import tr
+    base = base or tr("Eigen verloop")
+    if base not in M.USER_GRADIENTS:
+        return base
+    n = 2
+    while f"{base} {n}" in M.USER_GRADIENTS:
+        n += 1
+    return f"{base} {n}"
+
+
+class GradientBar(QWidget):
+    """Verloopbalk met kleurpunten eronder: klik een punt om het te kiezen, sleep om het te verschuiven,
+    klik op een lege plek om een punt toe te voegen."""
+    changed = Signal()
+    selected = Signal(int)
+    MARK = 9
+
+    def __init__(self, stops, fg, bg):
+        super().__init__()
+        self.stops = [[float(p), c] for p, c in stops]
+        self.fg, self.bg = fg, bg
+        self.cur = 0
+        self._drag = False
+        self.setMinimumSize(360, 54)
+
+    def _bar(self):
+        return QRect(self.MARK, 4, self.width() - 2 * self.MARK, self.height() - self.MARK * 2 - 8)
+
+    def _x(self, pos):
+        b = self._bar()
+        return b.left() + pos * b.width()
+
+    def paintEvent(self, e):
+        p = QPainter(self)
+        b = self._bar()
+        for y in range(b.top(), b.bottom() + 1, 6):
+            for x in range(b.left(), b.right() + 1, 6):
+                p.fillRect(x, y, 6, 6, QColor(204, 204, 204) if ((x - b.left()) // 6 + (y - b.top()) // 6) % 2 else QColor(255, 255, 255))
+        lut = M.stops_lut(self.stops, self.fg, self.bg)
+        idx = np.clip(np.round(np.linspace(0, 255, max(1, b.width()))).astype(int), 0, 255)
+        row = np.clip(lut[idx], 0, 255).astype(np.uint8)
+        p.drawImage(b.topLeft(), ops.rgba_to_qimage(np.ascontiguousarray(np.repeat(row[None], b.height(), axis=0))))
+        p.setPen(QPen(self.palette().mid().color()))
+        p.drawRect(b.adjusted(0, 0, -1, -1))
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        for i, (pos, spec) in enumerate(self.stops):
+            x = self._x(pos)
+            r, g, bb, _ = M._rgba(spec, self.fg, self.bg)
+            tri = [QPointF(x, b.bottom() + 2), QPointF(x - self.MARK / 2 - 1, b.bottom() + self.MARK + 4),
+                   QPointF(x + self.MARK / 2 + 1, b.bottom() + self.MARK + 4)]
+            p.setBrush(QColor(r, g, bb))
+            p.setPen(QPen(self.palette().highlight().color() if i == self.cur else self.palette().text().color(),
+                          2.2 if i == self.cur else 1))
+            p.drawPolygon(QPolygonF(tri))
+        p.end()
+
+    def _hit(self, x):
+        best, bd = None, 1e9
+        for i, (pos, _) in enumerate(self.stops):
+            d = abs(self._x(pos) - x)
+            if d < bd:
+                best, bd = i, d
+        return best if bd <= self.MARK else None
+
+    def _pos(self, x):
+        b = self._bar()
+        return max(0.0, min(1.0, (x - b.left()) / max(1, b.width())))
+
+    def mousePressEvent(self, e):
+        x = e.position().x()
+        i = self._hit(x)
+        if i is None:  # nieuw punt met de kleur die het verloop daar al heeft
+            pos = self._pos(x)
+            lut = M.stops_lut(self.stops, self.fg, self.bg)
+            r, g, b, a = (int(round(v)) for v in lut[int(round(pos * 255))])
+            self.stops.append([pos, "#%02x%02x%02x%02x" % (r, g, b, a)])
+            i = len(self.stops) - 1
+            self.changed.emit()
+        self.cur = i
+        self._drag = True
+        self.selected.emit(i)
+        self.update()
+
+    def mouseMoveEvent(self, e):
+        if self._drag and 0 <= self.cur < len(self.stops):
+            self.stops[self.cur][0] = self._pos(e.position().x())
+            self.selected.emit(self.cur)
+            self.changed.emit()
+            self.update()
+
+    def mouseReleaseEvent(self, e):
+        self._drag = False
+
+
+class GradientEditor(QDialog):
+    """Verloopbewerker: kleurpunten met een eigen kleur of de voorgrond-/achtergrondkleur, dekking en positie."""
+
+    SOURCES = ["Eigen kleur", "Voorgrondkleur", "Achtergrondkleur"]
+
+    def __init__(self, parent, name, stops, fg, bg):
+        from PySide6.QtWidgets import QComboBox, QFormLayout
+        super().__init__(parent)
+        self.setWindowTitle("Verloopbewerker")
+        self.fg, self.bg = QColor(fg), QColor(bg)
+        stops = list(stops) or [(0.0, "fg:255"), (1.0, "bg:255")]
+        if len(stops) < 2:
+            stops = [stops[0], (1.0, stops[0][1])]
+        v = QVBoxLayout(self)
+        f = QFormLayout()
+        self.name = QLineEdit(name)
+        self.name.setProperty("pp_notr", True)
+        f.addRow("Naam:", self.name)
+        v.addLayout(f)
+        self.bar = GradientBar(stops, self.fg, self.bg)
+        v.addWidget(self.bar)
+        hint = QLabel("Klik onder de balk op een lege plek om een kleurpunt toe te voegen; sleep een punt om het te verschuiven.")
+        hint.setWordWrap(True)
+        hint.setStyleSheet("color: gray;")
+        v.addWidget(hint)
+        g = QFormLayout()
+        self.src = QComboBox()
+        self.src.addItems(self.SOURCES)
+        self.color_btn = QPushButton()
+        self.color_btn.setFixedWidth(80)
+        self.color_btn.clicked.connect(self._pick_color)
+        self.alpha = QSpinBox()
+        self.alpha.setRange(0, 100)
+        self.alpha.setSuffix(" %")
+        self.pos = QSpinBox()
+        self.pos.setRange(0, 100)
+        self.pos.setSuffix(" %")
+        row = QHBoxLayout()
+        row.addWidget(self.src)
+        row.addWidget(self.color_btn)
+        g.addRow("Kleur:", row)
+        g.addRow("Dekking:", self.alpha)
+        g.addRow("Positie:", self.pos)
+        v.addLayout(g)
+        brow = QHBoxLayout()
+        self.del_btn = QPushButton("Kleurpunt verwijderen")
+        self.del_btn.clicked.connect(self._delete_stop)
+        rev = QPushButton("Omdraaien")
+        rev.clicked.connect(self._reverse)
+        brow.addWidget(self.del_btn)
+        brow.addWidget(rev)
+        brow.addStretch()
+        v.addLayout(brow)
+        bb = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        bb.button(QDialogButtonBox.StandardButton.Ok).setText("Opslaan")
+        bb.button(QDialogButtonBox.StandardButton.Cancel).setText("Annuleren")
+        bb.accepted.connect(self.accept)
+        bb.rejected.connect(self.reject)
+        self.ok = bb.button(QDialogButtonBox.StandardButton.Ok)
+        v.addWidget(bb)
+        self._busy = False
+        self.bar.selected.connect(self._show_stop)
+        self.bar.changed.connect(self._update_buttons)
+        self.src.currentIndexChanged.connect(self._edit_stop)
+        self.alpha.valueChanged.connect(self._edit_stop)
+        self.pos.valueChanged.connect(self._edit_stop)
+        self.name.textChanged.connect(self._update_buttons)
+        self._show_stop(0)
+        self.resize(440, 0)
+
+    # een kleurpunt: (bron 0/1/2, QColor, dekking 0..255)
+    def _parse(self, spec):
+        r, g, b, a = M._rgba(spec, self.fg, self.bg)
+        src = 1 if spec.startswith("fg") else 2 if spec.startswith("bg") else 0
+        return src, QColor(r, g, b), a
+
+    def _spec(self, src, color, a):
+        if src == 1:
+            return f"fg:{a}"
+        if src == 2:
+            return f"bg:{a}"
+        return "#%02x%02x%02x%02x" % (color.red(), color.green(), color.blue(), a)
+
+    def _show_stop(self, i):
+        self._busy = True
+        pos, spec = self.bar.stops[i]
+        src, color, a = self._parse(spec)
+        self._color = color
+        self.src.setCurrentIndex(src)
+        self.alpha.setValue(round(a / 2.55))
+        self.pos.setValue(round(pos * 100))
+        self._paint_color_btn()
+        self._busy = False
+        self._update_buttons()
+
+    def _paint_color_btn(self):
+        pm = QPixmap(60, 16)
+        pm.fill(self._color)
+        self.color_btn.setIcon(QIcon(pm))
+        self.color_btn.setIconSize(QSize(60, 16))
+        self.color_btn.setEnabled(self.src.currentIndex() == 0)
+
+    def _edit_stop(self, *_):
+        if self._busy:
+            return
+        i = self.bar.cur
+        if self.src.currentIndex() != 0:
+            self._color = QColor(self.fg if self.src.currentIndex() == 1 else self.bg)
+        self.bar.stops[i] = [self.pos.value() / 100,
+                             self._spec(self.src.currentIndex(), self._color, round(self.alpha.value() * 2.55))]
+        self._paint_color_btn()
+        self.bar.update()
+
+    def _pick_color(self):
+        from PySide6.QtWidgets import QColorDialog
+        c = QColorDialog.getColor(self._color, self, "Kleur")
+        if c.isValid():
+            self._color = c
+            self._edit_stop()
+
+    def _delete_stop(self):
+        if len(self.bar.stops) <= 2:
+            return
+        del self.bar.stops[self.bar.cur]
+        self.bar.cur = min(self.bar.cur, len(self.bar.stops) - 1)
+        self.bar.update()
+        self._show_stop(self.bar.cur)
+
+    def _reverse(self):
+        self.bar.stops = [[1 - p, c] for p, c in self.bar.stops]
+        self.bar.update()
+        self._show_stop(self.bar.cur)
+
+    def _update_buttons(self):
+        self.del_btn.setEnabled(len(self.bar.stops) > 2)
+        self.ok.setEnabled(bool(self.name.text().strip()))
+
+    def result_gradient(self):
+        return self.name.text().strip(), [(p, c) for p, c in sorted(self.bar.stops, key=lambda s: s[0])]
 
 
 class MaterialBox(QWidget):

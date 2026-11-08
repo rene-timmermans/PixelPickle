@@ -33,8 +33,21 @@ def Int(key, label, lo, hi, default):
     return dict(type="int", key=key, label=label, lo=lo, hi=hi, default=default)
 
 
-def Choice(key, label, options, default=0):
-    return dict(type="choice", key=key, label=label, options=list(options), default=default)
+def Choice(key, label, options, default=0, extra=None):
+    """extra: functie die bij het openen van het venster nog keuzes achter de vaste toevoegt (bijvoorbeeld
+    patronen uit een eigen installatie); die staan niet in de vaste lijst, de handleiding of de vertalingen."""
+    d = dict(type="choice", key=key, label=label, options=list(options), default=default)
+    if extra is not None:
+        d["extra"] = extra
+    return d
+
+
+def all_options(p):
+    """Vaste keuzes plus de keuzes die er bij het openen bij komen."""
+    try:
+        return p["options"] + (list(p["extra"]()) if p.get("extra") else [])
+    except Exception:  # noqa: BLE001 - een onleesbare extra map mag het venster niet breken
+        return list(p["options"])
 
 
 def Bool(key, label, default=False):

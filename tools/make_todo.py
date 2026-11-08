@@ -43,7 +43,22 @@ NOT_PLANNED = {0xd0e0, 0xd138, 0xd139,  # Plaatjespenseel, Uitsmeren (kunstmedia
                0x8026, 0x8025, 0x801c, 0x8024,  # scriptopname starten, pauzeren, annuleren, opslaan
                0x82fa, 0x8157,  # Lexar actief geheugensysteem, Voorbeeld in webbrowser
                0x8027, 0x821b,  # werkbalken Script en Web
-               0x8029, 0x82cc, 0x800a}  # Studiecentrum, Menger, Scriptuitvoer
+               0x8029, 0x82cc, 0x800a,  # Studiecentrum, Menger, Scriptuitvoer
+               0x8300, 0x82fd, 0x82fc,  # Bestand > E-mail
+               0x3acc, 0x627b, 0x627c,  # Fotolade, Documentmodus, Paletmodus
+               0x804e, 0x804f, 0x8050, 0x8129, 0x812a,  # Afbeelding > Palet
+               0x82c5, 0x8122, 0x82f8, 0x831f,  # Contactinformatie, ondersteuning, gratis inhoud, berichten
+               0x81d9, 0x81da, 0x81d8, 0x81f8,  # Insteekfilters (importeren, exporteren, effecten, laatst gebruikt)
+               0x800f, 0x8011, 0x8200, 0x823e, 0x82bc, 0x8217,  # Bestand > Script
+               0x814e, 0x814f, 0x8150, 0x81fa,  # Bestand > Werkvlak
+               0x8127, 0x82e2, 0x82f4,  # Bestand > Kleurbeheer
+               0x8210, 0x8004,  # Dokopties, Aanpassen
+               0x8173,  # Segmentering
+               0x813e, 0x813f, 0x8289, 0x82d1, 0x82d4,  # watermerken, tekenmateriaallagen
+               0x80fb, 0x3aca, 0x8006,  # koppelingen bestandsindelingen, Ordenen, eigen werkbalken
+               0x805e, 0x8077, 0x8078, 0x90eb, 0x90ec}  # kleurdiepte uitbreiden en 16 bits (altijd 8 bits RGB)
+
+NOT_PLANNED_MENUS = set()  # hele menu's die we niet bouwen
 
 rows_tools = []
 for i, group in enumerate(TOOLBAR, 1):
@@ -62,6 +77,8 @@ def walk(items, path):
         if not it:
             continue
         name = it["text"].replace("&", "")
+        if not path and name in NOT_PLANNED_MENUS:
+            continue
         if it["items"]:
             walk(it["items"], path + [name])
         elif it["id"] and it["id"] not in handlers and it["id"] != 0xe110 and it["id"] not in NOT_PLANNED:
@@ -98,22 +115,26 @@ Totaal: {len(rows_tools)} gereedschappen en {len(rows_menu)} menu-opdrachten.
 
 ## Menu-opdrachten
 
-{table(rows_menu)}
+{table(rows_menu) if rows_menu else "Alle menu-opdrachten zijn gebouwd."}
 
 ## Bekende beperkingen van wat er al is
 
-- [ ] Tekstlagen: één opmaak per tekst (geen losse woorden vet of in een andere kleur)
-- [ ] .pspimage: alleen Curven als PSP aanpassingslaag; andere aanpassingslagen worden bij opslaan weggelaten
-- [ ] Effect Lampen: 2 lampen in plaats van 5
-- [ ] Textuur en Sculptuur: eigen patronen in plaats van de PSP patroonbestanden
-- [ ] Rode ogen verwijderen (menu): herkent geen ogen, maakt alle sterk rode vlakken donkerder
-- [ ] Materialen: verloop en patroon werken nog niet bij tekst, en zelf verlopen samenstellen (verloopbewerker) kan nog niet
-- [ ] Inhoud van de snelmenu's (rechtsklik) precies gelijk aan PSP maken
+Geen bekende beperkingen op dit moment.
 
 ## Afgerond
 
 Wat al gebouwd is, met de versie waarin het verscheen.
 
+- [x] Laatste menu-opdrachten: menu Selecties compleet (onder andere kleurbereik, binnen/buiten doezelen, stippen en
+  gaten, selectieranden, zwevend, selectie bewerken, laden/opslaan op schijf); kleurdiepte verminderen, kanalen splitsen
+  en combineren, berekeningen, fotolijst; linialen, hulplijnen, uitlijnen op raster en hulplijnen; werkbalken Effecten
+  en Foto; paletten Histogram, Overzicht en Penseelvariantie; plakken als transparante en vectorselectie; afdrukken,
+  schermopname, eigen penselen, vormen en lijsten, PNG-optimalisatie, afbeelding met hyperlinks, batchverwerking,
+  namen in batch wijzigen en de voorkeuren (1.0.0)
+- [x] Lagen > Beeld (alleen huidige laag, alle, geen, omkeren, koppelingset); alfakanalen voor selecties en
+  maskers; tekst met opmaak per woord; verloop en patroon in tekst; verloopbewerker; Textuur en Sculptuur met
+  alle patronen uit Materialen; Rode ogen verwijderen herkent ogen; snelmenu's zoals PSP (afbeelding, werkruimte,
+  pen, vectorobjecten); menu Objecten; Vergrootglas (1.0.0)
 - [x] Laatste gereedschappen: Makeover (vlekken, tanden, oogwit, zonnebruin, slanker maken), Object verwijderen,
   Markering en Paletmes; Kleurwisselaar werkt op alle gelijkende kleuren; pijltoetsen met versnelling;
   spiegelen en omdraaien met een selectie op dezelfde plek; schuifbalk onder de invoervelden

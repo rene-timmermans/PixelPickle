@@ -47,21 +47,37 @@ def qt_nodes(obj):
     return [[_pt(n[0]), _pt(n[1]), _pt(n[2])] for n in obj["nodes"]]
 
 
-def qpath(obj):
-    n = qt_nodes(obj)
-    path = QPainterPath()
+def contours(obj):
+    """Alle contouren van een object: [(nodes, closed)]. Een samengesteld object (bijvoorbeeld een letter
+    met een gat) heeft naast de eerste contour nog 'more': [{"nodes": ..., "closed": ...}, ...]."""
+    return [(obj["nodes"], obj["closed"])] + [(c["nodes"], c["closed"]) for c in obj.get("more", [])]
+
+
+def _add_contour(path, nodes, closed):
+    n = [[_pt(q[0]), _pt(q[1]), _pt(q[2])] for q in nodes]
     if not n:
-        return path
+        return
     path.moveTo(n[0][0])
-    segs = list(zip(n, n[1:])) + ([(n[-1], n[0])] if obj["closed"] and len(n) > 2 else [])
+    segs = list(zip(n, n[1:])) + ([(n[-1], n[0])] if closed and len(n) > 2 else [])
     for a, b in segs:
         if a[2] is None and b[1] is None:
             path.lineTo(b[0])
         else:
             path.cubicTo(a[2] if a[2] is not None else a[0], b[1] if b[1] is not None else b[0], b[0])
-    if obj["closed"] and len(n) > 2:
+    if closed and len(n) > 2:
         path.closeSubpath()
+
+
+def qpath(obj):
+    path = QPainterPath()
+    path.setFillRule(Qt.FillRule.OddEvenFill)  # gaten in samengestelde objecten blijven open
+    for nodes, closed in contours(obj):
+        _add_contour(path, nodes, closed)
     return path
+
+
+def is_closed(obj):
+    return any(closed for _, closed in contours(obj))
 
 
 def pen_for(obj):
@@ -80,7 +96,7 @@ def paint(p: QPainter, objs):
         if len(obj["nodes"]) < 2:
             continue
         p.setRenderHint(QPainter.RenderHint.Antialiasing, obj.get("aa", True))
-        fill = obj["closed"] and obj.get("fill") is not None
+        fill = is_closed(obj) and obj.get("fill") is not None
         p.setBrush(QBrush(QColor(*obj["fill"])) if fill else Qt.BrushStyle.NoBrush)
         p.setPen(pen_for(obj))
         p.drawPath(qpath(obj))
@@ -98,11 +114,12 @@ def render(objs, w, h):
 def transform(objs, t):
     """Alle punten en handvatten door een (affiene) transformatie halen."""
     for obj in objs:
-        for n in obj["nodes"]:
-            for k in range(3):
-                if n[k] is not None:
-                    q = t.map(QPointF(n[k][0], n[k][1]))
-                    n[k] = [q.x(), q.y()]
+        for nodes, _ in contours(obj):
+            for n in nodes:
+                for k in range(3):
+                    if n[k] is not None:
+                        q = t.map(QPointF(n[k][0], n[k][1]))
+                        n[k] = [q.x(), q.y()]
         # lijnbreedte meeschalen (gemiddelde schaal; 1 bij verschuiven, draaien en spiegelen)
         s = (abs(t.m11() * t.m22() - t.m12() * t.m21())) ** 0.5
         obj["width"] = obj["width"] * s
@@ -115,7 +132,7 @@ def hit(obj, pt, tol):
     st.setWidth(max(obj.get("width", 1), 1) + 2 * tol)
     if st.createStroke(path).contains(pt):
         return True
-    return obj["closed"] and obj.get("fill") is not None and path.contains(pt)
+    return is_closed(obj) and obj.get("fill") is not None and path.contains(pt)
 
 
 def bounds(objs):
@@ -158,3 +175,17 @@ def path_to_nodes(path: QPainterPath):
             n[0][1] = last[1]
         result.append((n, closed))
     return result
+
+
+def object_from_path(path: QPainterPath, stroke, fill, width, **style):
+    """Vectorobject uit een QPainterPath (alle deelpaden als contouren van één samengesteld object)."""
+    parts = path_to_nodes(path)
+    if not parts:
+        return None
+    nodes, closed = parts[0]
+    obj = make_object(nodes, closed, stroke, fill, width, **style)
+    if len(parts) > 1:
+        obj["more"] = [{"nodes": [[_lst(n[0]), _lst(n[1]), _lst(n[2])] for n in nd], "closed": cl}
+                       for nd, cl in parts[1:]]
+    return obj
+

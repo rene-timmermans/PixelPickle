@@ -693,11 +693,45 @@ def _pattern(h, w, kind, sc, seed):
     return _tone(t, st)
 
 
-@effect(0x80b0, "Sculptuur", [Choice("pattern", "Patroon", _PATTERNS), Int("size", "Grootte %", 10, 400, 100)]
+def _material_patterns():
+    """De eigen naadloze patronen uit Materialen (vaste lijst, vertaald)."""
+    from .. import material
+    return list(material.PATTERNS)
+
+
+def _installed_patterns():
+    """Patronen uit een eigen installatie of de map Patronen van de gebruiker (alleen ingelezen bij gebruik)."""
+    from .. import material
+    return [n for n, _ in material.psp_patterns()]
+
+
+def _tiled_pattern(name, h, w, size, ctx):
+    """Patroon uit Materialen of een eigen installatie, getegeld over h x w, als RGB (float)."""
+    from PySide6.QtCore import QRect
+    from .. import material, imageops as ops
+    img = material.pattern_image(name)
+    if img is None or img.isNull():
+        return np.full((h, w, 3), 128, np.float32)
+    m = {"kind": "pattern", "image": img, "angle": 0, "scale": max(1.0, size * ctx.scale)}
+    out = material.render(m, QRect(0, 0, w, h))
+    return ops.qimage_to_rgba(out)[..., :3].astype(np.float32)
+
+
+def _pattern_by_index(i, h, w, size, ctx):
+    """Kleurpatroon nummer i: eerst de eigen sculptuurpatronen, dan Materialen, dan een eigen installatie."""
+    if i < len(_PATTERNS):
+        return _pattern(h, w, i, _px(40 * size / 100, ctx, 1), ctx.seed)
+    names = _material_patterns() + _installed_patterns()
+    k = i - len(_PATTERNS)
+    return _tiled_pattern(names[k], h, w, size, ctx) if k < len(names) else _pattern(h, w, 0, _px(40, ctx, 1), ctx.seed)
+
+
+@effect(0x80b0, "Sculptuur", [Choice("pattern", "Patroon", _PATTERNS + _material_patterns(), extra=_installed_patterns),
+                              Int("size", "Grootte %", 10, 400, 100)]
         + _light_params(315, 10, 20))
 def sculpture(a, ctx, pattern, size, smooth, depth, ambience, shine, color, angle, intensity, elevation):
     h, w = a.shape[:2]
-    pat = _pattern(h, w, pattern, _px(40 * size / 100, ctx, 1), ctx.seed)
+    pat = _pattern_by_index(pattern, h, w, size, ctx)
     hgt = blur(gray(a), _px(smooth / 10, ctx))
     diff, spec = lighting(hgt, angle, elevation, depth / 4, shine)
     return with_rgb(a, _compose(pat, diff, spec, _col(color, ctx), ambience, intensity))
@@ -768,11 +802,18 @@ def _texture(h, w, kind, sc, seed):
     return 1 - np.abs(n - 0.5) * 2
 
 
-@effect(0x80b1, "Textuur", [Choice("texture", "Textuur", _TEXTURES), Int("size", "Grootte %", 10, 400, 100)]
+@effect(0x80b1, "Textuur", [Choice("texture", "Textuur", _TEXTURES + _material_patterns(), extra=_installed_patterns),
+                            Int("size", "Grootte %", 10, 400, 100)]
         + _light_params(315, 10, 0))
 def texture(a, ctx, texture, size, smooth, depth, ambience, shine, color, angle, intensity, elevation):
     h, w = a.shape[:2]
-    tex = _texture(h, w, texture, _px(24 * size / 100, ctx, 1), ctx.seed) * 255
+    if texture < len(_TEXTURES):
+        tex = _texture(h, w, texture, _px(24 * size / 100, ctx, 1), ctx.seed) * 255
+    else:  # patroon uit Materialen of een eigen installatie: de helderheid wordt het reliëf
+        names = _material_patterns() + _installed_patterns()
+        k = texture - len(_TEXTURES)
+        rgb = _tiled_pattern(names[min(k, len(names) - 1)], h, w, size, ctx)
+        tex = rgb[..., 0] * 0.299 + rgb[..., 1] * 0.587 + rgb[..., 2] * 0.114
     tex = blur(tex, _px(smooth / 20, ctx))
     diff, spec = lighting(tex, angle, elevation, depth / 10 * ctx.scale, shine)
     return with_rgb(a, _compose(_rgb(a), diff, spec, _col(color, ctx), ambience, intensity))

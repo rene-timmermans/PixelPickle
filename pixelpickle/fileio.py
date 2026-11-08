@@ -91,6 +91,9 @@ def save(doc: Document, path: str, quality=90):
         kwargs["quality"] = quality
     if ext in (".tif", ".tiff"):
         kwargs["compression"] = "tiff_lzw"
+    if ext == ".png":  # compressie uit Voorkeuren bestandsindelingen
+        from PySide6.QtCore import QSettings
+        kwargs["compress_level"] = int(QSettings("PixelPickle", "PixelPickle").value("png_compress", 6))
     tmp = path + ".tmp"
     try:
         im.save(tmp, format=Image.registered_extensions().get(ext, "PNG"), **kwargs)
@@ -142,6 +145,17 @@ def save_ora(doc: Document, path: str):
                     el.set("pixelpickle-adjust", json.dumps([l.adjust[0], l.adjust[1]]))
                 z.writestr(src, _png_bytes(l.image), compress_type=zipfile.ZIP_STORED)
         emit(ET.SubElement(root, "stack"), None)
+        # alfakanalen: als grijswaarden-PNG naast de lagen (andere programma's slaan ze over)
+        chans = []
+        for i, (name, _) in enumerate(doc.channels):
+            src = f"pixelpickle/channel{i}.png"
+            arr = np.ascontiguousarray(doc.channel_mask(i))
+            buf = io.BytesIO()
+            Image.fromarray(arr, "L").save(buf, "PNG")
+            z.writestr(src, buf.getvalue(), compress_type=zipfile.ZIP_STORED)
+            chans.append({"name": name, "src": src})
+        if chans:
+            root.set("pixelpickle-channels", json.dumps(chans))
         z.writestr("stack.xml", ET.tostring(root, encoding="utf-8", xml_declaration=True),
                    compress_type=zipfile.ZIP_DEFLATED)
         flat = doc.flattened()
@@ -213,6 +227,19 @@ def load_ora(path: str) -> Document:
                                             for k, v in prm.items()})
                     layers.append(lay)
         walk(root.find("stack"), None)
+        try:
+            chans = json.loads(root.get("pixelpickle-channels") or "[]")
+        except ValueError:
+            chans = []
+        for c in chans:
+            try:
+                with Image.open(io.BytesIO(z.read(c["src"]))) as im:
+                    g = im.convert("L")
+                    if g.size != (w, h):
+                        g = g.resize((w, h))
+                    doc.channels.append((str(c["name"]), Document._channel_image(np.asarray(g, np.uint8))))
+            except (KeyError, OSError, TypeError):
+                continue  # beschadigd kanaal overslaan, de afbeelding zelf laadt gewoon
     if not any(l.kind != "group" for l in layers):
         raise FileError("Leeg OpenRaster bestand.")
     doc.layers = list(reversed(layers))

@@ -3,7 +3,7 @@ import os
 import traceback
 
 import numpy as np
-from PySide6.QtCore import QEvent, QPointF, QRect, QSettings, QSize, Qt, QTimer
+from PySide6.QtCore import QEvent, QPointF, QRect, QRectF, QSettings, QSize, Qt, QTimer
 from PySide6.QtGui import QAction, QColor, QFont, QIcon, QImage, QKeySequence, QPainter, QPixmap
 from PySide6.QtWidgets import (QAbstractButton, QApplication, QCheckBox, QDockWidget, QFileDialog, QHBoxLayout,
                                QInputDialog, QLabel,
@@ -133,6 +133,15 @@ class MainWindow(QMainWindow):
         self.setStatusBar(TrStatusBar())
         self.setWindowTitle(APP)
         self.settings = QSettings("PixelPickle", "PixelPickle")
+        from .materials import load_user_gradients
+        load_user_gradients()
+        from .viewaids import DEFAULTS as _VD
+        import json as _json
+        try:
+            saved = _json.loads(self.settings.value("view_opts", "{}") or "{}")
+        except ValueError:
+            saved = {}
+        self.view_opts = {**_VD, **{k: v for k, v in saved.items() if k in _VD}}
         QApplication.instance().installEventFilter(self)
         self.fg = QColor(0, 0, 0)
         self.bg = QColor(255, 255, 255)
@@ -147,6 +156,8 @@ class MainWindow(QMainWindow):
         self.mdi = QMdiArea()
         self.mdi.setBackground(QColor(112, 112, 112))
         self.mdi.subWindowActivated.connect(self.on_active)
+        self.mdi.viewport().setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.mdi.viewport().customContextMenuRequested.connect(self.show_workspace_menu)
         self.setCentralWidget(self.mdi)
         self._active_doc = None
 
@@ -257,6 +268,15 @@ class MainWindow(QMainWindow):
         self.dock_layers = self._dock("Lagen", self.layers, "layers")
         self.dock_hist = self._dock("Geschiedenis", self.history, "history")
         self.dock_hist.hide()
+        from .palettes import BrushVariancePalette, HistogramPalette, OverviewPalette
+        self.histogram = HistogramPalette(self)
+        self.overview = OverviewPalette(self)
+        self.brush_variance = BrushVariancePalette(self)
+        self.dock_histogram = self._dock("Histogram", self.histogram, "histogram")
+        self.dock_overview = self._dock("Overzicht", self.overview, "overview")
+        self.dock_variance = self._dock("Penseelvariantie", self.brush_variance, "brush_variance")
+        for dk in (self.dock_histogram, self.dock_overview, self.dock_variance):
+            dk.hide()
 
     def handlers(self):
         D = lambda f: (lambda: f(self.doc()))  # noqa: E731
@@ -266,11 +286,18 @@ class MainWindow(QMainWindow):
             0xe100: self.file_new, 0xe101: self.file_open, 0xe102: self.close_active,
             0xe103: self.file_save, 0xe104: self.file_save_as, 0xe10b: lambda: self.file_save_as(copy=True),
             0xe141: self.close, 0x8012: self.preferences, 0x812d: self.export_gif, 0x814b: self.export_jpeg,
+            0x8019: self.file_revert, 0x80d6: self.file_delete, 0x82ec: self.file_print, 0x812e: self.print_preview,
+            0x80e0: self.capture_setup, 0x80e1: self.capture_start, 0x8203: self.import_brush,
+            0x8201: self.export_brush, 0x815b: self.export_png, 0x8174: self.export_image_map,
+            0x822c: self.export_frame, 0x815c: self.export_shape, 0x801b: self.batch_process,
+            0x81ad: self.batch_rename, 0x8014: self.file_format_prefs, 0x8152: self.file_locations,
+            0x8204: self.reset_preferences,
             # Bewerken
             0xe12b: D(lambda d: d.undo()), 0xe12c: D(lambda d: d.redo()), 0xe128: self.repeat_last,
             0xe123: self.edit_cut, 0xe122: self.edit_copy, 0x8105: lambda: self.edit_copy(merged=True),
             0x80e6: self.paste_new_image, 0x810d: self.paste_new_layer, 0x801e: self.paste_new_selection,
             0x801f: self.paste_into_selection, 0xe120: self.edit_clear,
+            0x80f0: self.paste_transparent_selection, 0x8023: self.paste_vector_selection,
             0x8020: lambda: QApplication.clipboard().clear(),
             # Beeld
             0x8007: lambda: self.canvas().actual_size(), 0x8132: lambda: self.canvas().zoom_step(True),
@@ -279,6 +306,17 @@ class MainWindow(QMainWindow):
             0x8185: lambda: self.toggle_dock(self.dock_mat), 0x81ae: lambda: self.toggle_dock(self.dock_layers),
             0x8002: lambda: self.toggle_dock(self.dock_hist), 0x81ba: lambda: self.opt_bar.setVisible(not self.opt_bar.isVisible()),
             0x81f9: lambda: self.tools_toolbar.setVisible(not self.tools_toolbar.isVisible()),
+            0x8216: self.toggle_magnifier,
+            0x8022: lambda: self.toggle_dock(self.dock_histogram), 0x8159: lambda: self.toggle_dock(self.dock_overview),
+            0x822d: lambda: self.toggle_dock(self.dock_variance),
+            0x821d: lambda: self.effects_toolbar.setVisible(not self.effects_toolbar.isVisible()),
+            0x821c: lambda: self.photo_toolbar.setVisible(not self.photo_toolbar.isVisible()),
+            0x80ef: self.full_screen_preview, 0x8202: self.fit_to_screen,
+            0x810a: lambda: self.toggle_view("rulers"), 0x817c: lambda: self.toggle_view("guides"),
+            0x817a: lambda: self.toggle_view("snap_grid"), 0x817b: lambda: self.toggle_view("snap_guides"),
+            0x8155: self.grid_guide_properties,
+            **{cid: (lambda name=name: self.node_command(name)) for cid, name in self.NODE_COMMANDS.items()},
+            **{cid: (lambda k=k, a=a: self.object_command(k, a)) for cid, (k, a) in self.OBJECT_COMMANDS.items()},
             0x8125: self.check_updates,
             0xe800: lambda: self.std_toolbar.setVisible(not self.std_toolbar.isVisible()),
             0xe801: lambda: self.statusBar().setVisible(not self.statusBar().isVisible()),
@@ -331,20 +369,38 @@ class MainWindow(QMainWindow):
             0x8101: D(lambda d: d.arrange_layer("top")), 0x8104: D(lambda d: d.move_layer(1)),
             0x8102: D(lambda d: d.move_layer(-1)), 0x8103: D(lambda d: d.arrange_layer("bottom")),
             0x81d4: D(lambda d: d.merge_down()), 0x80f8: D(lambda d: d.flatten()),
-            0x8120: D(lambda d: d.merge_visible()), 0x815d: D(lambda d: d.promote_background()),
+            0x8120: D(lambda d: d.merge_visible()),
+            0x80ff: D(lambda d: d.layer_view("current")), 0x8100: D(lambda d: d.layer_view("all")),
+            0x8177: D(lambda d: d.layer_view("none")), 0x8176: D(lambda d: d.layer_view("invert")),
+            0x8178: D(lambda d: d.layer_view("link_show")), 0x8179: D(lambda d: d.layer_view("link_hide")), 0x815d: D(lambda d: d.promote_background()),
             0x8051: lambda: self.count_colors(True),
             0x8191: D(lambda d: d.new_group()), 0x8205: D(lambda d: d.ungroup()), 0x81d5: D(lambda d: d.merge_group()),
             0x81d6: D(lambda d: d.move_into_group()), 0x81d7: D(lambda d: d.move_out_of_group()),
             0x8107: D(lambda d: d.add_mask("hide_all")), 0x8108: D(lambda d: d.add_mask("show_all")),
             0x8106: D(lambda d: d.add_mask("hide_sel")), 0x80e9: D(lambda d: d.add_mask("show_sel")),
             0x80e8: self.mask_from_image, 0x80ec: D(lambda d: d.invert_mask()), 0x821f: self.toggle_mask_overlay,
-            0x80ea: self.load_mask, 0x80eb: self.save_mask, 0x80f5: D(lambda d: d.selection_from_mask()),
+            0x80ea: self.load_mask, 0x80eb: self.save_mask,
+            0x810f: lambda: self.channel_save(selection=True), 0x810e: lambda: self.channel_load(selection=True),
+            0x8111: lambda: self.channel_save(selection=False), 0x8110: lambda: self.channel_load(selection=False),
+            0x81e4: self.channel_delete, 0x80f5: D(lambda d: d.selection_from_mask()),
             # Selecties
             0x80dc: self.select_all, 0x80e2: self.select_none, 0x80dd: self.select_invert,
             0x811b: lambda: self.modify_selection("expand", "Uitbreiden", "Aantal pixels:"),
             0x811c: lambda: self.modify_selection("contract", "Inkrimpen", "Aantal pixels:"),
             0x80e3: lambda: self.modify_selection("feather", "Doezelen", "Aantal pixels:"),
             0x8109: D(lambda d: d.promote_selection()), 0x811a: self.toggle_marquee,
+            0x012f: self.picture_frame, 0x8058: lambda: self.reduce_colors(2), 0x8059: lambda: self.reduce_colors(16),
+            0x805a: lambda: self.reduce_colors(256), 0x805d: lambda: self.reduce_colors(None),
+            0x805b: lambda: self.reduce_bits((5, 5, 5)), 0x805c: lambda: self.reduce_bits((5, 6, 5)),
+            0x80f3: lambda: self.split_channels("rgb"), 0x8116: lambda: self.split_channels("hsl"),
+            0x8118: lambda: self.split_channels("cmyk"), 0x80f4: lambda: self.combine_channels("rgb"),
+            0x8117: lambda: self.combine_channels("hsl"), 0x8123: lambda: self.combine_channels("cmyk"),
+            0x80f2: self.image_arithmetic,
+            0x8001: self.sel_from_vectors, 0x8114: self.sel_similar, 0x81eb: self.sel_color_range,
+            0x8193: self.sel_feather_side, 0x81ee: self.sel_unfeather, 0x81e8: self.sel_antialias,
+            0x81e7: self.sel_recover_aa, 0x81f6: self.sel_specks, 0x81f5: self.sel_smooth, 0x81ec: self.sel_borders,
+            0x8283: self.sel_clip_canvas, 0x80de: self.sel_load_disk, 0x80df: self.sel_save_disk,
+            0x81f4: self.sel_edit, 0x80e4: self.sel_float, 0x80e5: self.sel_defloat,
             # Venster
             0xe130: self.new_window, 0x82ce: lambda: self.set_tab_mode(self.mdi.viewMode() != QMdiArea.ViewMode.TabbedView),
             0xe132: self.mdi.cascadeSubWindows, 0xe133: lambda: self.tile(False), 0xe134: lambda: self.tile(True),
@@ -376,10 +432,12 @@ class MainWindow(QMainWindow):
         return H
 
     # Opdrachten die ook zonder geopende afbeelding werken (o.a. voorkeuren, zoals in PSP)
-    NO_DOC = {0x8012, 0x8125, 0xe100, 0xe101, 0xe141, 0x80e6, 0x8020, 0x8185, 0x81ae, 0x8002, 0x81ba, 0x81f9, 0xe800, 0xe801,
+    NO_DOC = {0x8012, 0x8125, 0x80e0, 0x80e1, 0x8203, 0x801b, 0x81ad, 0x8014, 0x8152, 0x8204, 0x8216, 0x8022, 0x8159, 0x822d, 0x821d, 0x821c, 0x810a, 0x817c, 0x817a, 0x817b, 0x8155, 0xe100, 0xe101, 0xe141, 0x80e6, 0x8020, 0x8185, 0x81ae, 0x8002, 0x81ba, 0x81f9, 0xe800, 0xe801,
               0x801d, 0x82ce, 0xe132, 0xe133, 0xe134, 0x80d3, 0x8028, 0xe140, 0xe142, 0x8151}
     CHECKABLE = {0x821f: None, 0x8185: "dock_mat", 0x81ae: "dock_layers", 0x8002: "dock_hist", 0x82ce: None, 0x8021: None,
-                 0x811a: None, 0x81ba: "opt_bar"}
+                 0x811a: None, 0x81ba: "opt_bar", 0x8216: None, 0x81f4: None, 0x810a: None, 0x817c: None,
+                 0x817a: None, 0x817b: None, 0x8022: "dock_histogram", 0x8159: "dock_overview",
+                 0x822d: "dock_variance", 0x821d: None, 0x821c: None}
 
     @staticmethod
     def _tidy_menu(menu):
@@ -447,18 +505,23 @@ class MainWindow(QMainWindow):
                 mb.removeAction(m.menuAction())
                 continue
             self.top_menus[top["text"].replace("&", "")] = m
+            if top["text"].replace("&", "") == "Objecten":
+                m.aboutToShow.connect(self.update_node_actions)
             if top["text"].replace("&", "") == "Venster":
                 self.window_menu = m
                 m.aboutToShow.connect(self._fill_window_menu)
         self._window_entries = []
         a = self.actions_by_id
-        for cid, dock in ((0x8185, self.dock_mat), (0x81ae, self.dock_layers), (0x8002, self.dock_hist)):
+        for cid, dock in ((0x8185, self.dock_mat), (0x81ae, self.dock_layers), (0x8002, self.dock_hist),
+                          (0x8022, self.dock_histogram), (0x8159, self.dock_overview), (0x822d, self.dock_variance)):
             if cid in a:
                 dock.visibilityChanged.connect(lambda v, act=a[cid]: act.setChecked(v))
-                a[cid].setChecked(True)
+                a[cid].setChecked(dock.isVisible() or cid in (0x8185, 0x81ae, 0x8002))
+        self._build_extra_toolbars()
         if 0x81ba in a:  # optiebalk: vinkje volgt de zichtbaarheid (ook na sluiten via het balkmenu)
             self.opt_bar.visibilityChanged.connect(lambda v, act=a[0x81ba]: act.setChecked(v))
             a[0x81ba].setChecked(True)
+        self.sync_view_checks()
 
     def _build_standard_toolbar(self):
         tb = QToolBar("Standaard")
@@ -527,6 +590,12 @@ class MainWindow(QMainWindow):
         except Exception as e:
             self.report_error(e)
 
+    def run_command(self, cid):
+        """Een menu-opdracht uitvoeren alsof hij gekozen werd (als hij bestaat en beschikbaar is)."""
+        a = self.actions_by_id.get(cid)
+        if a is not None and a.isEnabled():
+            a.trigger()
+
     def repeat_last(self):
         if self.last_command:
             self.last_command()
@@ -594,6 +663,8 @@ class MainWindow(QMainWindow):
             self.layers.set_doc(doc)
             self.history.set_doc(doc)
         self.update_actions()
+        if hasattr(self, "actions_by_id"):
+            self._sync_seledit_check()
         if sw is not None:
             self.update_status(sw.canvas)
 
@@ -827,32 +898,36 @@ class MainWindow(QMainWindow):
                 self.opts[k] = v
         self.select_tool(tool)  # optiebalk opnieuw opbouwen met de nieuwe waarden
 
+    def _materials_changed(self):
+        """Palet bijwerken; een tekst die nog bewerkt wordt, neemt kleur, verloop of patroon meteen over."""
+        self.materials.refresh()
+        if isinstance(self.tool, TextTool):
+            self.tool.refresh()
+
     def set_color(self, c, foreground=True):
         if foreground:
             self.fg = QColor(c)
         else:
             self.bg = QColor(c)
-        self.materials.refresh()
+        self._materials_changed()
 
     def set_none(self, fg, value):
         if fg:
             self.fg_none = value
         else:
             self.bg_none = value
-        self.materials.refresh()
-        if isinstance(self.tool, TextTool):
-            self.tool.refresh()
+        self._materials_changed()
 
     def swap_colors(self):
         self.fg_none, self.bg_none = self.bg_none, self.fg_none
         self.fg, self.bg = self.bg, self.fg
         self.fg_mat, self.bg_mat = self.bg_mat, self.fg_mat
-        self.materials.refresh()
+        self._materials_changed()
 
     def reset_colors(self):
         self.fg, self.bg = QColor(0, 0, 0), QColor(255, 255, 255)
         self.fg_mat = self.bg_mat = None
-        self.materials.refresh()
+        self._materials_changed()
 
     # ---------------------------------------------------------------- verloop en patroon
     def material(self, fg=True):
@@ -866,7 +941,7 @@ class MainWindow(QMainWindow):
             self.fg_mat = mat
         else:
             self.bg_mat = mat
-        self.materials.refresh()
+        self._materials_changed()
 
     def set_material_kind(self, fg, kind):
         """Stijlknopjes onder het materiaalvak: 0 kleur, 1 verloop, 2 patroon (laatst gebruikte)."""
@@ -986,14 +1061,337 @@ class MainWindow(QMainWindow):
     def file_save_as(self, copy=False):
         self.save_doc(self.doc(), ask=True, copy=copy)
 
+    # ---------------------------------------------------------------- Bestand: overige opdrachten
+    def file_revert(self):
+        """Naar vorige versie: de laatst opgeslagen versie opnieuw inlezen (ongedaan te maken)."""
+        d = self.doc()
+        if not d.path or not os.path.exists(d.path):
+            self.statusBar().showMessage(tr("Deze afbeelding is nog niet opgeslagen."), 4000)
+            return
+        if d.modified and QMessageBox.question(self, APP, tr("Alle wijzigingen sinds het laatste opslaan "
+                                                             "weggooien en de opgeslagen versie terughalen?")) \
+                != QMessageBox.StandardButton.Yes:
+            return
+        try:
+            nd = fileio.load(d.path)
+        except Exception as e:  # noqa: BLE001
+            self.report_error(e)
+            return
+        d.push_undo("Naar vorige versie")
+        size_changed = (nd.w, nd.h) != (d.w, d.h)
+        d.w, d.h, d.layers, d.active, d.channels = nd.w, nd.h, nd.layers, nd.active, nd.channels
+        d.px_per_pt = nd.px_per_pt
+        d.set_selection(None)
+        d.set_modified(False)
+        if size_changed:
+            d.sizeChanged.emit()
+        d.structureChanged.emit()
+        d.changed.emit(QRect())
+
+    def file_delete(self):
+        """Verwijderen: het bestand van de actieve afbeelding naar de prullenbak verplaatsen en sluiten."""
+        from PySide6.QtCore import QFile
+        d = self.doc()
+        if not d.path or not os.path.exists(d.path):
+            self.statusBar().showMessage(tr("Deze afbeelding is nog niet opgeslagen."), 4000)
+            return
+        if QMessageBox.question(self, APP, tr("Het bestand {} naar de prullenbak verplaatsen?").format(
+                os.path.basename(d.path))) != QMessageBox.StandardButton.Yes:
+            return
+        if not QFile.moveToTrash(d.path):
+            QMessageBox.warning(self, APP, tr("Het bestand kon niet naar de prullenbak worden verplaatst."))
+            return
+        d.set_modified(False)
+        self.close_active()
+
+    def _paint_page(self, printer, fit=True):
+        """De afbeelding op de pagina: passend (midden) of op ware grootte volgens de resolutie."""
+        from PySide6.QtGui import QPageLayout
+        d = self.doc()
+        img = d.flattened(QColor(255, 255, 255))
+        p = QPainter(printer)
+        page = printer.pageLayout().paintRectPixels(printer.resolution())
+        page = QRectF(0, 0, page.width(), page.height())
+        if fit:
+            s = min(page.width() / img.width(), page.height() / img.height())
+        else:
+            dpi = 72 * d.px_per_pt
+            s = printer.resolution() / max(dpi, 1)
+        w, h = img.width() * s, img.height() * s
+        p.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+        p.drawImage(QRectF((page.width() - w) / 2, (page.height() - h) / 2, w, h), img)
+        p.end()
+
+    def file_print(self):
+        from PySide6.QtPrintSupport import QPrintDialog, QPrinter
+        printer = QPrinter(QPrinter.PrinterMode.HighResolution)
+        dlg = QPrintDialog(printer, self)
+        if dlg.exec():
+            self._paint_page(printer)
+
+    def print_preview(self):
+        """Afdrukweergave: voorbeeld van de pagina, passend of op ware grootte, met afdrukken vanuit het voorbeeld."""
+        from PySide6.QtPrintSupport import QPrinter, QPrintPreviewDialog
+        v = dialogs.ask_form(self, tr("Afdrukweergave"), [
+            ("fit", tr("Afmeting:"), "choice", [tr("Passend op de pagina"), tr("Ware grootte (volgens de resolutie)")], 0)])
+        if v is None:
+            return
+        printer = QPrinter(QPrinter.PrinterMode.HighResolution)
+        dlg = QPrintPreviewDialog(printer, self)
+        dlg.paintRequested.connect(lambda pr: self._paint_page(pr, v["fit"] == 0))
+        dlg.exec()
+
+    def capture_setup(self):
+        """Schermopname instellen: wat er wordt vastgelegd en na hoeveel seconden."""
+        st = self.settings
+        v = dialogs.ask_form(self, tr("Schermopname"), [
+            ("kind", tr("Opname van:"), "choice", [tr("Volledig scherm"), tr("Gebied (zelf kiezen)"), tr("Actief venster")],
+             int(st.value("cap_kind", 0))),
+            ("delay", tr("Vertraging:"), "int", 0, 60, int(st.value("cap_delay", 2)), " s"),
+            ("hide", tr("PixelPickle tijdens de opname verbergen"), "bool", st.value("cap_hide", "true") == "true")])
+        if v is not None:
+            st.setValue("cap_kind", v["kind"])
+            st.setValue("cap_delay", v["delay"])
+            st.setValue("cap_hide", "true" if v["hide"] else "false")
+
+    def capture_start(self):
+        """Schermopname maken; het resultaat opent als nieuwe afbeelding. Gebruikt het schermafdrukprogramma van
+        het bureaublad (onder Wayland kan een programma zelf niet zomaar het scherm vastleggen)."""
+        import shutil
+        import subprocess
+        import tempfile
+        import time
+        st = self.settings
+        kind, delay = int(st.value("cap_kind", 0)), int(st.value("cap_delay", 2))
+        hide = st.value("cap_hide", "true") == "true"
+        out = os.path.join(tempfile.mkdtemp(prefix="pixelpickle-"), "opname.png")
+        if hide:
+            self.hide()
+            QApplication.processEvents()
+        img = QImage()
+        try:
+            if shutil.which("spectacle"):
+                mode = ["-f", "-r", "-a"][kind]
+                subprocess.run(["spectacle", "-b", "-n", mode, "-d", str(delay * 1000), "-o", out], timeout=120)
+                img = QImage(out)
+            elif shutil.which("grim") and kind == 0:
+                time.sleep(delay)
+                subprocess.run(["grim", out], timeout=60)
+                img = QImage(out)
+            else:
+                time.sleep(delay)
+                scr = QApplication.primaryScreen()
+                img = scr.grabWindow(0).toImage() if scr else QImage()
+        except Exception as e:  # noqa: BLE001
+            self.report_error(e)
+        finally:
+            if hide:
+                self.show()
+                self.raise_()
+        if img.isNull():
+            QMessageBox.warning(self, APP, tr("De schermopname is niet gelukt."))
+            return
+        d = Document(img.width(), img.height(), None)
+        d.layers[0].image = img.convertToFormat(ops.FMT)
+        d.layers[0].name = tr("Achtergrond")
+        d.untitled = tr("Schermopname")
+        self.add_document(d)
+
+    def import_brush(self):
+        """Aangepast penseel importeren: een afbeelding wordt een eigen penseel (donker = verf)."""
+        from . import userdata
+        paths, _ = QFileDialog.getOpenFileNames(self, tr("Aangepast penseel importeren"), "",
+                                                tr("Afbeeldingen") + " (*.png *.jpg *.jpeg *.bmp *.gif *.tif *.tiff *.webp)")
+        done = []
+        for path in paths:
+            img = QImage(path)
+            if not img.isNull():
+                userdata.save_brush(os.path.splitext(os.path.basename(path))[0], userdata.brush_weight_from_image(img))
+                done.append(os.path.basename(path))
+        if done:
+            self.statusBar().showMessage(tr("Penselen geïmporteerd: {}").format(", ".join(done)), 6000)
+            if self.tool is not None:
+                self._build_options(self.tool)
+
+    def export_brush(self):
+        """Aangepast penseel exporteren: de selectie (of de hele afbeelding) wordt een eigen penseel."""
+        from . import userdata
+        d = self.doc()
+        r = d.selection_bbox() if d.sel is not None else d.rect()
+        img = d.composite().copy(r)
+        if d.sel is not None:  # buiten de selectie niets
+            m = d.sel.copy(r)
+            q = QPainter(img)
+            q.setCompositionMode(QPainter.CompositionMode.CompositionMode_DestinationIn)
+            q.drawImage(0, 0, m)
+            q.end()
+        if max(img.width(), img.height()) > 999:
+            img = img.scaled(999, 999, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        name, ok = QInputDialog.getText(self, tr("Aangepast penseel exporteren"), tr("Naam van het penseel:"),
+                                        text=d.title().rstrip(" *").rsplit(".", 1)[0])
+        if ok and name.strip():
+            userdata.save_brush(name, userdata.brush_weight_from_image(img))
+            self.statusBar().showMessage(tr("Penseel bewaard; kies het bij Vorm in de optiebalk van het penseel."), 6000)
+            if self.tool is not None:
+                self._build_options(self.tool)
+
+    def export_png(self):
+        d = self.doc()
+        dlg = dialogs.PngOptimizerDialog(self, ops.qimage_to_rgba(d.flattened()))
+        if not dlg.exec():
+            return
+        path = self._export_path(d, ".png", tr("PNG-optimalisatie"))
+        if path:
+            dlg.save(path)
+
+    def export_image_map(self):
+        """Afbeelding met hyperlinks: gebieden met links op de afbeelding, bewaard als HTML-pagina met afbeelding."""
+        d = self.doc()
+        img = d.flattened()
+        dlg = dialogs.ImageMapDialog(self, img)
+        if not dlg.exec():
+            return
+        path = self._export_path(d, ".html", tr("Afbeelding met hyperlinks"))
+        if not path:
+            return
+        base = os.path.splitext(path)[0]
+        img_path = base + ".png"
+        img.save(img_path)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(dlg.html(os.path.basename(img_path)))
+        self.statusBar().showMessage(tr("Bewaard: {} en {}").format(os.path.basename(path), os.path.basename(img_path)), 6000)
+
+    def export_frame(self):
+        """Fotolijst exporteren: de afbeelding (met een doorzichtig midden) wordt een eigen lijst voor Fotolijst."""
+        from . import userdata
+        d = self.doc()
+        img = d.composite()
+        a = ops.qimage_to_rgba(img)[..., 3]
+        if a[d.h // 2, d.w // 2] > 0:
+            QMessageBox.information(self, APP, tr("Een fotolijst heeft een doorzichtig midden, waar de foto komt. "
+                                                  "Maak het midden eerst doorzichtig (bijvoorbeeld met een selectie en Wissen)."))
+            return
+        name, ok = QInputDialog.getText(self, tr("Fotolijst exporteren"), tr("Naam van de lijst:"),
+                                        text=d.title().rstrip(" *").rsplit(".", 1)[0])
+        if ok and name.strip():
+            userdata.save_frame(name, img)
+            self.statusBar().showMessage(tr("Lijst bewaard; kies hem bij Afbeelding > Fotolijst."), 6000)
+
+    def export_shape(self):
+        """Vorm exporteren: de gekozen vectorobjecten (of alle op de vectorlaag) worden een eigen vorm voor
+        het gereedschap Basisvormen."""
+        from . import userdata
+        d = self.doc()
+        lay = d.layer()
+        if lay.vector is None or not lay.vector:
+            self.statusBar().showMessage(tr("Kies eerst een vectorlaag met objecten."), 4000)
+            return
+        objs = [lay.vector[i] for i in d.vsel] if d.vsel else list(lay.vector)
+        name, ok = QInputDialog.getText(self, tr("Vorm exporteren"), tr("Naam van de vorm:"))
+        if ok and name.strip():
+            userdata.save_shape(name, objs)
+            self.statusBar().showMessage(tr("Vorm bewaard; kies hem bij het gereedschap Basisvormen."), 6000)
+
+    def batch_process(self):
+        """Batchverwerking: bestanden omzetten naar een andere indeling (eventueel verkleind)."""
+        files = [s.canvas.doc.path for s in self.mdi.subWindowList() if s.canvas.doc.path]
+        dlg = dialogs.BatchDialog(self, files)
+        if not dlg.exec():
+            return
+        v = dlg.values()
+        done, failed = 0, []
+        from PySide6.QtWidgets import QProgressDialog
+        prog = QProgressDialog(tr("Bezig met verwerken..."), tr("Annuleren"), 0, len(v["files"]), self)
+        prog.setWindowModality(Qt.WindowModality.WindowModal)
+        for k, path in enumerate(v["files"]):
+            prog.setValue(k)
+            QApplication.processEvents()
+            if prog.wasCanceled():
+                break
+            try:
+                doc = fileio.load(path)
+                if v["maxsize"] and max(doc.w, doc.h) > v["maxsize"]:
+                    s_ = v["maxsize"] / max(doc.w, doc.h)
+                    doc.resize_image(max(1, round(doc.w * s_)), max(1, round(doc.h * s_)))
+                folder = v["outdir"] or os.path.dirname(path)
+                target = os.path.join(folder, os.path.splitext(os.path.basename(path))[0] + v["ext"])
+                if os.path.exists(target) and not v["overwrite"]:
+                    stem = os.path.splitext(target)[0]
+                    n = 2
+                    while os.path.exists(f"{stem} ({n}){v['ext']}"):
+                        n += 1
+                    target = f"{stem} ({n}){v['ext']}"
+                fileio.save(doc, target, v["quality"])
+                done += 1
+            except Exception as e:  # noqa: BLE001 - een kapot bestand overslaan
+                failed.append(f"{os.path.basename(path)}: {e}")
+        prog.setValue(len(v["files"]))
+        msg = tr("{} bestanden verwerkt.").format(done)
+        if failed:
+            msg += "\n\n" + tr("Niet gelukt:") + "\n" + "\n".join(failed[:10])
+        QMessageBox.information(self, APP, msg)
+
+    def batch_rename(self):
+        dlg = dialogs.BatchRenameDialog(self)
+        if not dlg.exec():
+            return
+        pairs = dlg.new_names()
+        targets = [n for _, n in pairs]
+        if len(set(targets)) != len(targets) or any(os.path.exists(n) and n not in [o for o, _ in pairs] for n in targets):
+            QMessageBox.warning(self, APP, tr("Sommige nieuwe namen bestaan al of komen dubbel voor; er is niets hernoemd."))
+            return
+        tmp = []
+        for old, _new in pairs:  # eerst tijdelijke namen, zodat namen elkaar niet in de weg zitten
+            t = old + ".pp-rename"
+            os.rename(old, t)
+            tmp.append(t)
+        for t, (_old, new) in zip(tmp, pairs):
+            os.rename(t, new)
+        self.statusBar().showMessage(tr("{} bestanden hernoemd.").format(len(pairs)), 5000)
+
+    def file_format_prefs(self):
+        st = self.settings
+        v = dialogs.ask_form(self, tr("Voorkeuren bestandsindelingen"), [
+            ("q", tr("JPEG-kwaliteit:"), "int", 1, 100, int(st.value("quality", 90))),
+            ("png", tr("PNG-compressie (0 tot 9):"), "int", 0, 9, int(st.value("png_compress", 6))),
+            ("layered", tr("Standaardindeling met lagen:"), "choice", ["OpenRaster (.ora)", ".pspimage"],
+             1 if st.value("layered_ext", ".ora") == ".pspimage" else 0)])
+        if v is not None:
+            st.setValue("quality", v["q"])
+            st.setValue("png_compress", v["png"])
+            st.setValue("layered_ext", ".pspimage" if v["layered"] == 1 else ".ora")
+
+    def file_locations(self):
+        dlg = dialogs.FileLocationsDialog(self)
+        if dlg.exec():
+            dlg.apply()
+            from . import material
+            material._psp_pat = None  # patronen opnieuw zoeken
+            material._cache.clear() if hasattr(material, "_cache") else None
+            if self.tool is not None:
+                self._build_options(self.tool)
+
+    def reset_preferences(self):
+        if QMessageBox.question(self, APP, tr("Alle voorkeuren terugzetten naar de standaardwaarden? Eigen penselen, "
+                                              "vormen, lijsten en verlopen in de mappen blijven bewaard. PixelPickle "
+                                              "gebruikt de standaardwaarden na een herstart.")) != QMessageBox.StandardButton.Yes:
+            return
+        self.settings.clear()
+        self.settings.sync()
+        self._prefs_reset = True  # bij afsluiten niets meer terugschrijven
+        QMessageBox.information(self, APP, tr("De voorkeuren zijn teruggezet. Start PixelPickle opnieuw."))
+
     def save_doc(self, doc, ask=False, copy=False):
+        if doc.seledit_layer() is not None:  # eerst Selectie bewerken afronden (die laag hoort niet in het bestand)
+            doc.toggle_selection_edit()
+            self._sync_seledit_check()
         path = doc.path
         ext = os.path.splitext(path)[1].lower() if path else ""
         writable = {".pspimage", ".psp", ".ora", ".png", ".jpg", ".jpeg", ".jpe", ".tif", ".tiff", ".bmp", ".webp", ".gif", ".tga"}
         if ask or not path or ext not in writable:
             base = os.path.splitext(path)[0] if path else os.path.join(
                 self.settings.value("lastdir", os.path.expanduser("~/Afbeeldingen")), doc.untitled)
-            default_ext = ".ora" if len(doc.layers) > 1 else ".png"
+            default_ext = self.settings.value("layered_ext", ".ora") if len(doc.layers) > 1 else ".png"
             path, flt = QFileDialog.getSaveFileName(self, "Opslaan als", base + default_ext, fileio.SAVE_FILTER,
                                                     "OpenRaster met lagen (*.ora)" if default_ext == ".ora" else "PNG (*.png)")
             if not path:
@@ -1142,6 +1540,45 @@ class MainWindow(QMainWindow):
         d.set_selection(ops.mask_to_qimage(a))
         self.select_tool(self.tools[0xd021])
 
+    def paste_transparent_selection(self):
+        """Plakken als transparante selectie: zoals Plakken als nieuwe selectie, maar de pixels in de huidige
+        achtergrondkleur worden doorzichtig (handig voor uitgeknipte voorwerpen op een effen achtergrond)."""
+        img, d = self._clip_image(), self.doc()
+        if img is None or d is None:
+            return
+        a = ops.qimage_to_rgba(img.convertToFormat(ops.FMT))
+        bg = np.array([self.bg.red(), self.bg.green(), self.bg.blue()], np.int16)
+        same = np.abs(a[..., :3].astype(np.int16) - bg).max(axis=2) <= 2
+        a[same, 3] = 0
+        layer_img, r = self._centered_layer(d, ops.rgba_to_qimage(a))
+        d.add_layer(Layer(d.next_raster_name(), layer_img), label="Plakken als transparante selectie")
+        d.set_selection(ops.mask_to_qimage(ops.qimage_to_rgba(layer_img)[..., 3]))
+        self.select_tool(self.tools[0xd021])
+
+    def paste_vector_selection(self):
+        """Plakken als nieuwe vectorselectie: gekopieerde vectorobjecten op de actieve vectorlaag (of een nieuwe)
+        plakken; ze zijn meteen gekozen, zodat je ze met Kiezen kunt verplaatsen."""
+        from . import vectorlayer as V
+        from .tools import PickTool
+        d = self.doc()
+        if d is None or not PickTool.clipboard:
+            self.statusBar().showMessage(tr("Er zijn geen gekopieerde vectorobjecten. Kopieer ze eerst met Selecteren."), 5000)
+            return
+        if d.layer().vector is None:
+            d.new_vector_layer()
+            d.undo_stack[-1] = ("Plakken als nieuwe vectorselectie", d.undo_stack[-1][1])
+        else:
+            d.push_undo("Plakken als nieuwe vectorselectie")
+        lay = d.layer()
+        start = len(lay.vector)
+        lay.vector.extend(V.copy_vector(PickTool.clipboard))
+        d.render_vector(lay)
+        d.vsel = list(range(start, len(lay.vector)))
+        self.select_tool(self.tools[0xd011])
+        self.tools[0xd011]._stale = True
+        d.changed.emit(QRect())
+        d.structureChanged.emit()
+
     def paste_into_selection(self):
         img, d = self._clip_image(), self.doc()
         if img is None or d is None or d.sel is None:
@@ -1279,6 +1716,58 @@ class MainWindow(QMainWindow):
         if path:
             d.layer().image.save(path)
 
+    # ------------------------------------------------------------ alfakanalen
+    def _channel_name(self, d, base):
+        names = set(d.channel_names())
+        n = 1
+        while f"{base} {n}" in names:
+            n += 1
+        return f"{base} {n}"
+
+    def channel_save(self, selection):
+        """Selectie of masker opslaan in een alfakanaal van de afbeelding."""
+        d = self.doc()
+        if selection and d.sel is None:
+            self.statusBar().showMessage(tr("Er is geen selectie om op te slaan."), 4000)
+            return
+        if not selection and d.layer().kind != "mask":
+            self.statusBar().showMessage(tr("Kies eerst een maskerlaag."), 4000)
+            return
+        title = "Selectie opslaan in alfakanaal" if selection else "Masker opslaan in alfakanaal"
+        dlg = dialogs.AlphaChannelDialog(self, title, d, "save",
+                                         self._channel_name(d, tr("Selectie") if selection else tr("Masker")))
+        if not dlg.exec():
+            return
+        arr = ops.qimage_to_mask(d.sel) if selection else d.mask_values()
+        d.store_channel(dlg.values(), arr, title)
+
+    def channel_load(self, selection):
+        d = self.doc()
+        if not d.channels:
+            self.statusBar().showMessage(tr("Deze afbeelding heeft nog geen alfakanalen."), 4000)
+            return
+        if not selection and d.layer().kind == "mask":
+            self.statusBar().showMessage(tr("Kies een gewone laag of groep om het masker op te zetten."), 4000)
+            return
+        title = "Selectie laden uit alfakanaal" if selection else "Masker laden uit alfakanaal"
+        dlg = dialogs.AlphaChannelDialog(self, title, d, "load", selection_ops=selection and d.sel is not None)
+        if not dlg.exec():
+            return
+        i, op, inv = dlg.values()
+        if selection:
+            d.selection_from_channel(i, op, inv)
+        else:
+            d.mask_from_channel(i, inv)
+
+    def channel_delete(self):
+        d = self.doc()
+        if not d.channels:
+            self.statusBar().showMessage(tr("Deze afbeelding heeft nog geen alfakanalen."), 4000)
+            return
+        dlg = dialogs.AlphaChannelDialog(self, "Alfakanaal verwijderen", d, "delete")
+        if dlg.exec():
+            d.delete_channels(dlg.values())
+
     def new_raster_layer(self):
         d = self.doc()
         layer = Layer(raster_name(d.raster_counter + 1), new_image(d.w, d.h))
@@ -1325,10 +1814,10 @@ class MainWindow(QMainWindow):
             self.close()
 
     # ================================================================ snelmenu's (rechtsklik)
-    CANVAS_MENU = [0xe12b, 0xe12c, None, 0xe123, 0xe122, 0x8105, 0x810d, 0x801e, 0x801f, 0xe120, None,
-                   0x80dc, 0x80e2, 0x80dd, 0x8109, 0x80e4, 0x80e5, None,
-                   "Selecties", "Lagen", "Afbeelding", "Aanpassen", "Effecten", None,
-                   0x8132, 0x8136, 0x8007, 0x81d0]
+    CANVAS_MENU = [0xe12b, 0xe12c, None, 0xe123, 0xe122, 0x810d, 0x801e, 0x801f, None,
+                   0x80dd, 0x8109, None, 0x8007, 0x81d0]
+    # rechtsklik op het lege werkvlak (naast of zonder afbeelding)
+    WORKSPACE_MENU = [0xe100, 0xe101, None, 0x80d3, None, 0x80e6, 0x8020, None, 0x8216, None, 0x8012]
 
     def _fill_menu(self, m, items):
         for it in items:
@@ -1345,6 +1834,10 @@ class MainWindow(QMainWindow):
         """Snelmenu op de afbeelding, met dezelfde opdrachten als de menubalk."""
         self.mdi.setActiveSubWindow(self._subwindow_of(cv))
         m = QMenu(self)
+        build = getattr(self.tool, "build_context_menu", None)
+        if build is not None and build(cv, m):  # gereedschap met een eigen snelmenu (zoals de Pen)
+            m.exec(cv.mapToGlobal(pos.toPoint()))
+            return
         extra = list(self.tool.context_actions(cv))
         d = cv.doc
         if d.layer().text is not None:
@@ -1358,6 +1851,199 @@ class MainWindow(QMainWindow):
             m.addSeparator()
         self._fill_menu(m, self.CANVAS_MENU)
         m.exec(cv.mapToGlobal(pos.toPoint()))
+
+    # Objecten > Bewerken, Tekenpunttype en Geselecteerde tekenpunten transformeren: werken op de lijnen
+    # van de Pen (ook op een opgepakt vectorobject); hetzelfde als het snelmenu van de Pen
+    NODE_COMMANDS = {0x1770: "cut", 0x1771: "copy", 0x1772: "paste", 0x1773: "delete", 0x1774: "select_all",
+                     0x1775: "select_none", 0x1776: "invert", 0x1777: "join", 0x1778: "merge", 0x1779: "break",
+                     0x177a: "close", 0x177b: "reverse_contour", 0x177c: "reverse_path", 0x177d: "duplicate_offset",
+                     0x177e: "duplicate", 0x177f: "asym", 0x1780: "sym", 0x1781: "cusp", 0x1782: "smooth",
+                     0x1783: "to_line", 0x1784: "line_before", 0x1785: "line_after", 0x1786: "curve_before",
+                     0x1787: "curve_after", 0x1788: "flip", 0x1789: "mirror", 0x178a: "rotate", 0x178b: "skew_x",
+                     0x178c: "skew_y", 0x178d: "contract", 0x178e: "expand"}
+
+    # menu Objecten: bewerkingen op hele vectorobjecten (gekozen met Kiezen op een vectorlaag)
+    OBJECT_COMMANDS = {
+        0x8163: ("align", "top"), 0x815e: ("align", "bottom"), 0x8160: ("align", "left"), 0x815f: ("align", "right"),
+        0x8161: ("align", "vcenter"), 0x8162: ("align", "hcenter"), 0x8172: ("align", "canvas"),
+        0x816e: ("align", "canvas_h"), 0x8170: ("align", "canvas_v"),
+        0x816c: ("distribute", "v_top"), 0x8164: ("distribute", "v_center"), 0x8166: ("distribute", "v_bottom"),
+        0x8165: ("distribute", "h_left"), 0x8168: ("distribute", "h_center"), 0x8167: ("distribute", "h_right"),
+        0x816f: ("distribute", "h_space"), 0x8171: ("distribute", "v_space"),
+        0x8169: ("same_size", "h"), 0x816a: ("same_size", "v"), 0x816b: ("same_size", "both"),
+        0x8139: ("arrange", "top"), 0x813a: ("arrange", "up"), 0x813b: ("arrange", "down"), 0x813c: ("arrange", "bottom"),
+        0x8154: ("group", None), 0x8156: ("ungroup", None), 0x81e6: ("properties", None),
+        0x813d: ("text_on_path", None), 0x1793: ("detach", None), 0x814c: ("curves", "single"),
+        0x814d: ("curves", "chars"), 0x82a8: ("to_path", None)}
+
+    def object_command(self, kind, arg=None):
+        from . import vectorops as VO, vectorlayer as V
+        d = self.doc()
+        if d is None:
+            return
+        layer = d.layer()
+        if kind in ("curves", "to_path"):
+            return self.text_to_curves("single" if kind == "to_path" else arg)
+        if kind == "detach":
+            if layer.text is None or not layer.text.get("on_path"):
+                self.statusBar().showMessage(tr("Kies eerst een tekstlaag die op een pad staat."), 4000)
+                return
+            d.push_undo("Object loskoppelen van pad")
+            layer.text = dict(layer.text)
+            layer.text.pop("on_path", None)
+            layer.text.pop("path_offset", None)
+            d.render_text(layer)
+            d.changed.emit(QRect())
+            d.structureChanged.emit()
+            return
+        sel = d.vsel
+        if layer.vector is None or not sel:
+            self.statusBar().showMessage(tr("Kies eerst objecten op een vectorlaag met het gereedschap Selecteren."), 5000)
+            return
+        if kind == "text_on_path":
+            return self.fit_text_to_path(layer.vector[sel[0]])
+        if kind == "properties":
+            dlg = dialogs.VectorPropertiesDialog(self, [layer.vector[i] for i in sel])
+            if not dlg.exec():
+                return
+            d.push_undo("Eigenschappen")
+            dlg.apply()
+        else:
+            label = {"align": "Uitlijnen", "distribute": "Verdelen", "same_size": "Even groot maken",
+                     "arrange": "Schikken", "group": "Groeperen", "ungroup": "Groep opheffen"}[kind]
+            d.push_undo(label)
+            objs = layer.vector
+            if kind == "align":
+                VO.align(objs, sel, arg, QRectF(d.rect()))
+            elif kind == "distribute":
+                if not VO.distribute(objs, sel, arg):
+                    d.drop_last_undo()
+                    self.statusBar().showMessage(tr("Kies minstens drie objecten om te verdelen."), 4000)
+                    return
+            elif kind == "same_size":
+                if not VO.same_size(objs, sel, arg):
+                    d.drop_last_undo()
+                    self.statusBar().showMessage(tr("Kies minstens twee objecten; het eerst gekozen object is de maat."), 4000)
+                    return
+            elif kind == "arrange":
+                layer.vector, new = VO.arrange(objs, sel, arg)
+                d.vsel = new
+            elif kind == "group":
+                if not VO.group(objs, sel):
+                    d.drop_last_undo()
+                    self.statusBar().showMessage(tr("Kies minstens twee objecten om te groeperen."), 4000)
+                    return
+            elif kind == "ungroup":
+                if not VO.ungroup(objs, sel):
+                    d.drop_last_undo()
+                    return
+        d.render_vector(layer)
+        d.changed.emit(QRect())
+        d.structureChanged.emit()
+        self.tools[0xd011]._stale = True
+        cv = self.canvas()
+        if cv:
+            cv.update()
+
+    def text_to_curves(self, how):
+        """Tekst omzetten in curven: de tekstlaag wordt een vectorlaag met bewerkbare vormen
+        (als één vorm, of één vorm per letter)."""
+        from . import textlayer, vectorlayer as V
+        d = self.doc()
+        layer = d.layer() if d else None
+        if layer is None or layer.text is None:
+            self.statusBar().showMessage(tr("Kies eerst een tekstlaag."), 4000)
+            return
+        t = layer.text
+        parts = textlayer.glyph_paths(t, d.px_per_pt, per_char=(how == "chars"))
+        objs = []
+        style = dict(width=float(t.get("stroke_width", 1.0) if t.get("stroke") else 0.0), aa=t.get("antialias", True))
+        if how == "chars":
+            for path, stroke, fill, sw in parts:
+                ob = V.object_from_path(path, list(stroke) + [255] if stroke else None,
+                                        list(fill) + [255] if fill else None, sw if stroke else 0.0, aa=style["aa"])
+                if ob:
+                    objs.append(ob)
+        else:
+            from PySide6.QtGui import QPainterPath
+            whole = QPainterPath()
+            for path, *_ in parts:
+                whole.addPath(path)
+            first = parts[0] if parts else (None, t.get("stroke"), t.get("fill"), 1.0)
+            ob = V.object_from_path(whole, list(first[1]) + [255] if first[1] else None,
+                                    list(first[2]) + [255] if first[2] else None, first[3] if first[1] else 0.0,
+                                    aa=style["aa"])
+            if ob:
+                objs.append(ob)
+        if not objs:
+            return
+        d.push_undo("Tekst omzetten in curven")
+        layer.text = None
+        layer.vector = objs
+        d.render_vector(layer)
+        d.changed.emit(QRect())
+        d.structureChanged.emit()
+
+    def fit_text_to_path(self, obj):
+        """Tekst inpassen in pad: een tekstlaag volgt het gekozen vectorobject."""
+        d = self.doc()
+        texts = [l for l in d.layers if l.text is not None]
+        if not texts:
+            self.statusBar().showMessage(tr("Maak eerst een tekst met het tekstgereedschap."), 5000)
+            return
+        target = texts[-1]
+        if len(texts) > 1:
+            from PySide6.QtWidgets import QInputDialog
+            names = [l.name for l in reversed(texts)]
+            name, ok = QInputDialog.getItem(self, tr("Tekst inpassen in pad"), tr("Welke tekst?"), names, 0, False)
+            if not ok:
+                return
+            target = list(reversed(texts))[names.index(name)]
+        d.push_undo("Tekst inpassen in pad")
+        target.text = dict(target.text)
+        target.text["on_path"] = {"nodes": [list(map(lambda q: list(q) if q is not None else None, n)) for n in obj["nodes"]],
+                                  "closed": obj["closed"]}
+        target.text["path_offset"] = 0.0
+        d.render_text(target)
+        d.changed.emit(QRect())
+        d.structureChanged.emit()
+
+    def node_command(self, name):
+        pen = self.tools[0xd110]
+        if self.tool is not pen or (not pen.paths and not (name == "paste" and pen.clipboard)):
+            self.statusBar().showMessage(tr("Kies de Pen en teken of pak een lijn of vorm op (modus Bewerken)."), 5000)
+            return
+        pen.pen_command(name, self.canvas())
+
+    def update_node_actions(self):
+        """Beschikbaarheid van de knooppuntopdrachten volgens de Pen (voor het menu en het snelmenu)."""
+        pen = self.tools[0xd110]
+        active = self.tool is pen and self.doc() is not None
+        state = pen.command_state() if active else {}
+        for cid, name in self.NODE_COMMANDS.items():
+            a = self.actions_by_id.get(cid)
+            if a is not None:
+                a.setEnabled(bool(state.get(name)))
+
+    def show_workspace_menu(self, pos):
+        """Rechtsklik op het lege werkvlak: bestanden, klembord, vergrootglas en voorkeuren (zoals PSP)."""
+        m = QMenu(self)
+        self._fill_menu(m, self.WORKSPACE_MENU)
+        m.exec(self.mdi.viewport().mapToGlobal(pos))
+
+    def toggle_magnifier(self):
+        if getattr(self, "magnifier", None) is None:
+            self.magnifier = dialogs.Magnifier(self)
+            a = self.actions_by_id.get(0x8216)
+            if a is not None:
+                self.magnifier.closed.connect(lambda: a.setChecked(False))
+        if self.magnifier.isVisible():
+            self.magnifier.hide()
+        else:
+            self.magnifier.show()
+        a = self.actions_by_id.get(0x8216)
+        if a is not None:
+            a.setChecked(self.magnifier.isVisible())
 
     def _subwindow_of(self, cv):
         w = cv.parentWidget()
@@ -1473,6 +2159,384 @@ class MainWindow(QMainWindow):
             d.modify_selection(kind, n)
             QApplication.restoreOverrideCursor()
 
+    # ---------------------------------------------------------------- menu Afbeelding
+    METHOD_NAMES = ["Dichtstbijzijnde kleur", "Foutdiffusie", "Geordende dithering"]
+
+    def _raster_layers(self, d):
+        return [l for l in d.layers if l.kind == "raster" and l.adjust is None and l.text is None and l.vector is None
+                and l.role is None]
+
+    def reduce_colors(self, n):
+        """Kleurdiepte verminderen naar een palet (2, 16, 256 of zelf gekozen aantal kleuren)."""
+        from . import imgops
+        d = self.doc()
+        title = tr("Kleurdiepte verminderen")
+        if n == 2:
+            v = dialogs.ask_form(self, title, [("m", tr("Methode:"), "choice", [tr(x) for x in self.METHOD_NAMES], 1)])
+        else:
+            fields = [("pal", tr("Palet:"), "choice", [tr("Optimaal"), tr("Vast (standaard)")], 0),
+                      ("m", tr("Methode:"), "choice", [tr(x) for x in self.METHOD_NAMES], 1)]
+            if n is None:
+                fields.insert(0, ("n", tr("Aantal kleuren:"), "int", 2, 256, 64))
+            v = dialogs.ask_form(self, title, fields)
+        if v is None:
+            return
+        layers = self._raster_layers(d)
+        method = imgops.METHODS[v["m"]]
+
+        def work():
+            arrs = [ops.qimage_to_rgba(l.image) for l in layers]
+            if n == 2:
+                return [imgops.two_colors(a, method) for a in arrs]
+            count = v.get("n", n)
+            pal = imgops.make_palette(arrs, count, "optimal" if v["pal"] == 0 else "fixed")
+            return [imgops.quantize(a, pal, method) for a in arrs]
+        out = self._busy(work)
+        d.push_undo("Kleurdiepte verminderen")
+        for l, a in zip(layers, out):
+            l.image = ops.rgba_to_qimage(a)
+        d.changed.emit(QRect())
+        d.structureChanged.emit()
+
+    def reduce_bits(self, bits):
+        from . import imgops
+        d = self.doc()
+        v = dialogs.ask_form(self, tr("Kleurdiepte verminderen"),
+                             [("m", tr("Methode:"), "choice", [tr("Dichtstbijzijnde kleur"), tr("Geordende dithering")], 1)])
+        if v is None:
+            return
+        layers = self._raster_layers(d)
+        d.push_undo("Kleurdiepte verminderen")
+        for l in layers:
+            l.image = ops.rgba_to_qimage(imgops.reduce_bits(ops.qimage_to_rgba(l.image), bits, v["m"] == 1))
+        d.changed.emit(QRect())
+        d.structureChanged.emit()
+
+    def _new_doc_from(self, rgba, name):
+        nd = Document(rgba.shape[1], rgba.shape[0], None)
+        nd.layers[0].image = ops.rgba_to_qimage(rgba)
+        nd.layers[0].name = tr("Achtergrond")
+        nd.untitled = name
+        self.add_document(nd)
+        return nd
+
+    def split_channels(self, model):
+        """Kanalen splitsen: elk kanaal wordt een eigen grijswaardenafbeelding."""
+        from . import imgops
+        d = self.doc()
+        a = ops.qimage_to_rgba(d.composite())
+        base = d.title().rstrip(" *")
+        for name, g in imgops.split(a, model):
+            self._new_doc_from(imgops.to_gray_rgba(g), f"{tr(name)} - {base}")
+
+    def _doc_choices(self):
+        docs = [s.canvas.doc for s in self.mdi.subWindowList()]
+        return docs, [x.title().rstrip(" *") for x in docs]
+
+    def combine_channels(self, model):
+        """Kanalen combineren: kies voor elk kanaal een open (grijswaarden)afbeelding."""
+        from . import imgops
+        docs, names = self._doc_choices()
+        labels = {"rgb": ["Rood", "Groen", "Blauw"], "hsl": ["Tint", "Verzadiging", "Lichtheid"],
+                  "cmyk": ["Cyaan", "Magenta", "Geel", "Zwart"]}[model]
+
+        def guess(lbl, k):  # een afbeelding met de kanaalnaam in de titel voorstellen
+            for i, n in enumerate(names):
+                if n.startswith(tr(lbl)):
+                    return i
+            return min(k, len(names) - 1)
+        v = dialogs.ask_form(self, tr("Kanalen combineren"),
+                             [(str(k), tr(lbl) + ":", "choice", names, guess(lbl, k)) for k, lbl in enumerate(labels)])
+        if v is None:
+            return
+        chans = [imgops.gray_of(ops.qimage_to_rgba(docs[v[str(k)]].composite())) for k in range(len(labels))]
+        if len({c.shape for c in chans}) != 1:
+            QMessageBox.warning(self, APP, tr("De gekozen afbeeldingen moeten even groot zijn."))
+            return
+        self._new_doc_from(imgops.combine(chans, model), tr("Gecombineerd"))
+
+    def image_arithmetic(self):
+        """Berekeningen: twee open afbeeldingen met elkaar verrekenen; het resultaat wordt een nieuwe afbeelding."""
+        from . import imgops
+        docs, names = self._doc_choices()
+        cur = docs.index(self.doc()) if self.doc() in docs else 0
+        funcs = ["Optellen", "Aftrekken", "Vermenigvuldigen", "Verschil", "Lichter", "Donkerder", "Gemiddelde",
+                 "EN", "OF", "XOF"]
+        v = dialogs.ask_form(self, tr("Berekeningen"), [
+            ("a", tr("Afbeelding 1:"), "choice", names, cur),
+            ("b", tr("Afbeelding 2:"), "choice", names, (cur + 1) % len(names)),
+            ("f", tr("Functie:"), "choice", [tr(x) for x in funcs], 0),
+            ("c", tr("Kanaal:"), "choice", [tr("Alle kanalen"), tr("Rood"), tr("Groen"), tr("Blauw")], 0),
+            ("div", tr("Deler:"), "int", 1, 255, 1), ("bias", tr("Verschuiving:"), "int", -255, 255, 0),
+            ("clip", tr("Afkappen"), "bool", True)])
+        if v is None:
+            return
+        a = ops.qimage_to_rgba(docs[v["a"]].composite())
+        b = ops.qimage_to_rgba(docs[v["b"]].composite())
+        if b.shape != a.shape:  # tweede afbeelding linksboven passend maken
+            pad = np.zeros_like(a)
+            hh, ww = min(a.shape[0], b.shape[0]), min(a.shape[1], b.shape[1])
+            pad[:hh, :ww] = b[:hh, :ww]
+            b = pad
+        out = imgops.arithmetic(a, b, imgops.FUNCTIONS[v["f"]], None if v["c"] == 0 else v["c"] - 1,
+                                v["div"], v["bias"], v["clip"])
+        self._new_doc_from(out, tr("Resultaat"))
+
+    def picture_frame(self):
+        """Fotolijst: een lijst als nieuwe laag, binnen de afbeelding of eromheen (het doek wordt groter)."""
+        from . import imgops
+        d = self.doc()
+        from . import userdata
+        styles = ["Eenvoudig", "Hout", "Goud", "Zilver", "Passe-partout", "Polaroid", "Schaduw"]
+        own = userdata.frame_names()  # eigen lijsten (Bestand > Exporteren > Fotolijst)
+        v = dialogs.ask_form(self, tr("Fotolijst"), [
+            ("s", tr("Lijst:"), "choice", [tr(x) for x in styles] + own, 2),
+            ("t", tr("Breedte:"), "int", 1, 1000, max(4, min(d.w, d.h) // 20)),
+            ("c", tr("Kleur:"), "color", QColor(70, 45, 25)),
+            ("out", tr("Plaats:"), "choice", [tr("Lijst binnen de afbeelding"), tr("Lijst buiten de afbeelding")], 0)])
+        if v is None:
+            return
+        if v["s"] >= len(styles):  # eigen lijst: over de hele afbeelding geschaald
+            fimg = userdata.load_frame(own[v["s"] - len(styles)])
+            if fimg is None:
+                return
+            if v["out"] == 1:
+                d.canvas_size(d.w + 2 * v["t"], d.h + 2 * v["t"], v["t"], v["t"], QColor(0, 0, 0, 0))
+            first = len(d.undo_stack)
+            img = new_image(d.w, d.h)
+            q = QPainter(img)
+            q.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+            q.drawImage(QRectF(0, 0, d.w, d.h), fimg)
+            q.end()
+            d.add_layer(Layer(tr("Fotolijst"), img), len(d.layers), label="Fotolijst")
+            if v["out"] == 1:
+                snap = d.undo_stack[first - 1][1]
+                del d.undo_stack[first - 1:]
+                d.undo_stack.append(("Fotolijst", snap))
+                d.historyChanged.emit()
+            return
+        style, t = imgops.FRAMES[v["s"]], v["t"]
+        outside = v["out"] == 1 or style == "shadow"
+        if outside:
+            bottom = t * 3 if style == "polaroid" else t
+            d.canvas_size(d.w + 2 * t, d.h + t + bottom, t, t, QColor(0, 0, 0, 0))
+            first = len(d.undo_stack)
+        img = imgops.frame_image(d.w, d.h, style, t, v["c"])
+        layer = Layer(tr("Fotolijst"), img)
+        if style == "shadow":
+            d.push_undo("Fotolijst")
+            d.layers.insert(0, layer)
+            d.active = 0
+            d.normalize()
+            d.structureChanged.emit()
+            d.changed.emit(QRect())
+        else:
+            d.add_layer(layer, len(d.layers), label="Fotolijst")
+        if outside:  # doek vergroten en lijst toevoegen is samen één stap
+            snap = d.undo_stack[first - 1][1]
+            del d.undo_stack[first - 1:]
+            d.undo_stack.append(("Fotolijst", snap))
+            d.historyChanged.emit()
+
+    # ---------------------------------------------------------------- Selecties > Wijzigen en verwanten
+    def _sel_array(self, d):
+        if d.sel is None:
+            self.statusBar().showMessage(tr("Er is geen selectie."), 3000)
+            return None
+        return ops.qimage_to_mask(d.sel)
+
+    def _busy(self, fn):
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        try:
+            return fn()
+        finally:
+            QApplication.restoreOverrideCursor()
+
+    def _sel_source(self, d, merged):
+        return ops.qimage_to_rgba(d.composite() if merged else d.layer().image)
+
+    def sel_from_vectors(self):
+        d = self.doc()
+        lay = d.layer()
+        if lay.vector is None or not lay.vector:
+            self.statusBar().showMessage(tr("Kies eerst een vectorlaag met objecten."), 4000)
+            return
+        d.selection_from_vectors(indices=d.vsel or None)
+
+    def sel_similar(self):
+        from . import selops
+        d = self.doc()
+        m = self._sel_array(d)
+        if m is None:
+            return
+        v = dialogs.ask_form(self, tr("Alles met dezelfde kleur selecteren"),
+                             [("tol", tr("Tolerantie:"), "int", 0, 200, 10), ("cont", tr("Aaneengesloten"), "bool", False),
+                              ("merged", tr("Alle lagen gebruiken"), "bool", False)])
+        if v is None:
+            return
+
+        def work():
+            sim = selops.similar_colors(self._sel_source(d, v["merged"]), m, v["tol"])
+            if v["cont"]:
+                sim = selops.grow_from(sim, m > 127)
+            return np.maximum(m, sim.astype(np.uint8) * 255)
+        d.apply_selection_array(self._busy(work), "Alles met dezelfde kleur selecteren")
+
+    def sel_color_range(self):
+        from . import selops
+        d = self.doc()
+        v = dialogs.ask_form(self, tr("Kleurbereik selecteren"),
+                             [("color", tr("Kleur:"), "color", self.fg), ("tol", tr("Tolerantie:"), "int", 0, 200, 20),
+                              ("soft", tr("Zachtheid:"), "int", 0, 100, 10),
+                              ("mode", tr("Modus:"), "choice", [tr("Vervangen"), tr("Toevoegen"), tr("Verwijderen")],
+                               1 if d.sel is not None else 0),
+                              ("merged", tr("Alle lagen gebruiken"), "bool", False)])
+        if v is None:
+            return
+        c = v["color"]
+        rng = self._busy(lambda: selops.color_range(self._sel_source(d, v["merged"]), (c.red(), c.green(), c.blue()),
+                                                    v["tol"], v["soft"]))
+        cur = ops.qimage_to_mask(d.sel) if d.sel is not None else np.zeros_like(rng)
+        out = rng if v["mode"] == 0 else np.maximum(cur, rng) if v["mode"] == 1 else \
+            np.clip(cur.astype(np.int16) - rng, 0, 255)
+        d.apply_selection_array(out, "Kleurbereik selecteren")
+
+    def sel_feather_side(self):
+        from . import selops
+        d = self.doc()
+        m = self._sel_array(d)
+        if m is None:
+            return
+        v = dialogs.ask_form(self, tr("Binnen/buiten doezelen"),
+                             [("n", tr("Doezelen:"), "int", 1, 200, 8),
+                              ("side", tr("Richting:"), "choice", [tr("Binnen"), tr("Buiten"), tr("Beide")], 2)])
+        if v is not None:
+            out = self._busy(lambda: selops.feather_side(m, v["n"], ["inside", "outside", "both"][v["side"]]))
+            d.apply_selection_array(out, "Binnen/buiten doezelen")
+
+    def sel_unfeather(self):
+        from . import selops
+        d = self.doc()
+        m = self._sel_array(d)
+        if m is None:
+            return
+        v = dialogs.ask_form(self, tr("Doezelen opheffen"), [("t", tr("Drempel:"), "int", 1, 100, 50, " %")])
+        if v is not None:
+            d.apply_selection_array(selops.unfeather(m, v["t"]), "Doezelen opheffen")
+
+    def sel_antialias(self):
+        from . import selops
+        d = self.doc()
+        m = self._sel_array(d)
+        if m is None:
+            return
+        v = dialogs.ask_form(self, tr("Op vorm gebaseerde anti-alias"),
+                             [("w", tr("Plaats:"), "choice", [tr("Binnen"), tr("Buiten")], 1)])
+        if v is not None:
+            d.apply_selection_array(selops.antialias(m, ["inside", "outside"][v["w"]]), "Op vorm gebaseerde anti-alias")
+
+    def sel_recover_aa(self):
+        from . import selops
+        d = self.doc()
+        m = self._sel_array(d)
+        if m is not None:
+            alpha = ops.qimage_to_rgba(d.layer().image)[..., 3]
+            d.apply_selection_array(selops.recover_antialias(m, alpha), "Anti-alias herstellen")
+
+    def sel_specks(self):
+        from . import selops
+        d = self.doc()
+        m = self._sel_array(d)
+        if m is None:
+            return
+        v = dialogs.ask_form(self, tr("Stippen en gaten verwijderen"),
+                             [("what", tr("Verwijderen:"), "choice", [tr("Stippen"), tr("Gaten"), tr("Stippen en gaten")], 2),
+                              ("size", tr("Kleiner dan (pixels):"), "int", 1, 1000000, 100)])
+        if v is not None:
+            out = self._busy(lambda: selops.remove_specks_holes(m, v["size"], v["what"] in (0, 2), v["what"] in (1, 2)))
+            d.apply_selection_array(out, "Stippen en gaten verwijderen")
+
+    def sel_smooth(self):
+        from . import selops
+        d = self.doc()
+        m = self._sel_array(d)
+        if m is None:
+            return
+        v = dialogs.ask_form(self, tr("Vloeiend"), [("n", tr("Hoeveelheid:"), "int", 1, 50, 5)])
+        if v is not None:
+            d.apply_selection_array(self._busy(lambda: selops.smooth(m, v["n"])), "Vloeiend")
+
+    def sel_borders(self):
+        from . import selops
+        d = self.doc()
+        m = self._sel_array(d)
+        if m is None:
+            return
+        v = dialogs.ask_form(self, tr("Selectieranden selecteren"),
+                             [("w", tr("Breedte:"), "int", 1, 200, 5),
+                              ("side", tr("Plaats:"), "choice", [tr("Binnen"), tr("Buiten"), tr("Beide")], 2),
+                              ("aa", tr("Anti-alias"), "bool", True)])
+        if v is not None:
+            out = self._busy(lambda: selops.borders(m, v["w"], ["inside", "outside", "both"][v["side"]], v["aa"]))
+            d.apply_selection_array(out, "Selectieranden selecteren")
+
+    def sel_clip_canvas(self):
+        """Afknippen tot doek: het deel van het selectiekader dat (na verschuiven) buiten het doek viel, weghalen."""
+        d = self.doc()
+        m = self._sel_array(d)
+        if m is not None:
+            d.apply_selection_array(m, "Afknippen tot doek")
+
+    def sel_load_disk(self):
+        path, _ = QFileDialog.getOpenFileName(self, tr("Selectie laden vanaf schijf"), self.settings.value("lastdir", ""),
+                                              tr("Afbeeldingen") + " (*.png *.jpg *.jpeg *.bmp *.tif *.tiff *.webp *.gif)")
+        if not path:
+            return
+        d = self.doc()
+        img = QImage(path)
+        if img.isNull():
+            return
+        img = img.scaled(d.w, d.h, Qt.AspectRatioMode.IgnoreAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        a = ops.qimage_to_rgba(img).astype(np.float32)
+        # met transparantie: de dekking is de selectie; anders de helderheid (wit = geselecteerd)
+        v = a[..., 3] if (a[..., 3] < 255).any() else a[..., 0] * 0.299 + a[..., 1] * 0.587 + a[..., 2] * 0.114
+        d.apply_selection_array(v, "Selectie laden vanaf schijf")
+
+    def sel_save_disk(self):
+        d = self.doc()
+        m = self._sel_array(d)
+        if m is None:
+            return
+        path = self._export_path(d, ".png", tr("Selectie opslaan op schijf"))
+        if path:
+            arr = np.ascontiguousarray(m)
+            QImage(arr.data, arr.shape[1], arr.shape[0], arr.strides[0], QImage.Format.Format_Grayscale8).copy().save(path)
+
+    def _sync_seledit_check(self):
+        a = self.actions_by_id.get(0x81f4)
+        d = self.doc()
+        if a is not None:
+            a.setChecked(bool(d is not None and d.seledit_layer() is not None))
+
+    def sel_edit(self):
+        self.doc().toggle_selection_edit()
+        self._sync_seledit_check()
+
+    def sel_float(self):
+        d = self.doc()
+        if d.sel is None:
+            self.statusBar().showMessage(tr("Er is geen selectie."), 3000)
+            return
+        if not self.ensure_raster():
+            return
+        if not d.float_selection(self.bg):
+            self.statusBar().showMessage(tr("Er is al een zwevende selectie, of de actieve laag is geen rasterlaag."), 4000)
+
+    def sel_defloat(self):
+        d = self.doc()
+        if not d.defloat_selection():
+            self.statusBar().showMessage(tr("Er is geen zwevende selectie."), 3000)
+
     def toggle_marquee(self):
         cv = self.canvas()
         cv.hide_marquee = not getattr(cv, "hide_marquee", False)
@@ -1481,6 +2545,96 @@ class MainWindow(QMainWindow):
     # ================================================================ beeld en venster
     def toggle_fullscreen(self):
         self.showNormal() if self.isFullScreen() else self.showFullScreen()
+
+    # werkbalken Effecten en Foto (Beeld > Werkbalken): snelkoppelingen naar veelgebruikte opdrachten
+    EFFECTS_BAR = [0x807b, None, 0x809e, 0x80b2, 0x80b3, 0x80a0, 0x809f, 0x80a2]
+    PHOTO_BAR = [0x8240, 0x82d8, None, 0x82dc, 0x8052, 0x806a, None, 0x806e, 0x809b, 0x82f1]
+
+    def _build_extra_toolbars(self):
+        for attr, title, name, ids, cid in (("effects_toolbar", "Effecten", "effects_bar", self.EFFECTS_BAR, 0x821d),
+                                            ("photo_toolbar", "Foto", "photo_bar", self.PHOTO_BAR, 0x821c)):
+            tb = QToolBar(tr(title))
+            tb.setObjectName(name)
+            tb.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
+            for c in ids:
+                if c is None:
+                    tb.addSeparator()
+                elif c in self.actions_by_id:
+                    tb.addAction(self.actions_by_id[c])
+            self.addToolBar(Qt.ToolBarArea.TopToolBarArea, tb)
+            tb.hide()
+            setattr(self, attr, tb)
+            a = self.actions_by_id.get(cid)
+            if a is not None:
+                tb.visibilityChanged.connect(lambda v, act=a: act.setChecked(v))
+
+    def full_screen_preview(self):
+        """Schermvullend voorbeeld: de afbeelding passend op een zwart scherm; een toets of klik sluit het."""
+        d = self.doc()
+        img = d.flattened()
+        w = QWidget(None, Qt.WindowType.Window | Qt.WindowType.FramelessWindowHint)
+        w.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        w.setStyleSheet("background: black;")
+
+        def paint(e, w=w, img=img):
+            p = QPainter(w)
+            p.fillRect(w.rect(), QColor(0, 0, 0))
+            s = min(w.width() / img.width(), w.height() / img.height(), 1.0 if img.width() < w.width() else 99)
+            tw, th = img.width() * s, img.height() * s
+            p.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+            p.drawImage(QRectF((w.width() - tw) / 2, (w.height() - th) / 2, tw, th), img)
+            p.end()
+        w.paintEvent = paint
+        w.keyPressEvent = lambda e, w=w: w.close()
+        w.mousePressEvent = lambda e, w=w: w.close()
+        self._preview = w
+        w.showFullScreen()
+
+    def fit_to_screen(self):
+        """Schermvullend maken: het afbeeldingsvenster zo groot mogelijk en de afbeelding passend erin."""
+        sw = self.mdi.activeSubWindow()
+        if sw is None:
+            return
+        if self.mdi.viewMode() == QMdiArea.ViewMode.SubWindowView:
+            sw.showMaximized()
+        QApplication.processEvents()
+        sw.canvas.fit()
+
+    VIEW_IDS = {"rulers": 0x810a, "guides": 0x817c, "snap_grid": 0x817a, "snap_guides": 0x817b}
+
+    def _save_view_opts(self):
+        import json
+        self.settings.setValue("view_opts", json.dumps(self.view_opts))
+
+    def sync_view_checks(self):
+        for key, cid in self.VIEW_IDS.items():
+            a = getattr(self, "actions_by_id", {}).get(cid)
+            if a is not None:
+                a.setChecked(bool(self.view_opts.get(key)))
+
+    def toggle_view(self, key):
+        """Linialen, hulplijnen, uitlijnen op raster en uitlijnen op hulplijnen aan of uit."""
+        self.view_opts[key] = not self.view_opts.get(key)
+        self._save_view_opts()
+        self.sync_view_checks()
+        for sw in self.mdi.subWindowList():
+            sw.canvas.update()
+
+    def grid_guide_properties(self):
+        o = self.view_opts
+        v = dialogs.ask_form(self, tr("Eigenschappen Raster, Hulplijn en Uitlijnen wijzigen"), [
+            ("grid_h", tr("Horizontale rasterafstand:"), "int", 2, 5000, o["grid_h"], " px"),
+            ("grid_v", tr("Verticale rasterafstand:"), "int", 2, 5000, o["grid_v"], " px"),
+            ("grid_color", tr("Rasterkleur:"), "color", QColor(o["grid_color"])),
+            ("guide_color", tr("Kleur hulplijnen:"), "color", QColor(o["guide_color"])),
+            ("snap_dist", tr("Uitlijnafstand:"), "int", 1, 50, o["snap_dist"], " px")])
+        if v is None:
+            return
+        for k, val in v.items():
+            o[k] = val.name() if isinstance(val, QColor) else val
+        self._save_view_opts()
+        for sw in self.mdi.subWindowList():
+            sw.canvas.update()
 
     def toggle_grid(self):
         cv = self.canvas()
@@ -1558,6 +2712,7 @@ class MainWindow(QMainWindow):
         nd = Document(d.w, d.h, None)
         nd.layers = [l.clone() for l in d.layers]
         nd.active = d.active
+        nd.channels = list(d.channels)
         self.add_document(nd)
 
     def fit_window_to_image(self):
@@ -1668,8 +2823,9 @@ class MainWindow(QMainWindow):
             d.set_modified(False)
         if getattr(self, "_restart", False):  # herstarten na taalwissel
             restart_pixelpickle()
-        self.settings.setValue("geometry", self.saveGeometry())
-        self.settings.setValue("state2", self.saveState())
+        if not getattr(self, "_prefs_reset", False):  # na Voorkeuren herstellen niets terugschrijven
+            self.settings.setValue("geometry", self.saveGeometry())
+            self.settings.setValue("state2", self.saveState())
         self.autosaver.shutdown()
         e.accept()
 

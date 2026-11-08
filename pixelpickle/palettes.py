@@ -513,3 +513,190 @@ class HistoryPalette(QWidget):
             d.undo()
         while len(d.undo_stack) < k and d.redo_stack:
             d.redo()
+
+
+# ================================================================ Histogram, Overzicht, Penseelvariantie
+class _CanvasWatcher(QWidget):
+    """Basis voor paletten die het actieve beeld volgen: kijkt een paar keer per seconde of er iets
+    veranderd is (alleen als het palet zichtbaar is)."""
+
+    def __init__(self, main, interval=250):
+        super().__init__()
+        self.main = main
+        self._key = None
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self._poll)
+        self.timer.start(interval)
+
+    def _state(self, cv):
+        return None
+
+    def _poll(self):
+        if not self.isVisible():
+            return
+        cv = self.main.canvas()
+        key = (id(cv), self._state(cv)) if cv is not None else None
+        if key != self._key:
+            self._key = key
+            self.refresh(cv)
+
+    def refresh(self, cv):
+        self.update()
+
+
+class HistogramPalette(_CanvasWatcher):
+    """Histogram van de afbeelding (alle zichtbare lagen): helderheid of een kleurkanaal, met gemiddelde en
+    mediaan. Wordt bijgewerkt als de afbeelding verandert."""
+    CHANNELS = ["Helderheid", "Rood", "Groen", "Blauw", "RGB"]
+
+    def __init__(self, main):
+        super().__init__(main, 400)
+        v = QVBoxLayout(self)
+        v.setContentsMargins(4, 4, 4, 4)
+        self.combo = QComboBox()
+        self.combo.addItems(self.CHANNELS)
+        self.combo.currentIndexChanged.connect(lambda *_: self.refresh(self.main.canvas()))
+        v.addWidget(self.combo)
+        self.view = QWidget()
+        self.view.setMinimumHeight(110)
+        self.view.paintEvent = self._paint_view
+        v.addWidget(self.view, 1)
+        self.info = QLabel()
+        self.info.setProperty("pp_notr", True)
+        v.addWidget(self.info)
+        self.hist = None
+
+    def _state(self, cv):
+        return cv.cache.cacheKey() if cv is not None and cv.cache is not None else None
+
+    def refresh(self, cv):
+        import numpy as np
+        from . import imageops as ops
+        from .i18n import tr
+        self.hist = None
+        if cv is not None and cv.cache is not None:
+            a = ops.qimage_to_rgba(cv.cache)
+            step = max(1, int((a.shape[0] * a.shape[1] / 400000) ** 0.5))  # grote foto's: steekproef
+            a = a[::step, ::step].reshape(-1, 4)
+            a = a[a[:, 3] > 0]
+            if len(a):
+                y = (a[:, 0] * 0.299 + a[:, 1] * 0.587 + a[:, 2] * 0.114).astype(np.int32)
+                self.hist = [np.bincount(y, minlength=256)] + [np.bincount(a[:, c], minlength=256) for c in range(3)]
+                ch = self.combo.currentIndex()
+                vals = y if ch in (0, 4) else a[:, ch - 1]
+                self.info.setText(f"{tr('Gemiddelde')}: {vals.mean():.1f}   {tr('Mediaan')}: {int(np.median(vals))}")
+        if self.hist is None:
+            self.info.setText("")
+        self.view.update()
+
+    def _paint_view(self, e):
+        p = QPainter(self.view)
+        r = self.view.rect().adjusted(1, 1, -1, -1)
+        p.fillRect(r, self.palette().base())
+        if self.hist is not None:
+            ch = self.combo.currentIndex()
+            sets = [(self.hist[1], QColor(230, 60, 60, 150)), (self.hist[2], QColor(60, 190, 60, 150)),
+                    (self.hist[3], QColor(60, 90, 230, 150))] if ch == 4 else \
+                [(self.hist[ch], [self.palette().text().color(), QColor(220, 50, 50), QColor(40, 170, 40),
+                                  QColor(50, 80, 220)][ch])]
+            top = max(float(h[1:255].max()) for h, _ in sets) or 1.0  # uitersten niet laten overheersen
+            for h, col in sets:
+                p.setPen(Qt.PenStyle.NoPen)
+                c = QColor(col)
+                p.setBrush(c)
+                for i in range(256):
+                    x0 = r.left() + r.width() * i / 256
+                    hh = min(1.0, h[i] / top) * r.height()
+                    p.drawRect(QRectF(x0, r.bottom() - hh, max(1.0, r.width() / 256), hh))
+        p.setPen(QPen(self.palette().mid().color()))
+        p.setBrush(Qt.BrushStyle.NoBrush)
+        p.drawRect(r)
+        p.end()
+
+
+class OverviewPalette(_CanvasWatcher):
+    """Overzicht: de hele afbeelding verkleind, met een kader om wat er in het venster te zien is. Klik of
+    sleep in het overzicht om het beeld te verschuiven."""
+
+    def __init__(self, main):
+        super().__init__(main, 150)
+        self.setMinimumSize(160, 120)
+        self._drag = False
+
+    def _state(self, cv):
+        return (cv.cache.cacheKey() if cv.cache is not None else 0, round(cv.zoom, 4), round(cv.ox), round(cv.oy),
+                cv.width(), cv.height())
+
+    def _geom(self, cv):
+        d = cv.doc
+        s = min((self.width() - 8) / d.w, (self.height() - 24) / d.h)
+        w, h = d.w * s, d.h * s
+        return QRectF((self.width() - w) / 2, 4, w, h), s
+
+    def paintEvent(self, e):
+        p = QPainter(self)
+        p.fillRect(self.rect(), self.palette().window())
+        cv = self.main.canvas()
+        if cv is not None and cv.cache is not None:
+            r, s = self._geom(cv)
+            p.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+            p.drawImage(r, cv.cache)
+            # zichtbaar deel van het venster
+            vx, vy = -cv.ox / cv.zoom, -cv.oy / cv.zoom
+            vw, vh = cv.width() / cv.zoom, cv.height() / cv.zoom
+            view = QRectF(r.x() + vx * s, r.y() + vy * s, vw * s, vh * s).intersected(r)
+            p.setPen(QPen(QColor(230, 40, 40), 2))
+            p.setBrush(Qt.BrushStyle.NoBrush)
+            p.drawRect(view)
+            p.setPen(self.palette().text().color())
+            from .i18n import tr
+            p.drawText(QRectF(0, self.height() - 18, self.width(), 16), Qt.AlignmentFlag.AlignCenter,
+                       f"{tr('Zoom')}: {cv.zoom * 100:.0f}%")
+        p.end()
+
+    def _center_on(self, pos):
+        cv = self.main.canvas()
+        if cv is None:
+            return
+        r, s = self._geom(cv)
+        x, y = (pos.x() - r.x()) / s, (pos.y() - r.y()) / s
+        cv.ox = cv.width() / 2 - x * cv.zoom
+        cv.oy = cv.height() / 2 - y * cv.zoom
+        cv._auto = False
+        cv.update()
+        self.update()
+
+    def mousePressEvent(self, e):
+        self._drag = True
+        self._center_on(e.position())
+
+    def mouseMoveEvent(self, e):
+        if self._drag:
+            self._center_on(e.position())
+
+    def mouseReleaseEvent(self, e):
+        self._drag = False
+
+
+class BrushVariancePalette(QWidget):
+    """Penseelvariantie: willekeurige afwijking per stempel in grootte, dekking, rotatie en plaats (spreiding),
+    voor een natuurlijker streek. Geldt voor het penseel, de airbrush en de wisser."""
+    FIELDS = [("var_size", "Grootte"), ("var_opacity", "Dekking"), ("var_rotation", "Rotatie"),
+              ("var_spread", "Spreiding")]
+
+    def __init__(self, main):
+        super().__init__()
+        from PySide6.QtWidgets import QFormLayout, QSpinBox
+        self.main = main
+        f = QFormLayout(self)
+        for key, label in self.FIELDS:
+            main.opts.setdefault(key, 0)
+            sp = QSpinBox()
+            sp.setRange(0, 100)
+            sp.setSuffix(" %")
+            sp.setValue(int(main.opts[key]))
+            sp.valueChanged.connect(lambda v, k=key: main.opts.__setitem__(k, v))
+            f.addRow(label + ":", sp)
+        reset = QLabel("0 % = geen variatie")
+        reset.setStyleSheet("color: gray;")
+        f.addRow(reset)

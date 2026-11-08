@@ -19,6 +19,12 @@ QFileDialog.getSaveFileName = staticmethod(lambda *a, **k: (os.path.join(_TMP, "
 QFileDialog.getOpenFileName = staticmethod(lambda *a, **k: ("", ""))
 QFileDialog.getOpenFileNames = staticmethod(lambda *a, **k: ([], ""))
 QInputDialog.getMultiLineText = staticmethod(lambda *a, **k: ("Hallo\nwereld", True))
+QInputDialog.getText = staticmethod(lambda *a, **k: ("rooktest", True))
+QInputDialog.getDouble = staticmethod(lambda *a, **k: (15.0, True))
+QInputDialog.getItem = staticmethod(lambda *a, **k: (a[3][0] if len(a) > 3 and a[3] else "", True))
+from PySide6.QtWidgets import QColorDialog
+QColorDialog.getColor = staticmethod(lambda *a, **k: QColor(10, 20, 30))
+os.environ["XDG_DATA_HOME"] = tempfile.mkdtemp()  # eigen penselen, vormen en lijsten in een tijdelijke map
 
 from pixelpickle.mainwindow import MainWindow
 from pixelpickle.document import Document
@@ -144,7 +150,10 @@ for cid, tool in [(c, t) for c, t in T.items() if t.available]:
 print("gereedschappen getest:", len(T), "fouten:", errors)
 
 # --- elke menuopdracht met een functie
-skip = {0xe141, 0xe102, 0x80d3, 0x801d, 0xe101, 0xe104, 0xe10b, 0xe103}
+# overslaan: sluiten/openen/opslaan, en opdrachten met gevolgen buiten de test (afdrukken naar de echte printer,
+# een schermopname met het programma van het bureaublad, een bestand naar de prullenbak, voorkeuren wissen)
+skip = {0xe141, 0xe102, 0x80d3, 0x801d, 0xe101, 0xe104, 0xe10b, 0xe103,
+        0x82ec, 0x812e, 0x80e1, 0x80d6, 0x8204}
 doc.add_layer(); w.select_all()
 from PySide6.QtWidgets import QApplication as QA
 QA.clipboard().setImage(QImage(50, 40, QImage.Format.Format_ARGB32))

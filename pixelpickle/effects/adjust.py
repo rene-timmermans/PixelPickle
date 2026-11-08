@@ -510,13 +510,27 @@ def fill_flash(a, ctx, strength):
     return with_rgb(a, _tone(_rgb(a), strength * 0.8, 0, max(1, max(a.shape[:2]) / 60)))
 
 
-@effect(0x806e, "Rode ogen verwijderen", [Int("strength", "Sterkte", 0, 100, 75)])
-def red_eye(a, ctx, strength):
+@effect(0x806e, "Rode ogen verwijderen", [Int("strength", "Sterkte", 0, 100, 75),
+                                           Int("eye_size", "Max. oogdiameter (%)", 1, 15, 4)])
+def red_eye(a, ctx, strength, eye_size=4):
+    """Alleen rode ogen: kleine, losstaande rode vlekken. Een vlek telt mee als er in een ruime omgeving
+    (een paar keer de grootste oogdiameter) weinig ander rood is; grote rode vlakken zoals kleding, een
+    bal of een muur vallen zo af. Met een selectie werkt het alleen daarbinnen."""
     rgb = _rgb(a)
     R, G, B = rgb[..., 0], rgb[..., 1], rgb[..., 2]
     gb = (G + B) / 2
     ratio = R / np.maximum(gb, 8)
-    m = np.clip((ratio - 1.8) / 0.8, 0, 1) * np.clip((R - 70) / 40, 0, 1)
+    red = np.clip((ratio - 1.8) / 0.8, 0, 1) * np.clip((R - 70) / 40, 0, 1)
+    h, w = red.shape
+    d_max = max(2.0, max(h, w) * eye_size / 100)          # grootste oogdiameter in pixels
+    core = (red > 0.35).astype(np.float32)
+    # aandeel rood in een ruime omgeving: bij een pupil laag (er omheen zit oogwit, iris en huid)
+    around = blur(core, max(1.0, d_max * 1.2))
+    near = blur(core, max(0.6, d_max * 0.25))
+    isolated = np.clip((0.22 - around) / 0.12, 0, 1) * np.clip((near - 0.05) / 0.1, 0, 1)
+    # het masker iets laten uitlopen zodat de rand van de pupil ook meegaat
+    keep = np.clip(blur(isolated, max(0.6, d_max * 0.15)) * 3, 0, 1)
+    m = red * keep
     m = np.clip(blur(m, _px(1, ctx, 0)) * 1.3, 0, 1) * (strength / 100)
     newR = np.minimum(R, gb * 0.9)
     dark = 0.85

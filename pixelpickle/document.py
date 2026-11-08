@@ -214,6 +214,7 @@ class Layer:
         self.text = None        # bewerkbare tekst (zie textlayer.py); image is dan de weergave
         self.blend_ranges = None  # mengbereiken: {kanaal: (deze laag, onderliggend)}, zie BLEND_CHANNELS
         self.vector = None      # vectorlaag: [object, ...] (zie vectorlayer.py); image is dan de weergave
+        self.role = None        # "floating" (zwevende selectie) of "seledit" (selectie bewerken), anders None
 
     def clone(self):
         # QImage kopie deelt pixels tot er geschreven wordt (copy on write)
@@ -227,6 +228,7 @@ class Layer:
         l.blend_ranges = copy_ranges(self.blend_ranges)
         from .vectorlayer import copy_vector
         l.vector = copy_vector(self.vector)
+        l.role = self.role
         return l
 
 
@@ -348,6 +350,11 @@ class Document(QObject):
         self.redo_stack = []
         self.raster_counter = 1
         self.px_per_pt = 1.0  # tekst in punten: 72 dpi (bij PSP bestanden uit de resolutie berekend)
+        # alfakanalen: bewaarde selecties en maskers [(naam, QImage)], even groot als het doek; de waarde
+        # zit in de alfa, zodat ze met dezelfde bewerkingen als lagen meedraaien, -schalen en -snijden
+        self.channels = []
+        self._vsel = ([], None)
+        self.guides = {"h": [], "v": []}  # hulplijnen (documentcoördinaten), gesleept uit de linialen  # gekozen vectorobjecten (indexen) en de laag waar ze bij horen
 
     # ------------------------------------------------------------ algemeen
     def rect(self):
@@ -378,7 +385,7 @@ class Document(QObject):
     def snapshot(self):
         return dict(w=self.w, h=self.h, layers=clone_layers(self.layers),
                     active=self.active, sel=QImage(self.sel) if self.sel is not None else None,
-                    sel_lines=list(self.sel_lines))
+                    sel_lines=list(self.sel_lines), channels=list(self.channels))
 
     def restore(self, s):
         size_changed = (s["w"], s["h"]) != (self.w, self.h)
@@ -387,6 +394,7 @@ class Document(QObject):
         self.active = min(s["active"], len(self.layers) - 1)
         self.sel = s["sel"]
         self.sel_lines = s["sel_lines"]
+        self.channels = list(s.get("channels", []))
         if size_changed:
             self.sizeChanged.emit()
         self.structureChanged.emit()
@@ -470,7 +478,7 @@ class Document(QObject):
         def comp(items):
             out = new_image(r.width(), r.height())
             for l in items:
-                if not l.visible or l.opacity <= 0:
+                if not l.visible or l.opacity <= 0 or l.role == "seledit":  # selectie bewerken: alleen als rode laag
                     continue
                 if l.kind == "group":
                     buf = comp(self.children(l, L))
@@ -647,6 +655,48 @@ class Document(QObject):
         self.structureChanged.emit()
         self.changed.emit(QRect())
 
+    def ancestors(self, l):
+        """De groepen waar laag l (direct of indirect) in zit."""
+        out, g = [], l.group
+        while g is not None:
+            out.append(g)
+            g = g.group
+        return out
+
+    def layer_view(self, how):
+        """Lagen > Beeld: welke lagen zichtbaar zijn.
+        current: alleen de actieve laag (met de groepen eromheen en, bij een groep, alles erin);
+        all / none: alle lagen aan of uit; invert: elke laag omgekeerd (groepen blijven aan, zodat
+        omgedraaide lagen erin te zien zijn); link_show / link_hide: de koppelingsset van de actieve
+        laag tonen of verbergen (zonder koppelingsset: alleen de actieve laag)."""
+        act = self.layer()
+        if how == "current":
+            keep = set(map(id, self.subtree(act) + self.ancestors(act)))
+            new = {id(l): id(l) in keep for l in self.layers}
+        elif how in ("all", "none"):
+            new = {id(l): how == "all" for l in self.layers}
+        elif how == "invert":
+            new = {id(l): True if l.kind == "group" else not l.visible for l in self.layers}
+        else:
+            members = [l for l in self.layers if act.link_set and l.link_set == act.link_set] or [act]
+            vis = how == "link_show"
+            new = {id(l): l.visible for l in self.layers}
+            for l in members:
+                new[id(l)] = vis
+                if vis:  # tonen: ook de groepen eromheen aanzetten
+                    for g in self.ancestors(l):
+                        new[id(g)] = True
+        if all(l.visible == new[id(l)] for l in self.layers):
+            return False
+        self.push_undo({"current": "Alleen huidige laag", "all": "Alle lagen", "none": "Geen lagen",
+                        "invert": "Zichtbaarheid omkeren", "link_show": "Koppelingset weergeven",
+                        "link_hide": "Koppelingset verbergen"}[how])
+        for l in self.layers:
+            l.visible = new[id(l)]
+        self.changed.emit(QRect())
+        self.structureChanged.emit()
+        return True
+
     def merge_visible(self):
         vis = [l for l in self.layers if l.visible and l.kind != "group"]
         if len(vis) < 2:
@@ -800,14 +850,215 @@ class Document(QObject):
         self.structureChanged.emit()
         self.changed.emit(QRect())
 
+    # ------------------------------------------------------------ gekozen vectorobjecten
+    @property
+    def vsel(self):
+        """Indexen van de gekozen objecten op de actieve vectorlaag (in kiesvolgorde)."""
+        sel, layer = self._vsel
+        lay = self.layer()
+        if layer is not lay or lay.vector is None:
+            return []
+        return [i for i in sel if 0 <= i < len(lay.vector)]
+
+    @vsel.setter
+    def vsel(self, sel):
+        self._vsel = (list(sel), self.layer())
+        self.selectionChanged.emit()
+
+    # ------------------------------------------------------------ zwevende selectie
+    def floating_layer(self):
+        return next((l for l in self.layers if l.role == "floating"), None)
+
+    def float_selection(self, fill_bg: QColor | None = None):
+        """Zwevend: de geselecteerde pixels gaan naar een eigen laag boven de actieve laag; op de laag zelf
+        blijft een gat (op de achtergrondlaag gevuld met de achtergrondkleur)."""
+        src = self.layer()
+        if self.sel is None or src.kind != "raster" or src.adjust is not None or self.floating_layer() is not None:
+            return False
+        self.push_undo("Zwevend")
+        piece = QImage(src.image)
+        p = QPainter(piece)
+        p.setCompositionMode(QPainter.CompositionMode.CompositionMode_DestinationIn)
+        p.drawImage(0, 0, self.sel)
+        p.end()
+        hole = QImage(src.image)
+        p = QPainter(hole)
+        p.setCompositionMode(QPainter.CompositionMode.CompositionMode_DestinationOut)
+        p.drawImage(0, 0, self.sel)
+        if fill_bg is not None and self.layers.index(src) == 0 and src.name in BG_NAMES:
+            bg = new_image(self.w, self.h, fill_bg)
+            q = QPainter(bg)
+            q.setCompositionMode(QPainter.CompositionMode.CompositionMode_DestinationIn)
+            q.drawImage(0, 0, self.sel)
+            q.end()
+            p.setCompositionMode(QPainter.CompositionMode.CompositionMode_DestinationOver)
+            p.drawImage(0, 0, bg)
+        p.end()
+        src.image = hole
+        from .i18n import tr
+        fl = Layer(tr("Zwevende selectie"), piece)
+        fl.role = "floating"
+        fl.group = src.group
+        self.layers.insert(self.layers.index(src) + 1, fl)
+        self.active = self.layers.index(fl)
+        self.structureChanged.emit()
+        self.changed.emit(QRect())
+        return True
+
+    def defloat_selection(self):
+        """Niet-zwevend: de zwevende selectie wordt weer onderdeel van de laag eronder."""
+        fl = self.floating_layer()
+        if fl is None:
+            return False
+        i = self.layers.index(fl)
+        below = next((l for l in reversed(self.layers[:i]) if l.kind == "raster" and l.adjust is None
+                      and l.group is fl.group), None)
+        self.push_undo("Niet-zwevend")
+        if below is None:  # geen laag eronder: de zwevende laag wordt een gewone laag
+            fl.role = None
+        else:
+            img = QImage(below.image)
+            p = QPainter(img)
+            p.setOpacity(fl.opacity)
+            p.drawImage(0, 0, fl.image)
+            p.end()
+            below.image = img
+            self.layers.remove(fl)
+            self.active = self.layers.index(below)
+        self.structureChanged.emit()
+        self.changed.emit(QRect())
+        return True
+
+    # ------------------------------------------------------------ selectie bewerken
+    def seledit_layer(self):
+        return next((l for l in self.layers if l.role == "seledit"), None)
+
+    def toggle_selection_edit(self):
+        """Selectie bewerken (zoals PSP): de selectie wordt een grijze laag (wit = geselecteerd) die je met de
+        penselen, vulemmer en andere gereedschappen bijwerkt; niet geselecteerde delen worden rood getoond.
+        Nogmaals kiezen maakt er weer een selectie van."""
+        from .i18n import tr
+        lay = self.seledit_layer()
+        if lay is None:
+            self.push_undo("Selectie bewerken")
+            arr = ops.qimage_to_mask(self.sel) if self.sel is not None else np.zeros((self.h, self.w), np.uint8)
+            a = np.dstack([arr, arr, arr, np.full_like(arr, 255)])
+            lay = Layer(tr("Selectie bewerken"), ops.rgba_to_qimage(a))
+            lay.role = "seledit"
+            self.layers.append(lay)
+            self.active = len(self.layers) - 1
+            self.set_selection(None)
+        else:
+            self.push_undo("Selectie bewerken")
+            a = ops.qimage_to_rgba(lay.image).astype(np.float32)
+            v = (a[..., 0] * 0.299 + a[..., 1] * 0.587 + a[..., 2] * 0.114) * a[..., 3] / 255
+            i = self.layers.index(lay)
+            self.layers.remove(lay)
+            self.active = max(0, min(i - 1, len(self.layers) - 1))
+            self.set_selection(ops.mask_to_qimage(np.clip(v, 0, 255).astype(np.uint8)))
+        self.structureChanged.emit()
+        self.changed.emit(QRect())
+
+    def selection_from_vectors(self, layer=None, indices=None):
+        """Selectie uit vectorobjecten (de gekozen objecten, of alle op de vectorlaag): vulling en lijn."""
+        from . import vectorlayer as V
+        layer = layer or self.layer()
+        if layer.vector is None:
+            return False
+        objs = [layer.vector[i] for i in indices] if indices else list(layer.vector)
+        if not objs:
+            return False
+        m = QImage(self.w, self.h, QImage.Format.Format_Alpha8)
+        m.fill(QColor(0, 0, 0, 0))
+        p = QPainter(m)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        for o in objs:
+            path = V.qpath(o)
+            if V.is_closed(o):
+                p.fillPath(path, QColor(0, 0, 0, 255))
+            if o.get("stroke") is not None and o["width"] > 0:
+                p.strokePath(path, QPen(QColor(0, 0, 0, 255), o["width"]))
+        p.end()
+        self.push_undo("Vanuit vectorobject")
+        self.set_selection(m)
+        return True
+
+    def apply_selection_array(self, arr, label):
+        """Nieuwe selectie uit een masker (0..255) met één stap ongedaan maken."""
+        self.push_undo(label)
+        self.set_selection(ops.mask_to_qimage(np.ascontiguousarray(np.clip(arr, 0, 255).astype(np.uint8))))
+
+    # ------------------------------------------------------------ alfakanalen
+    @staticmethod
+    def _channel_image(arr):
+        """Grijswaarden (uint8, 0..255) als kanaalbeeld: wit met de waarde als alfa."""
+        a = np.zeros(arr.shape + (4,), np.uint8)
+        a[..., :3] = 255
+        a[..., 3] = arr
+        return ops.rgba_to_qimage(a)
+
+    def channel_mask(self, i) -> np.ndarray:
+        return ops.qimage_to_rgba(self.channels[i][1])[..., 3].copy()
+
+    def channel_names(self):
+        return [n for n, _ in self.channels]
+
+    def store_channel(self, name, arr, label):
+        """Kanaal bewaren; een bestaand kanaal met dezelfde naam wordt overschreven."""
+        self.push_undo(label)
+        img = self._channel_image(np.ascontiguousarray(arr, dtype=np.uint8))
+        names = self.channel_names()
+        if name in names:
+            self.channels[names.index(name)] = (name, img)
+        else:
+            self.channels.append((name, img))
+        self.structureChanged.emit()
+
+    def delete_channels(self, indices):
+        if not indices:
+            return
+        self.push_undo("Alfakanaal verwijderen")
+        self.channels = [c for i, c in enumerate(self.channels) if i not in set(indices)]
+        self.structureChanged.emit()
+
+    def mask_values(self, l=None) -> np.ndarray:
+        """Waarden (0..255) van een maskerlaag: helderheid maal dekking."""
+        l = l or self.layer()
+        a = ops.qimage_to_rgba(l.image).astype(np.float32)
+        return np.clip((a[..., 0] * 0.299 + a[..., 1] * 0.587 + a[..., 2] * 0.114) * a[..., 3] / 255, 0, 255
+                       ).astype(np.uint8)
+
+    def selection_from_channel(self, i, mode="replace", invert=False):
+        arr = self.channel_mask(i)
+        if invert:
+            arr = 255 - arr
+        self.push_undo("Selectie laden uit alfakanaal")
+        self.combine_selection(ops.mask_to_qimage(arr), mode)
+
+    def mask_from_channel(self, i, invert=False):
+        """Nieuwe maskerlaag op de actieve laag, met het kanaal als inhoud (wit = zichtbaar)."""
+        if self.layer().kind == "mask":
+            return False
+        arr = self.channel_mask(i)
+        if invert:
+            arr = 255 - arr
+        self.add_mask("show_all")
+        self.undo_stack[-1] = ("Masker laden uit alfakanaal", self.undo_stack[-1][1])
+        a = np.zeros(arr.shape + (4,), np.uint8)
+        a[..., 0] = a[..., 1] = a[..., 2] = arr
+        a[..., 3] = 255
+        self.layer().image = ops.rgba_to_qimage(a)
+        self.structureChanged.emit()
+        self.changed.emit(QRect())
+        return True
+
     def selection_from_mask(self):
         l = self.layer()
         if l.kind != "mask" and l.adjust is None:
             return
-        a = ops.qimage_to_rgba(l.image).astype(np.float32)
-        v = (a[..., 0] * 0.299 + a[..., 1] * 0.587 + a[..., 2] * 0.114) * a[..., 3] / 255
+        v = self.mask_values(l)
         self.push_undo("Selectie vanuit masker")
-        self.set_selection(ops.mask_to_qimage(np.clip(v, 0, 255)))
+        self.set_selection(ops.mask_to_qimage(v))
 
     # ------------------------------------------------------------ geometrie
     def render_text(self, layer):
@@ -852,6 +1103,7 @@ class Document(QObject):
         self.push_undo(label)
         for l in self.layers:
             l.image = fn(l.image)
+        self.channels = [(n, fn(im)) for n, im in self.channels]
         self.w, self.h = w, h
         if tmap is not None:
             self._move_text(tmap)
@@ -880,6 +1132,7 @@ class Document(QObject):
         self.push_undo("Canvasgrootte")
         for i, l in enumerate(self.layers):
             l.image = fn_for(i == 0 and l.name in BG_NAMES)(l.image)
+        self.channels = [(n, fn_for(False)(im)) for n, im in self.channels]
         self.w, self.h = w, h
         self._move_text(QTransform.fromTranslate(ox, oy))
         self.set_selection(None)
@@ -984,6 +1237,7 @@ class Document(QObject):
                 p.end()
                 out = bg
             l.image = out
+        self.channels = [(n, im.transformed(t, mode)) for n, im in self.channels]
         nw, nh = self.layers[0].image.width(), self.layers[0].image.height()
         if crop:
             a = math.radians(degrees)
@@ -1000,6 +1254,7 @@ class Document(QObject):
             r = QRect((nw - wr) // 2, (nh - hr) // 2, wr, hr)
             for l in self.layers:
                 l.image = l.image.copy(r)
+            self.channels = [(n, im.copy(r)) for n, im in self.channels]
             nw, nh = wr, hr
             tmap = tmap * QTransform.fromTranslate(-r.x(), -r.y())
         self.w, self.h = nw, nh
@@ -1045,6 +1300,16 @@ class Document(QObject):
             l.image = out
             l.text = None  # tekst en vectoren worden een gewone (vervormde) rasterlaag
             l.vector = None
+        chans = []
+        for n, im in self.channels:
+            out = new_image(nw, nh)
+            p = QPainter(out)
+            p.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+            p.setTransform(t)
+            p.drawImage(0, 0, im)
+            p.end()
+            chans.append((n, out))
+        self.channels = chans
         self.w, self.h = nw, nh
         self.set_selection(None)
         self.sizeChanged.emit()
