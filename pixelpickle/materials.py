@@ -1,7 +1,7 @@
 """Materialen palet en het venster Materiaaleigenschappen (kleurenring, stalen, RGB/HSL)."""
 import math
 
-from PySide6.QtCore import QPointF, QRect, QRectF, QSize, Qt, Signal
+from PySide6.QtCore import QPointF, QRect, QRectF, QSize, Qt, QTimer, Signal
 import numpy as np
 from PySide6.QtGui import (QColor, QConicalGradient, QIcon, QImage, QLinearGradient, QPainter, QPen, QPixmap,
                            QPolygonF)
@@ -860,9 +860,13 @@ class MaterialsPalette(QWidget):
         swap.setToolTip("Kleuren wisselen")
         swap.setFixedSize(20, 20)
         swap.clicked.connect(main.swap_colors)
-        right.addWidget(swap, 0, 1, 2, 1, Qt.AlignmentFlag.AlignVCenter)
-        right.addWidget(self.bgbox, 1, 0)
-        right.setRowStretch(2, 1)
+        right.addWidget(swap, 0, 1, 3, 1, Qt.AlignmentFlag.AlignVCenter)
+        right.setRowStretch(1, 1)  # ruimte tussen voorgrond en achtergrond: achtergrond onderaan
+        right.addWidget(self.bgbox, 2, 0)
+        right.setContentsMargins(0, 0, 0, 0)
+        self.right = right
+        self.tabs = tabs
+        tabs.currentChanged.connect(lambda *_: QTimer.singleShot(0, self._align_right))
         lay.addLayout(right)
         # het vinkje op een eigen regel onder het palet, zodat de kolom met de kleurvakken smal blijft
         self.all_tools = QCheckBox("Alle gereedschappen")
@@ -872,6 +876,29 @@ class MaterialsPalette(QWidget):
         from PySide6.QtWidgets import QSizePolicy
         self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
         self.refresh()
+
+    def _align_right(self):
+        """De kolom met de kleurvakken precies naast het spectrum: de bovenkant van het voorgrondvak op de
+        bovenkant van het spectrum, de onderste knopjes op de onderkant (los van de hoogte van de tabbladen)."""
+        page = self.tabs.currentWidget()
+        if page is None or not page.isVisible():
+            return
+        top = page.mapTo(self, page.rect().topLeft()).y()
+        bottom = page.mapTo(self, page.rect().bottomLeft()).y()
+        lay_top = self.tabs.mapTo(self, self.tabs.rect().topLeft()).y()
+        lay_bottom = self.tabs.mapTo(self, self.tabs.rect().bottomLeft()).y()
+        m = (max(0, top - lay_top), max(0, lay_bottom - bottom))
+        cur = self.right.contentsMargins()
+        if (cur.top(), cur.bottom()) != m:
+            self.right.setContentsMargins(0, m[0], 0, m[1])
+
+    def showEvent(self, e):
+        super().showEvent(e)
+        QTimer.singleShot(0, self._align_right)
+
+    def resizeEvent(self, e):
+        super().resizeEvent(e)
+        QTimer.singleShot(0, self._align_right)
 
     def choose(self, fg):
         m = self.main

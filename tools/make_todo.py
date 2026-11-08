@@ -125,6 +125,7 @@ Geen bekende beperkingen op dit moment.
 
 Wat al gebouwd is, met de versie waarin het verscheen.
 
+- [x] Kleurvakken in het materialenpalet uitgelijnd met het spectrum (1.0.3)
 - [x] Strakker materialenpalet: stijlknopjes tegen elkaar, palet smaller (1.0.2)
 - [x] Sneltoetsen van de gereedschappen en Ctrl+F4/Ctrl+W hersteld; voorkeuren Transparantie en arcering en
   Lettertypen (Microsoft-kernlettertypen downloaden); schuifbalken rond de afbeelding (1.0.1)

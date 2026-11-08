@@ -110,6 +110,8 @@ Arabisch (van rechts naar links). Bij de eerste start is de taal Engels. Kies ee
 
 ## Wat er nieuw is
 
+**1.0.3** De kleurvakken in het materialenpalet zijn precies uitgelijnd met het kleurenspectrum ernaast.
+
 **1.0.2** Strakker materialenpalet: de knopjes onder de kleurvakken staan tegen elkaar aan en het palet kan
 smaller.
 
