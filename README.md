@@ -1,5 +1,7 @@
 # PixelPickle
 
+<img src="pixelpickle/data/icons/pixelpickle-256.png" width="64" alt="PixelPickle-icoon">
+
 Fotobewerker voor Linux met een begrijpelijke en vertrouwde indeling van de gereedschappen. Menu's,
 gereedschappen en sneltoetsen staan op vaste, logische plekken, zodat je direct aan de slag kunt en
 niet hoeft te zoeken.
