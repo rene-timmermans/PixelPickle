@@ -2114,5 +2114,7 @@
  "{} lettertypebestanden geïnstalleerd; ze zijn meteen te gebruiken.": "{} archivos de fuentes instalados; se pueden usar de inmediato.",
  "Deze lagengroep is leeg.": "Este grupo de capas está vacío.",
  "Kies een lagengroep met minstens drie lagen om te verdelen.": "Elija un grupo de capas con al menos tres capas para distribuir.",
- "Kies een lagengroep met minstens twee lagen.": "Elija un grupo de capas con al menos dos capas."
+ "Kies een lagengroep met minstens twee lagen.": "Elija un grupo de capas con al menos dos capas.",
+ "Deze lagengroep bevat geen rasterlagen om te bewerken.": "Este grupo de capas no contiene capas ráster que editar.",
+ "Tekst- en vectorlagen in de groep worden overgeslagen.": "Las capas de texto y vectoriales del grupo se omiten."
 }

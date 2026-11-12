@@ -63,7 +63,7 @@
   "807b": "Apre il Browser effetti, che mostra gli effetti affiancati con un'anteprima della tua immagine. Scegline uno per aprirlo con le sue impostazioni.",
   "8140": "Aggiunge un nuovo livello raster vuoto sopra il livello attivo. Una finestra di dialogo ti permette di impostarne prima nome, opacità, modalità di fusione e altre proprietà.",
   "8141": "Aggiunge un nuovo livello vettoriale per linee e forme modificabili disegnate con la Penna e gli strumenti forma.",
-  "8191": "Inserisce il livello attivo in un nuovo gruppo di livelli, così puoi spostare, nascondere o mascherare più livelli insieme.",
+  "8191": "Inserisce il livello attivo in un nuovo gruppo di livelli, così puoi spostare, nascondere o mascherare più livelli insieme. Quando il gruppo è il livello attivo, regolazioni ed effetti agiscono su ogni livello raster del gruppo e l'anteprima mostra l'intero gruppo.",
   "8107": "Aggiunge una maschera che nasconde l'intero livello (Shift+Y). Dipingi di bianco sulla maschera per mostrare di nuovo alcune parti.",
   "8108": "Aggiunge una maschera che mostra l'intero livello. Dipingi di nero sulla maschera per nascondere alcune parti.",
   "8106": "Aggiunge una maschera che nasconde l'area selezionata e mostra il resto.",

@@ -63,7 +63,7 @@
   "807b": "Opent Effecten zoeken, dat de effecten naast elkaar toont met een voorbeeld van je afbeelding. Kies er een om het met zijn instellingen te openen.",
   "8140": "Voegt een nieuwe, lege rasterlaag toe boven de actieve laag. In een venster stel je eerst de naam, dekking, mengmodus en andere eigenschappen in.",
   "8141": "Voegt een nieuwe vectorlaag toe voor bewerkbare lijnen en vormen, getekend met de Pen en de vormgereedschappen.",
-  "8191": "Zet de actieve laag in een nieuwe lagengroep, zodat je meerdere lagen samen kunt verplaatsen, verbergen of maskeren.",
+  "8191": "Zet de actieve laag in een nieuwe lagengroep, zodat je meerdere lagen samen kunt verplaatsen, verbergen of maskeren. Is de groep de actieve laag, dan werken aanpassingen en effecten op elke rasterlaag in de groep, en het voorbeeld toont de hele groep.",
   "8107": "Voegt een masker toe dat de hele laag verbergt (Shift+Y). Schilder wit op het masker om delen weer zichtbaar te maken.",
   "8108": "Voegt een masker toe dat de hele laag toont. Schilder zwart op het masker om delen te verbergen.",
   "8106": "Voegt een masker toe dat het geselecteerde gebied verbergt en de rest toont.",

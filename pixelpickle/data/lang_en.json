@@ -2114,5 +2114,7 @@
  "{} lettertypebestanden geïnstalleerd; ze zijn meteen te gebruiken.": "{} font files installed; you can use them right away.",
  "Deze lagengroep is leeg.": "This layer group is empty.",
  "Kies een lagengroep met minstens drie lagen om te verdelen.": "Choose a layer group with at least three layers to distribute.",
- "Kies een lagengroep met minstens twee lagen.": "Choose a layer group with at least two layers."
+ "Kies een lagengroep met minstens twee lagen.": "Choose a layer group with at least two layers.",
+ "Deze lagengroep bevat geen rasterlagen om te bewerken.": "This layer group contains no raster layers to edit.",
+ "Tekst- en vectorlagen in de groep worden overgeslagen.": "Text and vector layers in the group are skipped."
 }

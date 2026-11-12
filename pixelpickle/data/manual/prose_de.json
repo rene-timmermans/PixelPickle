@@ -63,7 +63,7 @@
   "807b": "Öffnet den Effektbrowser, der die Effekte nebeneinander mit einer Vorschau Ihres Bildes zeigt. Wählen Sie einen aus, um ihn mit seinen Einstellungen zu öffnen.",
   "8140": "Fügt über der aktiven Ebene eine neue, leere Rasterebene hinzu. In einem Dialogfeld können Sie zuerst Name, Deckkraft, Mischmodus und weitere Eigenschaften festlegen.",
   "8141": "Fügt eine neue Vektorebene für bearbeitbare Linien und Formen hinzu, die mit dem Stift und den Formwerkzeugen gezeichnet werden.",
-  "8191": "Legt die aktive Ebene in eine neue Ebenengruppe, sodass Sie mehrere Ebenen gemeinsam verschieben, ausblenden oder maskieren können.",
+  "8191": "Legt die aktive Ebene in eine neue Ebenengruppe, sodass Sie mehrere Ebenen gemeinsam verschieben, ausblenden oder maskieren können. Ist die Gruppe die aktive Ebene, wirken Anpassungen und Effekte auf jede Rasterebene der Gruppe, und die Vorschau zeigt die ganze Gruppe.",
   "8107": "Fügt eine Maske hinzu, die die ganze Ebene verbirgt (Shift+Y). Malen Sie Weiß auf die Maske, um Teile wieder sichtbar zu machen.",
   "8108": "Fügt eine Maske hinzu, die die ganze Ebene zeigt. Malen Sie Schwarz auf die Maske, um Teile zu verbergen.",
   "8106": "Fügt eine Maske hinzu, die den ausgewählten Bereich verbirgt und den Rest zeigt.",

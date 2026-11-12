@@ -63,7 +63,7 @@
   "807b": "Ouvre le Navigateur d'effets, qui présente les effets côte à côte avec un aperçu de votre image. Choisissez-en un pour l'ouvrir avec ses paramètres.",
   "8140": "Ajoute un nouveau calque raster vide au-dessus du calque actif. Une boîte de dialogue vous permet d'abord de définir son nom, son opacité, son mode de fusion et d'autres propriétés.",
   "8141": "Ajoute un nouveau calque vectoriel pour les lignes et les formes modifiables dessinées avec la Plume et les outils de forme.",
-  "8191": "Place le calque actif dans un nouveau groupe de calques, pour pouvoir déplacer, masquer ou munir d'un masque plusieurs calques à la fois.",
+  "8191": "Place le calque actif dans un nouveau groupe de calques, pour pouvoir déplacer, masquer ou munir d'un masque plusieurs calques à la fois. Lorsque le groupe est le calque actif, les réglages et les effets s'appliquent à chaque calque raster du groupe, et l'aperçu montre le groupe entier.",
   "8107": "Ajoute un masque qui cache le calque entier (Shift+Y). Peignez en blanc sur le masque pour faire réapparaître certaines parties.",
   "8108": "Ajoute un masque qui affiche le calque entier. Peignez en noir sur le masque pour cacher certaines parties.",
   "8106": "Ajoute un masque qui cache la zone sélectionnée et affiche le reste.",

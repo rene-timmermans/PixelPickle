@@ -1656,6 +1656,8 @@ class MainWindow(QMainWindow):
         QMessageBox.information(self, APP, f"Aantal unieke kleuren: {n:,}".replace(",", "."))
 
     def adjust(self, title, fn, params):
+        if not self._group_effect_ok(self.doc()):
+            return
         dialogs.AdjustDialog(self, self.doc(), title, fn, params).exec()
 
     # ================================================================ lagen
@@ -2195,6 +2197,19 @@ class MainWindow(QMainWindow):
         d.new_vector_layer()
         d.changed.emit(QRect())
 
+    def _group_effect_ok(self, d):
+        """Op een lagengroep werkt een effect op elke rasterlaag erin. Zonder rasterlagen kan dat niet;
+        tekst- en vectorlagen in de groep blijven ongemoeid (dat staat even in de statusbalk)."""
+        g = d.layer()
+        if g.kind != "group":
+            return True
+        if not d.effect_targets():
+            self.statusBar().showMessage(tr("Deze lagengroep bevat geen rasterlagen om te bewerken."), 5000)
+            return False
+        if any(l.text is not None or l.vector is not None for l in d.subtree(g)):
+            self.statusBar().showMessage(tr("Tekst- en vectorlagen in de groep worden overgeslagen."), 5000)
+        return True
+
     def run_effect(self, cid):
         d = self.doc()
         if not self.ensure_raster():
@@ -2202,6 +2217,8 @@ class MainWindow(QMainWindow):
         eff = self.effects[cid]
         if d.layer().adjust is not None:
             self.statusBar().showMessage("Kies een rasterlaag; op een aanpassingslaag werken effecten niet.", 4000)
+            return
+        if not self._group_effect_ok(d):
             return
         if not eff.params:
             from .effects import Ctx

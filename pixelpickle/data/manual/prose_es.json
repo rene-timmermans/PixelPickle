@@ -63,7 +63,7 @@
   "807b": "Abre el Explorador de efectos, que muestra los efectos uno junto a otro con una vista previa de tu imagen. Elige uno para abrirlo con su configuración.",
   "8140": "Añade una capa ráster nueva y vacía encima de la capa activa. Un cuadro de diálogo te permite establecer antes su nombre, opacidad, modo de fusión y otras propiedades.",
   "8141": "Añade una capa vectorial nueva para líneas y formas editables dibujadas con la Pluma y las herramientas de forma.",
-  "8191": "Coloca la capa activa en un grupo de capas nuevo, para que puedas mover, ocultar o enmascarar varias capas juntas.",
+  "8191": "Coloca la capa activa en un grupo de capas nuevo, para que puedas mover, ocultar o enmascarar varias capas juntas. Cuando el grupo es la capa activa, los ajustes y efectos se aplican a cada capa ráster del grupo, y la vista previa muestra el grupo completo.",
   "8107": "Añade una máscara que oculta toda la capa (Shift+Y). Pinta de blanco en la máscara para volver a mostrar partes.",
   "8108": "Añade una máscara que muestra toda la capa. Pinta de negro en la máscara para ocultar partes.",
   "8106": "Añade una máscara que oculta el área seleccionada y muestra el resto.",

@@ -2114,5 +2114,7 @@
  "{} lettertypebestanden geïnstalleerd; ze zijn meteen te gebruiken.": "{} file di font installati; sono subito utilizzabili.",
  "Deze lagengroep is leeg.": "Questo gruppo di livelli è vuoto.",
  "Kies een lagengroep met minstens drie lagen om te verdelen.": "Scegli un gruppo di livelli con almeno tre livelli da distribuire.",
- "Kies een lagengroep met minstens twee lagen.": "Scegli un gruppo di livelli con almeno due livelli."
+ "Kies een lagengroep met minstens twee lagen.": "Scegli un gruppo di livelli con almeno due livelli.",
+ "Deze lagengroep bevat geen rasterlagen om te bewerken.": "Questo gruppo di livelli non contiene livelli raster da modificare.",
+ "Tekst- en vectorlagen in de groep worden overgeslagen.": "I livelli di testo e vettoriali del gruppo vengono saltati."
 }

@@ -130,5 +130,46 @@ assert d.layer() is target, d.layer().name
 stroke(pick, (160, 100), (165, 100))
 assert d.layer() is other and other.image.pixelColor(172, 100).alpha() == 255
 print("9 klikken op een laag met Selecteren maakt die laag actief en sleept haar meteen")
+# 10. aanpassingen en effecten op een lagengroep: elke rasterlaag in de groep
+from pixelpickle.effectdialog import EffectDialog
+from pixelpickle import dialogs
+d2 = Document(80, 60, QColor(255, 255, 255)); cv2 = w.add_document(d2).canvas; app.processEvents()
+gl = []
+for x in (10, 50):
+    d2.add_layer(); gl.append(d2.layer())
+    p = QPainter(d2.layer().image); p.fillRect(x, 10, 15, 15, QColor(0, 100, 200)); p.end()
+d2.active = d2.layers.index(gl[0]); d2.new_group(); grp2 = d2.layer()
+for l in gl:
+    l.group = grp2
+d2.normalize(); d2.active = d2.layers.index(grp2)
+bg_before = QImage(d2.layers[0].image)
+dlg = EffectDialog(w, d2, w.effects[0x8054])
+assert not ops.qimage_to_rgba(dlg.region)[..., 3].max() == 0, "voorbeeld van de groep is leeg"
+dlg.set_params({"red": 100, "green": 0, "blue": 0}); dlg.accept()
+assert all(l.image.pixelColor(x + 5, 15).red() > 200 for l, x in zip(gl, (10, 50))), [l.image.pixelColor(15, 15).name() for l in gl]
+assert d2.layers[0].image == bg_before
+d2.undo()
+names2 = [l.name for l in gl]
+assert all(l.image.pixelColor(x + 5, 15).red() == 0 for l, x in zip([l for l in d2.layers if l.name in names2], (10, 50)))
+d2.active = [l.kind for l in d2.layers].index("group")
+w.all_handlers()[0x804b]()  # negatief, zonder venster
+neg = [l for l in d2.layers if l.name in names2]
+assert all(l.image.pixelColor(x + 5, 15).red() == 255 for l, x in zip(neg, (10, 50)))
+d2.undo(); d2.active = [l.kind for l in d2.layers].index("group")
+ad = dialogs.AdjustDialog(w, d2, "Helderheid/contrast", ops.adj_brightness_contrast,
+                          [("brightness", "Helderheid:", -100, 100, 60), ("contrast", "Contrast:", -100, 100, 0)])
+ad.accept()
+assert all(l.image.pixelColor(x + 5, 15).lightness() > QColor(0, 100, 200).lightness()
+           for l, x in zip([l for l in d2.layers if l.name in names2], (10, 50)))
+d2.set_modified(False)
+print("10 aanpassingen en effecten werken op alle rasterlagen van een lagengroep, met voorbeeld")
+# 11. andere laag kiezen in het lagenpalet: het canvas tekent meteen opnieuw (kader van Selecteren)
+w.select_tool(w.tools[0xd011]); app.processEvents()
+painted = []
+cv2.paintEvent = lambda e, _orig=cv2.paintEvent: (painted.append(1), _orig(e))
+row = [w.layers._index(r) for r in range(w.layers.list.count())].index([l.name for l in d2.layers].index(names2[0]))
+w.layers.on_row(row); app.processEvents()
+assert painted, "canvas niet opnieuw getekend na laagwissel"
+print("11 laag kiezen in het lagenpalet werkt het canvas meteen bij")
 d.set_modified(False)
 print("ALLES OK")

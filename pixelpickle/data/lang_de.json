@@ -2114,5 +2114,7 @@
  "{} lettertypebestanden geïnstalleerd; ze zijn meteen te gebruiken.": "{} Schriftartdateien installiert; sie sind sofort verwendbar.",
  "Deze lagengroep is leeg.": "Diese Ebenengruppe ist leer.",
  "Kies een lagengroep met minstens drie lagen om te verdelen.": "Wählen Sie eine Ebenengruppe mit mindestens drei Ebenen zum Verteilen.",
- "Kies een lagengroep met minstens twee lagen.": "Wählen Sie eine Ebenengruppe mit mindestens zwei Ebenen."
+ "Kies een lagengroep met minstens twee lagen.": "Wählen Sie eine Ebenengruppe mit mindestens zwei Ebenen.",
+ "Deze lagengroep bevat geen rasterlagen om te bewerken.": "Diese Ebenengruppe enthält keine Rasterebenen zum Bearbeiten.",
+ "Tekst- en vectorlagen in de groep worden overgeslagen.": "Text- und Vektorebenen in der Gruppe werden übersprungen."
 }

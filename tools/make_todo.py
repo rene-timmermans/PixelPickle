@@ -125,6 +125,7 @@ Geen bekende beperkingen op dit moment.
 
 Wat al gebouwd is, met de versie waarin het verscheen.
 
+- [x] Aanpassingen en effecten op lagengroepen, met voorbeeld; kader volgt direct de gekozen laag (1.3.0)
 - [x] Selecteren op lagengroepen; uitlijnen, verdelen en even groot maken op lagen; klik kiest de laag (1.2.0)
 - [x] Ctrl kiest een kleur bij kleurpenselen; spiegelen op de eigen plek; Naar doel overgaan zonder opbouw;
   1-pixel selecties; schuifbalk bij laagdekking; smallere kleurtabbladen; augurk in het infovenster (1.1.0)

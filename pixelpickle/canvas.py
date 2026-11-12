@@ -94,6 +94,10 @@ class Canvas(QWidget):
         doc.changed.connect(self._on_changed)
         doc.sizeChanged.connect(self._on_size)
         doc.selectionChanged.connect(self._on_selection)
+        # andere actieve laag (lagenpalet) of laagstructuur: meteen opnieuw tekenen, zodat bijvoorbeeld het
+        # kader van Selecteren direct om de nieuwe laag staat (het beeld zelf hoeft niet opnieuw samengesteld)
+        doc.titleChanged.connect(self.update)
+        doc.structureChanged.connect(self.update)
         self.recompose()
 
     # ------------------------------------------------------------ beeld

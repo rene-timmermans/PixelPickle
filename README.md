@@ -112,6 +112,10 @@ Arabisch (van rechts naar links). Bij de eerste start is de taal Engels. Kies ee
 
 ## Wat er nieuw is
 
+**1.3.0** Aanpassingen en effecten werken op lagengroepen: is een groep de actieve laag, dan wordt elke rasterlaag
+erin bewerkt en toont het voorbeeldvenster de hele groep. Kies je in het lagenpalet een andere laag, dan staat het
+kader van het gereedschap Selecteren meteen om die laag.
+
 **1.2.0** Het gereedschap Selecteren werkt op lagengroepen: verplaatsen, schalen en roteren doen de hele groep
 als één geheel. Uitlijnen, Verdelen en Even groot maken werken ook op de lagen in een groep. Klik je met Selecteren
 op iets van een andere laag, dan wordt die laag meteen actief en kun je haar direct slepen.

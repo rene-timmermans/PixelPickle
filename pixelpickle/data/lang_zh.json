@@ -2114,5 +2114,7 @@
  "{} lettertypebestanden geïnstalleerd; ze zijn meteen te gebruiken.": "已安装 {} 个字体文件；可立即使用。",
  "Deze lagengroep is leeg.": "此图层组为空。",
  "Kies een lagengroep met minstens drie lagen om te verdelen.": "请选择至少包含三个图层的图层组进行分布。",
- "Kies een lagengroep met minstens twee lagen.": "请选择至少包含两个图层的图层组。"
+ "Kies een lagengroep met minstens twee lagen.": "请选择至少包含两个图层的图层组。",
+ "Deze lagengroep bevat geen rasterlagen om te bewerken.": "此图层组中没有可编辑的栅格图层。",
+ "Tekst- en vectorlagen in de groep worden overgeslagen.": "组中的文本图层和矢量图层将被跳过。"
 }

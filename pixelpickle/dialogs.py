@@ -137,8 +137,8 @@ class AdjustDialog(QDialog):
         super().__init__(main)
         self.setWindowTitle(title)
         self.doc, self.fn, self.title = doc, fn, title
-        self.layer = doc.layer()
-        self.orig = QImage(self.layer.image)
+        self.targets = doc.effect_targets()  # de actieve laag, of elke rasterlaag van een lagengroep
+        self.origs = [QImage(l.image) for l in self.targets]
         self.sliders = {}
         v = QVBoxLayout(self)
         f = QFormLayout()
@@ -173,37 +173,39 @@ class AdjustDialog(QDialog):
     def schedule(self):
         self.timer.start()
 
-    def _result(self):
+    def _result(self, orig):
         d = self.doc
         r = d.selection_bbox() if d.sel is not None else d.rect()
-        out = QImage(self.orig)
+        out = QImage(orig)
         if r.isEmpty():
-            return out, r
-        vals = self.values()
-        res = ops.rgba_to_qimage(self.fn(ops.qimage_to_rgba(self.orig.copy(r)), **vals))
+            return out
+        res = ops.rgba_to_qimage(self.fn(ops.qimage_to_rgba(orig.copy(r)), **self.values()))
         apply_region(out, r, res, d.sel)
-        return out, r
+        return out
+
+    def _restore(self):
+        for l, o in zip(self.targets, self.origs):
+            l.image = o
 
     def update_preview(self):
-        if self.preview.isChecked():
-            self.layer.image, _ = self._result()
-        else:
-            self.layer.image = self.orig
+        for l, o in zip(self.targets, self.origs):
+            l.image = self._result(o) if self.preview.isChecked() else o
         self.doc.changed.emit(QRect())
 
     def accept(self):
         self.timer.stop()
-        out, _ = self._result()
-        self.layer.image = self.orig
+        outs = [self._result(o) for o in self.origs]
+        self._restore()
         self.doc.push_undo(self.title)
-        self.layer.image = out
+        for l, out in zip(self.targets, outs):
+            l.image = out
         self.doc.changed.emit(QRect())
         self.doc.structureChanged.emit()
         super().accept()
 
     def reject(self):
         self.timer.stop()
-        self.layer.image = self.orig
+        self._restore()
         self.doc.changed.emit(QRect())
         super().reject()
 

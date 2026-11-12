@@ -1223,20 +1223,32 @@ class Document(QObject):
         self.structureChanged.emit()
 
     # ------------------------------------------------------------ pixelfilters
+    def effect_targets(self):
+        """Lagen waarop een aanpassing of effect werkt: de actieve laag, of bij een lagengroep elke rasterlaag
+        erin (tekst-, vector- en aanpassingslagen in de groep worden overgeslagen)."""
+        act = self.layer()
+        if act.kind != "group":
+            return [act]
+        return [l for l in self.subtree(act) if l.kind == "raster" and l.adjust is None and l.text is None
+                and l.vector is None and l.role is None]
+
     def apply_to_layer(self, fn, label, base: QImage | None = None, push=True):
-        """Pas fn(rgba)->rgba toe op de actieve laag, binnen de selectie."""
-        layer = self.layer()
-        src = base if base is not None else layer.image
+        """Pas fn(rgba)->rgba toe op de actieve laag (of elke rasterlaag van een actieve groep), binnen de selectie."""
+        targets = [self.layer()] if base is not None else self.effect_targets()
         r = self.selection_bbox() if self.sel is not None else self.rect()
-        if r.isEmpty():
+        if r.isEmpty() or not targets:
             return
-        local = src.copy(r)
-        result = ops.rgba_to_qimage(fn(ops.qimage_to_rgba(local)))
-        out = QImage(src)
-        apply_region(out, r, result, self.sel)
+        outs = []
+        for layer in targets:
+            src = base if base is not None else layer.image
+            result = ops.rgba_to_qimage(fn(ops.qimage_to_rgba(src.copy(r))))
+            out = QImage(src)
+            apply_region(out, r, result, self.sel)
+            outs.append(out)
         if push:
             self.push_undo(label)
-        layer.image = out
+        for layer, out in zip(targets, outs):
+            layer.image = out
         self.changed.emit(r)
         self.structureChanged.emit()
 

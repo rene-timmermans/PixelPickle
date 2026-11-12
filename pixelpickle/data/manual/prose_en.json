@@ -63,7 +63,7 @@
   "807b": "Opens the Effect Browser, which shows the effects side by side with a preview of your image. Pick one to open it with its settings.",
   "8140": "Adds a new, empty raster layer above the active layer. A dialog lets you set its name, opacity, blend mode and other properties first.",
   "8141": "Adds a new vector layer for editable lines and shapes drawn with the Pen and shape tools.",
-  "8191": "Puts the active layer in a new layer group, so you can move, hide or mask several layers together.",
+  "8191": "Puts the active layer in a new layer group, so you can move, hide or mask several layers together. When the group is the active layer, adjustments and effects work on every raster layer in the group, and the preview shows the whole group.",
   "8107": "Adds a mask that hides the whole layer (Shift+Y). Paint white on the mask to reveal parts again.",
   "8108": "Adds a mask that shows the whole layer. Paint black on the mask to hide parts.",
   "8106": "Adds a mask that hides the selected area and shows the rest.",

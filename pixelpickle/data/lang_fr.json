@@ -2114,5 +2114,7 @@
  "{} lettertypebestanden geïnstalleerd; ze zijn meteen te gebruiken.": "{} fichiers de police installés ; ils sont utilisables immédiatement.",
  "Deze lagengroep is leeg.": "Ce groupe de calques est vide.",
  "Kies een lagengroep met minstens drie lagen om te verdelen.": "Choisissez un groupe de calques contenant au moins trois calques à répartir.",
- "Kies een lagengroep met minstens twee lagen.": "Choisissez un groupe de calques contenant au moins deux calques."
+ "Kies een lagengroep met minstens twee lagen.": "Choisissez un groupe de calques contenant au moins deux calques.",
+ "Deze lagengroep bevat geen rasterlagen om te bewerken.": "Ce groupe de calques ne contient aucun calque raster à modifier.",
+ "Tekst- en vectorlagen in de groep worden overgeslagen.": "Les calques de texte et vectoriels du groupe sont ignorés."
 }

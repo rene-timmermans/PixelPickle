@@ -2114,5 +2114,7 @@
  "{} lettertypebestanden geïnstalleerd; ze zijn meteen te gebruiken.": "Установлено файлов шрифтов: {}; их можно использовать сразу.",
  "Deze lagengroep is leeg.": "Эта группа слоёв пуста.",
  "Kies een lagengroep met minstens drie lagen om te verdelen.": "Выберите группу слоёв минимум с тремя слоями для распределения.",
- "Kies een lagengroep met minstens twee lagen.": "Выберите группу слоёв минимум с двумя слоями."
+ "Kies een lagengroep met minstens twee lagen.": "Выберите группу слоёв минимум с двумя слоями.",
+ "Deze lagengroep bevat geen rasterlagen om te bewerken.": "В этой группе слоёв нет растровых слоёв для обработки.",
+ "Tekst- en vectorlagen in de groep worden overgeslagen.": "Текстовые и векторные слои группы пропускаются."
 }

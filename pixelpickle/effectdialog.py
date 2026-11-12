@@ -174,7 +174,13 @@ class EffectDialog(QDialog):
         self.ctx = Ctx(fg=main.fg.getRgb()[:3], bg=main.bg.getRgb()[:3])
         layer = doc.layer()
         self.layer = layer
-        self.orig = QImage(layer.image)
+        # de actieve laag, of bij een lagengroep elke rasterlaag erin (het voorbeeld toont dan de hele groep)
+        self.targets = doc.effect_targets() if mode == "apply" else [layer]
+        self.origs = [QImage(l.image) for l in self.targets]
+        if mode == "apply" and layer.kind == "group":
+            self.orig = doc.composite(None, self.targets)
+        else:
+            self.orig = QImage(layer.image)
         self.rect = doc.selection_bbox() if doc.sel is not None else doc.rect()
         if mode == "params":  # aanpassingslaag: voorbeeld op de samengestelde lagen eronder
             below = doc.layers[:doc.active] if layer.adjust else doc.layers[:doc.active + 1]
@@ -508,19 +514,25 @@ class EffectDialog(QDialog):
         img = self._draw(res, (cx - x0) * self.zoom, (cy - y0) * self.zoom, 1.0)
         self.after.setPixmap(checker_pixmap(img))
 
-    def result_image(self):
-        region = self.orig.copy(self.rect)
+    def result_image(self, orig=None):
+        orig = self.orig if orig is None else orig
+        region = orig.copy(self.rect)
         res = ops.rgba_to_qimage(run_effect(self.eff, ops.qimage_to_rgba(region), self.ctx, self.params()))
-        out = QImage(self.orig)
+        out = QImage(orig)
         apply_region(out, self.rect, res, self.doc.sel)
         return out
+
+    def _restore(self):
+        for l, o in zip(self.targets, self.origs):
+            l.image = o
 
     def update_on_image(self):
         if self.mode != "apply":
             return
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         try:
-            self.layer.image = self.result_image() if self.on_image.isChecked() else self.orig
+            for l, o in zip(self.targets, self.origs):
+                l.image = self.result_image(o) if self.on_image.isChecked() else o
         finally:
             QApplication.restoreOverrideCursor()
         self.doc.changed.emit(QRect())
@@ -537,12 +549,13 @@ class EffectDialog(QDialog):
         if self.mode == "apply":
             QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
             try:
-                out = self.result_image()
+                outs = [self.result_image(o) for o in self.origs]
             finally:
                 QApplication.restoreOverrideCursor()
-            self.layer.image = self.orig
+            self._restore()
             self.doc.push_undo(self.eff.name)
-            self.layer.image = out
+            for l, out in zip(self.targets, outs):
+                l.image = out
             self.doc.changed.emit(QRect())
             self.doc.structureChanged.emit()
         super().accept()
@@ -550,8 +563,8 @@ class EffectDialog(QDialog):
     def reject(self):
         self.timer.stop()
         self.img_timer.stop()
-        if self.mode == "apply" and self.layer.image is not self.orig:
-            self.layer.image = self.orig
+        if self.mode == "apply" and any(l.image is not o for l, o in zip(self.targets, self.origs)):
+            self._restore()
             self.doc.changed.emit(QRect())
         super().reject()
 
@@ -565,7 +578,8 @@ class EffectBrowser(QDialog):
         self.main, self.doc = main, doc
         self.setWindowTitle("Effecten zoeken")
         self.resize(900, 600)
-        src = doc.layer().image.scaled(110, 85, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        base = doc.composite(None, doc.effect_targets()) if doc.layer().kind == "group" else doc.layer().image
+        src = base.scaled(110, 85, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
         self.thumb_rgba = ops.qimage_to_rgba(src)
         self.scale = src.width() / max(1, doc.w)
         self.chosen = None

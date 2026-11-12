@@ -2114,5 +2114,7 @@
  "{} lettertypebestanden geïnstalleerd; ze zijn meteen te gebruiken.": "تم تثبيت {} ملفات خطوط؛ يمكن استخدامها فورًا.",
  "Deze lagengroep is leeg.": "مجموعة الطبقات هذه فارغة.",
  "Kies een lagengroep met minstens drie lagen om te verdelen.": "اختر مجموعة طبقات تحتوي على ثلاث طبقات على الأقل للتوزيع.",
- "Kies een lagengroep met minstens twee lagen.": "اختر مجموعة طبقات تحتوي على طبقتين على الأقل."
+ "Kies een lagengroep met minstens twee lagen.": "اختر مجموعة طبقات تحتوي على طبقتين على الأقل.",
+ "Deze lagengroep bevat geen rasterlagen om te bewerken.": "لا تحتوي مجموعة الطبقات هذه على طبقات نقطية لتحريرها.",
+ "Tekst- en vectorlagen in de groep worden overgeslagen.": "يتم تخطي الطبقات النصية والمتجهة في المجموعة."
 }
