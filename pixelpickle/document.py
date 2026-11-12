@@ -423,6 +423,27 @@ class Document(QObject):
         self.set_modified(True)
         self.historyChanged.emit()
 
+    def jump_history(self, k):
+        """Naar stap k van de geschiedenis (k = aantal stappen op de ongedaan-maakstapel), in één keer:
+        alleen de eindtoestand wordt hersteld en alles wordt één keer bijgewerkt, in plaats van na elke stap."""
+        n = len(self.undo_stack)
+        if k == n or k < 0 or k > n + len(self.redo_stack):
+            return
+        cur = self.snapshot()
+        if k < n:  # terug: elke tussenstand gaat op de opnieuw-stapel
+            for _ in range(n - k):
+                label, s = self.undo_stack.pop()
+                self.redo_stack.append((label, cur))
+                cur = s
+        else:  # vooruit
+            for _ in range(k - n):
+                label, s = self.redo_stack.pop()
+                self.undo_stack.append((label, cur))
+                cur = s
+        self.restore(cur)
+        self.set_modified(True)
+        self.historyChanged.emit()
+
     def redo(self):
         if not self.redo_stack:
             return

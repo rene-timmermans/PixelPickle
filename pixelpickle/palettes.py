@@ -534,11 +534,14 @@ class HistoryPalette(QWidget):
 
     def jump(self, it):
         d = self.doc
-        k = self.list.row(it)
-        while len(d.undo_stack) > k and d.undo_stack:
-            d.undo()
-        while len(d.undo_stack) < k and d.redo_stack:
-            d.redo()
+        if d is None:
+            return
+        from PySide6.QtWidgets import QApplication
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        try:
+            d.jump_history(self.list.row(it))
+        finally:
+            QApplication.restoreOverrideCursor()
 
 
 # ================================================================ Histogram, Overzicht, Penseelvariantie

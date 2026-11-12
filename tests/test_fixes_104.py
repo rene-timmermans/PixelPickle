@@ -187,5 +187,22 @@ assert ml[0].image.pixelColor(45, 15) == QColor(255, 0, 0) and ml[0].image.pixel
 assert ml[1].image.pixelColor(15, 15) == QColor(255, 0, 0) and ml[1].image.pixelColor(10, 10) == QColor(0, 0, 255)
 d3.set_modified(False)
 print("12 spiegelen van een lagengroep gebeurt als geheel, op dezelfde plek")
+# 13. springen in de geschiedenis: in één keer, met hetzelfde resultaat als stap voor stap
+d4 = Document(60, 40, QColor(255, 255, 255)); w.add_document(d4); app.processEvents()
+for i in range(5):
+    d4.add_layer(Layer(f"L{i}", new_image(60, 40)), label=f"stap {i}")
+names_at = lambda: [l.name for l in d4.layers]
+full = names_at()
+d4.jump_history(2)
+assert names_at() == full[:3] and len(d4.undo_stack) == 2 and len(d4.redo_stack) == 3, names_at()
+assert [lab for lab, _ in d4.redo_stack] == ["stap 4", "stap 3", "stap 2"]
+d4.redo(); assert names_at() == full[:4]
+d4.jump_history(5); assert names_at() == full and not d4.redo_stack
+d4.jump_history(0); assert names_at() == full[:1]
+d4.undo(); assert names_at() == full[:1]  # niets meer ongedaan te maken
+w.history.set_doc(d4); w.history.refresh()
+w.history.jump(w.history.list.item(5)); assert names_at() == full
+d4.set_modified(False)
+print("13 springen in de geschiedenis gebeurt in één keer en klopt met stap voor stap")
 d.set_modified(False)
 print("ALLES OK")
