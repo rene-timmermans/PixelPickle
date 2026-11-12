@@ -1,6 +1,6 @@
 # Pakketbeschrijving voor PixelPickle. Bouwen: in deze map  makepkg  (of via ../tools/build_package.sh)
 pkgname=pixelpickle
-pkgver=1.3.0
+pkgver=1.3.1
 pkgrel=1
 pkgdesc="Fotobewerker voor Linux met een begrijpelijke en vertrouwde indeling van de gereedschappen"
 arch=('any')

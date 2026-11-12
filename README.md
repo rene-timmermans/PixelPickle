@@ -112,6 +112,9 @@ Arabisch (van rechts naar links). Bij de eerste start is de taal Engels. Kies ee
 
 ## Wat er nieuw is
 
+**1.3.1** Spiegelen en omdraaien van een lagengroep gebeurt als geheel, op dezelfde plek. In het lagenpalet zijn
+het oogje en het uitklappijltje nu ook op de geselecteerde rij altijd goed te zien, in elk thema.
+
 **1.3.0** Aanpassingen en effecten werken op lagengroepen: is een groep de actieve laag, dan wordt elke rasterlaag
 erin bewerkt en toont het voorbeeldvenster de hele groep. Kies je in het lagenpalet een andere laag, dan staat het
 kader van het gereedschap Selecteren meteen om die laag.
