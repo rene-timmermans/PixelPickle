@@ -515,7 +515,25 @@ class PickTool(Tool):
     def _vector(self, d):
         return d.layer().vector is not None
 
+    @staticmethod
+    def _members(d):
+        """Bij een actieve lagengroep: alle lagen erin (zonder de groepen zelf), anders None."""
+        act = d.layer()
+        if act.kind != "group":
+            return None
+        return [l for l in d.subtree(act) if l.kind != "group"]
+
     def _bbox(self, d):
+        members = self._members(d)
+        if members is not None:  # lagengroep: het kader om de inhoud van alle lagen erin
+            r = QRectF()
+            for l in members:
+                if l.adjust is not None:
+                    continue
+                b = ops.mask_bbox(ops.qimage_to_rgba(l.image)[..., 3] > 0)
+                if not b.isEmpty():
+                    r = r.united(QRectF(b))
+            return r if not r.isEmpty() else None
         if self._vector(d):  # vectorlaag: het kader om de gekozen objecten
             from . import vectorlayer as V
             sel = d.vsel
@@ -592,10 +610,49 @@ class PickTool(Tool):
             return Qt.CursorShape.SizeVerCursor if i in (0, 2) else Qt.CursorShape.SizeHorCursor
         return Qt.CursorShape.SizeAllCursor
 
+    @staticmethod
+    def _layer_at(d, pt):
+        """De bovenste zichtbare laag met een (niet geheel doorzichtige) pixel op pt, of None. De achtergrondlaag
+        telt niet mee: die kies je in het lagenpalet."""
+        x, y = int(math.floor(pt.x())), int(math.floor(pt.y()))
+        if not (0 <= x < d.w and 0 <= y < d.h):
+            return None
+        for k in range(len(d.layers) - 1, -1, -1):
+            l = d.layers[k]
+            if l.kind == "group" or l.adjust is not None or l.role == "seledit":
+                continue
+            if k == 0 and l.name in BG_NAMES:
+                continue
+            p, shown = l, True
+            while p is not None:
+                shown = shown and p.visible
+                p = p.group
+            if shown and l.image.pixelColor(x, y).alpha() > 0:
+                return l
+        return None
+
+    def _auto_layer(self, cv, pt):
+        """Klik buiten het kader op een andere laag: die laag wordt de actieve laag (en kan meteen gesleept worden)."""
+        d = cv.doc
+        if self._hit(cv, pt) is not None:
+            return
+        if self._vector(d) and self._obj_at(d, pt, 4 / cv.zoom) is not None:
+            return
+        other = self._layer_at(d, pt)
+        if other is None or other is d.layer():
+            return
+        d.active = d.layers.index(other)
+        if other.vector is not None:
+            d.vsel = []
+        self._stale = True
+        d.structureChanged.emit()
+        cv.update()
+
     def press(self, cv, pt, ev):
         if ev.button() != LB:
             return
         d = cv.doc
+        self._auto_layer(cv, pt)
         self._stale = True
         if self._vector(d):
             from . import vectorops as VO
@@ -645,6 +702,9 @@ class PickTool(Tool):
         from .vectorlayer import copy_vector
         self.text_base = copy_text(d.layer().text)
         self.vector_base = copy_vector(d.layer().vector)
+        members = self._members(d)
+        self.group_base = None if members is None else [
+            (l, QImage(l.image), copy_text(l.text), copy_vector(l.vector)) for l in members]
         self.drag = hit
         self.start = pt
         self.base = QImage(d.layer().image)
@@ -698,6 +758,25 @@ class PickTool(Tool):
             self.main.statusBar().showMessage(f"Schaal X: {sx * 100:.1f}%  Schaal Y: {sy * 100:.1f}%")
         self.T = T
         d = cv.doc
+        if getattr(self, "group_base", None):  # lagengroep: alle lagen erin als één geheel
+            from . import vectorlayer as V
+            from .textlayer import copy_text, set_transform, transform
+            for layer, img, text, vec in self.group_base:
+                if text is not None:
+                    t = copy_text(text)
+                    set_transform(t, transform(t) * T)
+                    layer.text = t
+                    d.render_text(layer)
+                elif vec is not None:
+                    objs = V.copy_vector(vec)
+                    V.transform(objs, T)
+                    layer.vector = objs
+                    d.render_vector(layer)
+                else:
+                    layer.image = self._transformed(d, img, T)
+            self.changed_any = True
+            d.changed.emit(QRect())
+            return
         if getattr(self, "vector_base", None) is not None:  # vectorlaag: alleen de gekozen objecten
             from . import vectorlayer as V
             objs = V.copy_vector(self.vector_base)
@@ -716,16 +795,20 @@ class PickTool(Tool):
             self.changed_any = True
             d.changed.emit(QRect())
             return
+        d.layer().image = self._transformed(d, self.base, T)
+        self.changed_any = True
+        d.changed.emit(QRect())
+
+    @staticmethod
+    def _transformed(d, img, T):
         out = new_image(d.w, d.h)
         p = QPainter(out)
         p.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
         p.setTransform(T)
-        p.drawImage(0, 0, self.base)
+        p.drawImage(0, 0, img)
         p.end()
-        d.layer().image = out
-        self.changed_any = True
-        d.changed.emit(QRect())
+        return out
 
     def release(self, cv, pt, ev):
         if self.drag is None:
@@ -746,6 +829,7 @@ class PickTool(Tool):
             cv.doc.drop_last_undo()
         self._stale = True
         self.base = None
+        self.group_base = None
         cv.doc.structureChanged.emit()
         cv.update()
 

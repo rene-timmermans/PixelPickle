@@ -6,7 +6,7 @@ Architecture: all
 Maintainer: rtimmermans <rtimmermans@infodatek.com>
 Depends: python3 (>= 3.11), python3-numpy, python3-pil, python3-pyside6.qtcore, python3-pyside6.qtgui, python3-pyside6.qtwidgets
 Recommends: fonts-noto-core, fonts-noto-cjk
-Homepage: https://github.com/rene-timmermans/pixelpickle
+Homepage: https://github.com/rene-timmermans/PixelPickle
 Description: Fotobewerker voor Linux met een begrijpelijke en vertrouwde indeling van de gereedschappen
  PixelPickle is een fotobewerker voor Linux met een begrijpelijke en vertrouwde
  indeling van menu's, gereedschappen en sneltoetsen: lagen, maskers,

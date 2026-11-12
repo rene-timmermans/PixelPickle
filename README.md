@@ -91,7 +91,7 @@ niet hoeft te zoeken.
 ## Installeren
 
 Download het pakket voor jouw distributie bij de nieuwste
-[release](https://github.com/rene-timmermans/pixelpickle/releases/latest). Alles wat PixelPickle nodig
+[release](https://github.com/rene-timmermans/PixelPickle/releases/latest). Alles wat PixelPickle nodig
 heeft, installeert je pakketbeheerder automatisch mee. Daarna staat PixelPickle in het menu (Grafisch)
 of start je het met `pixelpickle`.
 

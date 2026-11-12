@@ -1341,7 +1341,7 @@ class AboutDialog(QDialog):
             pic.setPixmap(art)
         pic.setAlignment(Qt.AlignmentFlag.AlignTop)
         top.addWidget(pic)
-        url = "https://github.com/rene-timmermans/pixelpickle"
+        url = "https://github.com/rene-timmermans/PixelPickle"
         txt = QLabel(
             f"<h2 style='margin:0'>PixelPickle {__version__}</h2>"
             f"<p>{tr('Een eenvoudig te gebruiken fotobewerker die meteen vertrouwd aanvoelt.')}</p>"

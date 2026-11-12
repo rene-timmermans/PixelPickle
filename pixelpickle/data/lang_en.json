@@ -2111,5 +2111,8 @@
  "Taal": "Language",
  "Transparantie en arcering": "Transparency and Shading",
  "Zwevende werkbalk bij bijsnijden tonen": "Show the floating crop toolbar",
- "{} lettertypebestanden geïnstalleerd; ze zijn meteen te gebruiken.": "{} font files installed; you can use them right away."
+ "{} lettertypebestanden geïnstalleerd; ze zijn meteen te gebruiken.": "{} font files installed; you can use them right away.",
+ "Deze lagengroep is leeg.": "This layer group is empty.",
+ "Kies een lagengroep met minstens drie lagen om te verdelen.": "Choose a layer group with at least three layers to distribute.",
+ "Kies een lagengroep met minstens twee lagen.": "Choose a layer group with at least two layers."
 }

@@ -2111,5 +2111,8 @@
  "Taal": "Idioma",
  "Transparantie en arcering": "Transparencia y sombreado",
  "Zwevende werkbalk bij bijsnijden tonen": "Mostrar la barra flotante de recorte",
- "{} lettertypebestanden geïnstalleerd; ze zijn meteen te gebruiken.": "{} archivos de fuentes instalados; se pueden usar de inmediato."
+ "{} lettertypebestanden geïnstalleerd; ze zijn meteen te gebruiken.": "{} archivos de fuentes instalados; se pueden usar de inmediato.",
+ "Deze lagengroep is leeg.": "Este grupo de capas está vacío.",
+ "Kies een lagengroep met minstens drie lagen om te verdelen.": "Elija un grupo de capas con al menos tres capas para distribuir.",
+ "Kies een lagengroep met minstens twee lagen.": "Elija un grupo de capas con al menos dos capas."
 }

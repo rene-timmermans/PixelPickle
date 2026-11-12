@@ -3,7 +3,7 @@ Version:        %{pp_version}
 Release:        1%{?dist}
 Summary:        Fotobewerker voor Linux met een begrijpelijke en vertrouwde indeling van de gereedschappen
 License:        GPL-3.0-or-later
-URL:            https://github.com/rene-timmermans/pixelpickle
+URL:            https://github.com/rene-timmermans/PixelPickle
 Source0:        pixelpickle-%{version}.tar.gz
 BuildArch:      noarch
 Requires:       python3 >= 3.11

@@ -2111,5 +2111,8 @@
  "Taal": "اللغة",
  "Transparantie en arcering": "الشفافية والتظليل",
  "Zwevende werkbalk bij bijsnijden tonen": "إظهار شريط أدوات القص العائم",
- "{} lettertypebestanden geïnstalleerd; ze zijn meteen te gebruiken.": "تم تثبيت {} ملفات خطوط؛ يمكن استخدامها فورًا."
+ "{} lettertypebestanden geïnstalleerd; ze zijn meteen te gebruiken.": "تم تثبيت {} ملفات خطوط؛ يمكن استخدامها فورًا.",
+ "Deze lagengroep is leeg.": "مجموعة الطبقات هذه فارغة.",
+ "Kies een lagengroep met minstens drie lagen om te verdelen.": "اختر مجموعة طبقات تحتوي على ثلاث طبقات على الأقل للتوزيع.",
+ "Kies een lagengroep met minstens twee lagen.": "اختر مجموعة طبقات تحتوي على طبقتين على الأقل."
 }

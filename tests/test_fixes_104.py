@@ -8,7 +8,7 @@ os.environ["XDG_CONFIG_HOME"] = tempfile.mkdtemp()
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np  # noqa: E402
 from PySide6.QtCore import QEvent, QPointF, Qt  # noqa: E402
-from PySide6.QtGui import QColor, QMouseEvent, QPainter  # noqa: E402
+from PySide6.QtGui import QColor, QImage, QMouseEvent, QPainter  # noqa: E402
 from PySide6.QtWidgets import QApplication  # noqa: E402
 
 app = QApplication(sys.argv)
@@ -76,5 +76,59 @@ m = ops.qimage_to_mask(d.sel)
 assert np.nonzero((m > 0).any(0))[0].tolist() == [10] and m[20, 10] == 255
 stroke(sel, (50, 50), (50.1, 50.1)); assert d.sel is None
 print("6 slepen binnen één pixelkolom selecteert precies die kolom; klikken heft de selectie op")
+# 7. Selecteren op een lagengroep: kader om de inhoud van de groep, alles verplaatst samen
+d.sel = None
+base_bg = QImage(d.layers[0].image)
+circles = []
+for i in range(3):
+    d.add_layer(); circles.append(d.layer()); p = QPainter(d.layer().image); p.setBrush(QColor(0, 0, 255)); p.setPen(Qt.PenStyle.NoPen)
+    p.drawEllipse(QPointF(30 + 40 * i, 30), 8, 8); p.end()
+d.active = d.layers.index(circles[0]); d.new_group()
+g = d.layer()
+for l in circles:
+    l.group = g
+d.normalize(); d.active = d.layers.index(g)
+pick = w.tools[0xd011]; w.select_tool(pick); cv.zoom = 1
+box = pick._bbox(d)
+assert abs(box.left() - 22) <= 1 and abs(box.right() - 118) <= 1, box
+stroke(pick, (30, 30), (40, 50))
+assert all(l.image.pixelColor(40 + 40 * i, 50).alpha() == 255 for i, l in enumerate(circles))
+assert all(l.image.pixelColor(30 + 40 * i, 30).alpha() == 0 for i, l in enumerate(circles))
+assert d.layers[0].image == base_bg, "achtergrond mag niet meebewegen"
+names = [l.name for l in circles]
+d.undo()
+by_name = {l.name: l for l in d.layers}
+assert all(by_name[n].image.pixelColor(30 + 40 * i, 30).alpha() == 255 for i, n in enumerate(names)), "ongedaan maken"
+
+print("7 Selecteren op een lagengroep verplaatst alle lagen erin samen, de achtergrond blijft staan")
+# 8. Verdelen en uitlijnen op een lagengroep: elke laag is een object
+grp = [l for l in d.layers if l.kind == "group"][-1]
+d.active = d.layers.index(grp)
+kids = [l for l in d.children(grp)]
+bb = lambda l: ops.mask_bbox(ops.qimage_to_rgba(l.image)[..., 3] > 0)
+p = QPainter(kids[1].image); p.setCompositionMode(QPainter.CompositionMode.CompositionMode_Clear); p.fillRect(kids[1].image.rect(), Qt.GlobalColor.transparent); p.end()
+p = QPainter(kids[1].image); p.setBrush(QColor(0, 0, 255)); p.setPen(Qt.PenStyle.NoPen); p.drawEllipse(QPointF(50, 80), 8, 8); p.end()
+w.all_handlers()[0x8164]()  # verticaal gelijkmatig verdelen (middens)
+ys = sorted(bb(l).center().y() for l in kids)
+assert abs((ys[1] - ys[0]) - (ys[2] - ys[1])) <= 1, ys
+w.all_handlers()[0x8163]()  # bovenkanten uitlijnen
+assert len({bb(l).top() for l in kids}) == 1, [bb(l) for l in kids]
+print("8 verdelen en uitlijnen werken op de lagen van een lagengroep")
+# 9. klik met Selecteren op een andere laag maakt die laag actief
+w.select_tool(pick)
+for l in d.layers:
+    if l.name == "figuur":
+        l.visible = False
+target = kids[0]
+c = bb(target).center()
+d.active = 0  # achtergrond actief: kader om de hele achtergrond, dus eerst een andere laag buiten de groep
+d.add_layer(); other = d.layer()
+p = QPainter(other.image); p.fillRect(150, 90, 20, 20, QColor(0, 200, 0)); p.end()
+pick._stale = True
+stroke(pick, (c.x(), c.y()), (c.x(), c.y()))
+assert d.layer() is target, d.layer().name
+stroke(pick, (160, 100), (165, 100))
+assert d.layer() is other and other.image.pixelColor(172, 100).alpha() == 255
+print("9 klikken op een laag met Selecteren maakt die laag actief en sleept haar meteen")
 d.set_modified(False)
 print("ALLES OK")

@@ -2111,5 +2111,8 @@
  "Taal": "Langue",
  "Transparantie en arcering": "Transparence et ombrage",
  "Zwevende werkbalk bij bijsnijden tonen": "Afficher la barre d'outils flottante de recadrage",
- "{} lettertypebestanden geïnstalleerd; ze zijn meteen te gebruiken.": "{} fichiers de police installés ; ils sont utilisables immédiatement."
+ "{} lettertypebestanden geïnstalleerd; ze zijn meteen te gebruiken.": "{} fichiers de police installés ; ils sont utilisables immédiatement.",
+ "Deze lagengroep is leeg.": "Ce groupe de calques est vide.",
+ "Kies een lagengroep met minstens drie lagen om te verdelen.": "Choisissez un groupe de calques contenant au moins trois calques à répartir.",
+ "Kies een lagengroep met minstens twee lagen.": "Choisissez un groupe de calques contenant au moins deux calques."
 }

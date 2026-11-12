@@ -2111,5 +2111,8 @@
  "Taal": "语言",
  "Transparantie en arcering": "透明度和遮罩",
  "Zwevende werkbalk bij bijsnijden tonen": "显示浮动裁剪工具栏",
- "{} lettertypebestanden geïnstalleerd; ze zijn meteen te gebruiken.": "已安装 {} 个字体文件；可立即使用。"
+ "{} lettertypebestanden geïnstalleerd; ze zijn meteen te gebruiken.": "已安装 {} 个字体文件；可立即使用。",
+ "Deze lagengroep is leeg.": "此图层组为空。",
+ "Kies een lagengroep met minstens drie lagen om te verdelen.": "请选择至少包含三个图层的图层组进行分布。",
+ "Kies een lagengroep met minstens twee lagen.": "请选择至少包含两个图层的图层组。"
 }

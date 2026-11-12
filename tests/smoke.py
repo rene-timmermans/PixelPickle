@@ -113,7 +113,7 @@ assert cv.cache.pixelColor(390, 290).lightness() > base_px.lightness(), "aanpass
 from pixelpickle.document import new_image as _ni
 lay.image = _ni(doc.w, doc.h, QColor(0, 0, 0)); doc.changed.emit(QRect()); app.processEvents()
 assert cv.cache.pixelColor(390, 290) == base_px, "zwart masker moet effect verbergen"
-fileio.save(doc, os.path.join(_TMP, "adj.ora")); assert fileio.load(os.path.join(_TMP, "adj.ora")).layers[-1].adjust[0] == 0x8052
+fileio.save(doc, os.path.join(_TMP, "adj.ora")); assert [l.adjust[0] for l in fileio.load(os.path.join(_TMP, "adj.ora")).layers if l.adjust] == [0x8052]
 w.layer_properties(); doc.delete_layer()
 # koppelingsset
 doc.add_layer(); a1 = doc.layer(); a1.link_set = 1; doc.add_layer(); a2 = doc.layer(); a2.link_set = 1

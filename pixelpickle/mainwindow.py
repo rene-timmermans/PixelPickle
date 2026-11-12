@@ -4,7 +4,7 @@ import traceback
 
 import numpy as np
 from PySide6.QtCore import QEvent, QPointF, QRect, QRectF, QSettings, QSize, Qt, QTimer
-from PySide6.QtGui import QAction, QColor, QFont, QIcon, QImage, QKeySequence, QPainter, QPixmap
+from PySide6.QtGui import QAction, QColor, QFont, QIcon, QImage, QKeySequence, QPainter, QPixmap, QTransform
 from PySide6.QtWidgets import (QAbstractButton, QApplication, QCheckBox, QDockWidget, QFileDialog, QHBoxLayout,
                                QInputDialog, QLabel,
                                QMainWindow, QMdiArea, QMdiSubWindow, QMenu, QMessageBox, QStyle,
@@ -1906,6 +1906,8 @@ class MainWindow(QMainWindow):
             d.changed.emit(QRect())
             d.structureChanged.emit()
             return
+        if layer.kind == "group" and kind in ("align", "distribute", "same_size"):
+            return self._group_object_command(d, layer, kind, arg)
         sel = d.vsel
         if layer.vector is None or not sel:
             self.statusBar().showMessage(tr("Kies eerst objecten op een vectorlaag met het gereedschap Selecteren."), 5000)
@@ -1951,6 +1953,78 @@ class MainWindow(QMainWindow):
         d.changed.emit(QRect())
         d.structureChanged.emit()
         self.tools[0xd011]._stale = True
+        cv = self.canvas()
+        if cv:
+            cv.update()
+
+    def _group_object_command(self, d, g, kind, arg):
+        """Uitlijnen, Verdelen en Even groot maken op een lagengroep: elke laag (of subgroep) in de groep is
+        een object, met de niet-transparante pixels als omhullende. De berekening is dezelfde als bij
+        vectorobjecten; elke laag krijgt daarna de verschuiving (en schaal) van haar eigen kader."""
+        from . import vectorops as VO, vectorlayer as V, imageops as ops
+        from .textlayer import copy_text, set_transform, transform
+        items = []  # (lagen, omhullende)
+        for c in d.children(g):
+            layers = [l for l in d.subtree(c) if l.kind != "group"]
+            r = QRectF()
+            for l in layers:
+                if l.adjust is None:
+                    b = ops.mask_bbox(ops.qimage_to_rgba(l.image)[..., 3] > 0)
+                    if not b.isEmpty():
+                        r = r.united(QRectF(b))
+            if not r.isEmpty():
+                items.append((layers, r))
+        items.reverse()  # zoals in het lagenpalet: bovenste laag eerst (maatstaf bij Even groot maken)
+        need = {"align": 1, "distribute": 3, "same_size": 2}[kind]
+        if len(items) < need:
+            self.statusBar().showMessage(tr({"align": "Deze lagengroep is leeg.",
+                                             "distribute": "Kies een lagengroep met minstens drie lagen om te verdelen.",
+                                             "same_size": "Kies een lagengroep met minstens twee lagen."}[kind]), 5000)
+            return
+
+        def box(r):
+            pts = [r.topLeft(), r.topRight(), r.bottomRight(), r.bottomLeft()]
+            return V.make_object([[QPointF(q), None, None] for q in pts], True, None, None, 0)
+        objs = [box(r) for _, r in items]
+        sel = list(range(len(objs)))
+        d.push_undo({"align": "Uitlijnen", "distribute": "Verdelen", "same_size": "Even groot maken"}[kind])
+        if kind == "align":
+            VO.align(objs, sel, arg, QRectF(d.rect()))
+        elif kind == "distribute":
+            VO.distribute(objs, sel, arg)
+        else:
+            VO.same_size(objs, sel, arg)
+        PT = self.tools[0xd011]
+        moved = False
+        for (layers, r), o in zip(items, objs):
+            nb = VO.obj_bounds(o)
+            sx, sy = nb.width() / r.width(), nb.height() / r.height()
+            if abs(sx - 1) < 1e-6 and abs(sy - 1) < 1e-6:  # alleen verschuiven: op hele pixels, blijft scherp
+                T = QTransform.fromTranslate(round(nb.left() - r.left()), round(nb.top() - r.top()))
+            else:
+                T = (QTransform.fromTranslate(-r.left(), -r.top()) * QTransform.fromScale(sx, sy)
+                     * QTransform.fromTranslate(nb.left(), nb.top()))
+            if T.isIdentity():
+                continue
+            moved = True
+            for l in layers:
+                if l.text is not None:
+                    t = copy_text(l.text)
+                    set_transform(t, transform(t) * T)
+                    l.text = t
+                    d.render_text(l)
+                elif l.vector is not None:
+                    v = V.copy_vector(l.vector)
+                    V.transform(v, T)
+                    l.vector = v
+                    d.render_vector(l)
+                else:
+                    l.image = PT._transformed(d, l.image, T)
+        if not moved:
+            d.drop_last_undo()
+        PT._stale = True
+        d.changed.emit(QRect())
+        d.structureChanged.emit()
         cv = self.canvas()
         if cv:
             cv.update()
@@ -2733,7 +2807,7 @@ class MainWindow(QMainWindow):
                       int(cv.doc.h * cv.zoom) + (sw.height() - cv.height()) + 4)
             cv.center()
 
-    PROJECT_URL = "https://github.com/rene-timmermans/pixelpickle"
+    PROJECT_URL = "https://github.com/rene-timmermans/PixelPickle"
 
     def check_updates(self):
         """Op updates controleren: de projectpagina openen (daar staan de nieuwste versies)."""

@@ -2111,5 +2111,8 @@
  "Taal": "Sprache",
  "Transparantie en arcering": "Transparenz und Abdunkeln",
  "Zwevende werkbalk bij bijsnijden tonen": "Schwebende Symbolleiste beim Zuschneiden anzeigen",
- "{} lettertypebestanden geïnstalleerd; ze zijn meteen te gebruiken.": "{} Schriftartdateien installiert; sie sind sofort verwendbar."
+ "{} lettertypebestanden geïnstalleerd; ze zijn meteen te gebruiken.": "{} Schriftartdateien installiert; sie sind sofort verwendbar.",
+ "Deze lagengroep is leeg.": "Diese Ebenengruppe ist leer.",
+ "Kies een lagengroep met minstens drie lagen om te verdelen.": "Wählen Sie eine Ebenengruppe mit mindestens drei Ebenen zum Verteilen.",
+ "Kies een lagengroep met minstens twee lagen.": "Wählen Sie eine Ebenengruppe mit mindestens zwei Ebenen."
 }
