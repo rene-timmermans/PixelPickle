@@ -112,6 +112,10 @@ Arabisch (van rechts naar links). Bij de eerste start is de taal Engels. Kies ee
 
 ## Wat er nieuw is
 
+**1.2.0** Het gereedschap Selecteren werkt op lagengroepen: verplaatsen, schalen en roteren doen de hele groep
+als één geheel. Uitlijnen, Verdelen en Even groot maken werken ook op de lagen in een groep. Klik je met Selecteren
+op iets van een andere laag, dan wordt die laag meteen actief en kun je haar direct slepen.
+
 **1.1.0** Met Ctrl ingedrukt kies je bij het penseel, Kleur vervangen en Naar doel overgaan meteen een kleur met
 de pipet. Spiegelen zonder selectie spiegelt een laag op haar eigen plek. Naar doel overgaan wordt niet sterker als
 je twee keer over dezelfde plek gaat. Selecties van 1 pixel breed of hoog lukken nu altijd. Verder een schuifbalk
