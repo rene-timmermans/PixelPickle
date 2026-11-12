@@ -156,22 +156,28 @@ class LayerRow(QWidget):
         self.layer = layer
         h = QHBoxLayout(self)
         h.setContentsMargins(2 + depth * 18, 2, 2, 2)
+        self.tog = None
+        self.selected = False
         if layer.kind == "group":
-            tog = QToolButton()
+            tog = self.tog = QToolButton()
             icons.set_button(tog, "chevron_right" if layer.collapsed else "chevron_down", 12)
             tog.setAutoRaise(True)
             tog.setFixedSize(16, 22)
             tog.setToolTip("Groep in- of uitklappen")
             tog.clicked.connect(lambda: palette.toggle_collapse(layer))
             h.addWidget(tog)
+            h.addSpacing(8)  # ruimte tot het oogje, zodat je bij in- of uitklappen niet per ongeluk de groep verbergt
         self.eye = QToolButton()
         self.eye.setCheckable(True)
         self.eye.setChecked(layer.visible)
         self.eye.setAutoRaise(True)
         self.eye.setFixedSize(22, 22)
         self.eye.setToolTip("Zichtbaarheid aan/uit")
-        icons.set_button(self.eye, "eye" if layer.visible else "eye_off", 16)
-        self.eye.toggled.connect(lambda v: icons.set_button(self.eye, "eye" if v else "eye_off", 16))
+        # geen eigen knopvlak: het oogje staat direct op de rij, zodat het ook op de selectiebalk goed te zien is
+        self.eye.setStyleSheet("QToolButton { border: none; background: transparent; border-radius: 3px; }"
+                               "QToolButton:hover { background: rgba(127, 127, 127, 70); }")
+        self._paint_icons()
+        self.eye.toggled.connect(lambda v: self._paint_icons())
         self.eye.toggled.connect(lambda v: palette.set_visible(layer, v))
         h.addWidget(self.eye)
         kind = {"group": ("folder", "Lagengroep"), "mask": ("mask", "Maskerlaag (wit = tonen, zwart = verbergen)")}.get(layer.kind)
@@ -211,6 +217,20 @@ class LayerRow(QWidget):
             pal = self.palette()
             pal.setColor(self.backgroundRole(), layer.highlight)
             self.setPalette(pal)
+
+    def set_selected(self, sel):
+        if sel != self.selected:
+            self.selected = sel
+            self._paint_icons()
+
+    def _paint_icons(self):
+        """Oogje en uitklappijltje; op de geselecteerde rij in de tekstkleur van de selectie, anders vallen ze
+        weg tegen de selectiebalk (die dezelfde accentkleur heeft als de iconen)."""
+        from PySide6.QtWidgets import QApplication
+        col = QApplication.palette().highlightedText().color() if self.selected else None
+        icons.set_button(self.eye, "eye" if self.eye.isChecked() else "eye_off", 16, color=col)
+        if self.tog is not None:
+            icons.set_button(self.tog, "chevron_right" if self.layer.collapsed else "chevron_down", 12, color=col)
 
     def refresh_thumb(self):
         if self.layer.kind != "group":
@@ -282,6 +302,7 @@ class LayersPalette(QWidget):
         self.list.setDragDropMode(QListWidget.DragDropMode.InternalMove)
         self.list.setDefaultDropAction(Qt.DropAction.MoveAction)
         self.list.currentRowChanged.connect(self.on_row)
+        self.list.currentRowChanged.connect(lambda _: self._mark_selected())
         self.list.model().rowsMoved.connect(self.on_moved)
         self.list.itemDoubleClicked.connect(lambda it: self.main.layer_properties())
         self.list.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
@@ -354,11 +375,19 @@ class LayersPalette(QWidget):
                     cur = self.list.count() - 1
             if cur is not None:
                 self.list.setCurrentRow(cur)
+            self._mark_selected()
             l = d.layer()
             self.mode.setCurrentIndex(l.mode)
             self.spin.setValue(round(l.opacity * 100))
             self.lock.setChecked(l.lock_alpha)
         self._busy = False
+
+    def _mark_selected(self):
+        cur = self.list.currentRow()
+        for i in range(self.list.count()):
+            w = self.list.itemWidget(self.list.item(i))
+            if isinstance(w, LayerRow):
+                w.set_selected(i == cur)
 
     def toggle_collapse(self, g):
         g.collapsed = not g.collapsed

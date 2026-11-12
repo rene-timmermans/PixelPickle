@@ -757,9 +757,9 @@ ICONS = {
 }
 
 
-def set_button(button, name, size=16, tooltip=None):
-    """Knop een getekend icoon geven in plaats van een teken."""
-    ic = icon(name)
+def set_button(button, name, size=16, tooltip=None, color=None):
+    """Knop een getekend icoon geven in plaats van een teken (color: eigen kleur, anders de iconkleur)."""
+    ic = icon(name, color=color)
     if ic is None:
         return
     button.setText("")

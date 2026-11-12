@@ -1159,31 +1159,39 @@ class Document(QObject):
                 and self.layer().kind != "group":
             return self._mirror_selection(horizontal)
         # zonder selectie: om het midden van de laaginhoud (een losse figuur blijft op zijn plek);
-        # bij een volle laag is dat gewoon het midden van de afbeelding
+        # bij een volle laag is dat gewoon het midden van de afbeelding. Een lagengroep spiegelt als geheel
+        # om het midden van de inhoud van alle lagen erin.
         layer = self.layer()
-        if layer.text is not None:
-            from .textlayer import bounds
-            box = bounds(layer.text, self.px_per_pt)
-        elif layer.vector is not None:
-            from .vectorlayer import bounds as vbounds
-            box = vbounds(layer.vector)
-        else:
-            r = ops.mask_bbox(ops.qimage_to_rgba(layer.image)[..., 3] > 0)
-            box = QRectF(r) if not r.isEmpty() else QRectF(self.rect())
+        targets = [l for l in self.subtree(layer) if l.kind != "group"] if layer.kind == "group" else [layer]
+        box = QRectF()
+        for l in targets:
+            if l.text is not None:
+                from .textlayer import bounds
+                b = bounds(l.text, self.px_per_pt)
+            elif l.vector is not None:
+                from .vectorlayer import bounds as vbounds
+                b = vbounds(l.vector)
+            elif l.adjust is None and l.kind == "raster":
+                b = QRectF(ops.mask_bbox(ops.qimage_to_rgba(l.image)[..., 3] > 0))
+            else:
+                continue
+            if not b.isEmpty():
+                box = box.united(b)
         if box.isEmpty():
             box = QRectF(self.rect())
         self.push_undo("Spiegelen" if horizontal else "Omdraaien")
         c = box.center()
         m = QTransform(-1, 0, 0, 1, 2 * c.x(), 0) if horizontal else QTransform(1, 0, 0, -1, 0, 2 * c.y())
-        if layer.text is not None or layer.vector is not None:
-            self._move_text(m, [layer])
-        else:
+        for l in targets:
+            if l.text is not None or l.vector is not None:
+                self._move_text(m, [l])
+                continue
             out = new_image(self.w, self.h)
             p = QPainter(out)
             p.setTransform(m)
-            p.drawImage(0, 0, layer.image)
+            p.drawImage(0, 0, l.image)
             p.end()
-            layer.image = out
+            l.image = out
         self.changed.emit(QRect())
         self.structureChanged.emit()
 

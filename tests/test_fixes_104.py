@@ -171,5 +171,21 @@ row = [w.layers._index(r) for r in range(w.layers.list.count())].index([l.name f
 w.layers.on_row(row); app.processEvents()
 assert painted, "canvas niet opnieuw getekend na laagwissel"
 print("11 laag kiezen in het lagenpalet werkt het canvas meteen bij")
+# 12. spiegelen van een lagengroep: als geheel, om het midden van de inhoud van de groep
+d3 = Document(100, 50, QColor(255, 255, 255)); w.add_document(d3); app.processEvents()
+ml = []
+for x in (10, 40):
+    d3.add_layer(); ml.append(d3.layer())
+    p = QPainter(d3.layer().image); p.fillRect(x, 10, 10, 10, QColor(255, 0, 0)); p.end()
+ml[1].image.setPixelColor(49, 10, QColor(0, 0, 255))  # markering rechtsboven in het rechter blok
+d3.active = d3.layers.index(ml[0]); d3.new_group(); g3 = d3.layer()
+for l in ml:
+    l.group = g3
+d3.normalize(); d3.active = d3.layers.index(g3)
+d3.mirror_layer(True)  # groep beslaat x 10..49, midden 30: blokken wisselen van plek
+assert ml[0].image.pixelColor(45, 15) == QColor(255, 0, 0) and ml[0].image.pixelColor(15, 15).alpha() == 0
+assert ml[1].image.pixelColor(15, 15) == QColor(255, 0, 0) and ml[1].image.pixelColor(10, 10) == QColor(0, 0, 255)
+d3.set_modified(False)
+print("12 spiegelen van een lagengroep gebeurt als geheel, op dezelfde plek")
 d.set_modified(False)
 print("ALLES OK")
