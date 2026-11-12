@@ -200,10 +200,33 @@ zoomen en schuiven in het effectvoorbeeld en automatisch meeschuiven bij de rand
 
 ## Ontwikkelen
 
+Wil je PixelPickle vanuit de broncode starten of eraan meebouwen? Je hebt Python 3.11 of nieuwer nodig, met
+PySide6, NumPy en Pillow. Die installeer je met de pakketbeheerder van je distributie:
+
 ```
-./pixelpickle.sh                                           # starten vanuit de broncode
-QT_QPA_PLATFORM=offscreen .venv/bin/python tests/smoke.py   # tests
+sudo pacman -S python pyside6 python-numpy python-pillow                         # Arch, SteamOS
+sudo apt install python3-pyside6.qtwidgets python3-numpy python3-pil             # Debian, Ubuntu
+sudo dnf install python3-pyside6 python3-numpy python3-pillow                    # Fedora
 ```
+
+Of met pip, in een eigen virtuele omgeving:
+
+```
+python3 -m venv .venv && .venv/bin/pip install PySide6 numpy pillow
+```
+
+Daarna:
+
+```
+git clone https://github.com/rene-timmermans/PixelPickle.git
+cd PixelPickle
+./pixelpickle.sh                                          # starten (gebruikt .venv als die er is)
+./pixelpickle.sh --selftest                               # snelle controle zonder venster
+QT_QPA_PLATFORM=offscreen python3 tests/smoke.py          # uitgebreide test van alle gereedschappen en menu's
+```
+
+De programmacode staat in `pixelpickle/`, de tests in `tests/` en de pakketbestanden voor Arch, Debian en Fedora
+in `packaging/`. Wijzigingen of ideeën zijn welkom via een issue of pull request.
 
 ## Licentie
 
