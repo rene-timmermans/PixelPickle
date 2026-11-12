@@ -205,8 +205,6 @@ zoomen en schuiven in het effectvoorbeeld en automatisch meeschuiven bij de rand
 QT_QPA_PLATFORM=offscreen .venv/bin/python tests/smoke.py   # tests
 ```
 
-Functies die nog niet gebouwd zijn, staan in [TODO.md](TODO.md).
-
 ## Licentie
 
 PixelPickle is vrije software onder de [GNU General Public License v3.0 of later](LICENSE).
