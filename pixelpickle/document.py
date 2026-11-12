@@ -1,6 +1,6 @@
 """Documentmodel: lagen, selectie en geschiedenis (ongedaan maken)."""
 import numpy as np
-from PySide6.QtCore import QObject, QPoint, QRect, Qt, Signal
+from PySide6.QtCore import QObject, QPoint, QRect, QRectF, Qt, Signal
 from PySide6.QtGui import QColor, QImage, QPainter, QTransform
 
 from . import imageops as ops
@@ -1158,13 +1158,32 @@ class Document(QObject):
         if self.sel is not None and self.layer().text is None and self.layer().vector is None \
                 and self.layer().kind != "group":
             return self._mirror_selection(horizontal)
-        self.push_undo("Spiegelen" if horizontal else "Omdraaien")
-        t = QTransform.fromScale(-1, 1) if horizontal else QTransform.fromScale(1, -1)
-        if self.layer().text is not None or self.layer().vector is not None:
-            m = QTransform(-1, 0, 0, 1, self.w, 0) if horizontal else QTransform(1, 0, 0, -1, 0, self.h)
-            self._move_text(m, [self.layer()])
+        # zonder selectie: om het midden van de laaginhoud (een losse figuur blijft op zijn plek);
+        # bij een volle laag is dat gewoon het midden van de afbeelding
+        layer = self.layer()
+        if layer.text is not None:
+            from .textlayer import bounds
+            box = bounds(layer.text, self.px_per_pt)
+        elif layer.vector is not None:
+            from .vectorlayer import bounds as vbounds
+            box = vbounds(layer.vector)
         else:
-            self.layer().image = self.layer().image.transformed(t)
+            r = ops.mask_bbox(ops.qimage_to_rgba(layer.image)[..., 3] > 0)
+            box = QRectF(r) if not r.isEmpty() else QRectF(self.rect())
+        if box.isEmpty():
+            box = QRectF(self.rect())
+        self.push_undo("Spiegelen" if horizontal else "Omdraaien")
+        c = box.center()
+        m = QTransform(-1, 0, 0, 1, 2 * c.x(), 0) if horizontal else QTransform(1, 0, 0, -1, 0, 2 * c.y())
+        if layer.text is not None or layer.vector is not None:
+            self._move_text(m, [layer])
+        else:
+            out = new_image(self.w, self.h)
+            p = QPainter(out)
+            p.setTransform(m)
+            p.drawImage(0, 0, layer.image)
+            p.end()
+            layer.image = out
         self.changed.emit(QRect())
         self.structureChanged.emit()
 

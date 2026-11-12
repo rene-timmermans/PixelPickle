@@ -827,6 +827,13 @@ class MaterialsPalette(QWidget):
         tabs = QTabWidget()
         tabs.setTabPosition(QTabWidget.TabPosition.North)
         tabs.setIconSize(QSize(18, 18))
+        # compacte tabbladen: alleen een icoontje, dus weinig opvulling (kleuren uit het thema)
+        tabs.tabBar().setStyleSheet(
+            "QTabBar::tab { width: 18px; padding: 3px 6px; margin-right: 1px; border: 1px solid palette(mid);"
+            " border-bottom: none; border-top-left-radius: 3px; border-top-right-radius: 3px;"
+            " background: palette(button); }"
+            "QTabBar::tab:selected { background: palette(base); }"
+            "QTabBar::tab:!selected { margin-top: 2px; }")
         tabs.setStyleSheet("QTabBar::tab { padding: 3px 6px; min-width: 0; }")
         tabs.tabBar().setExpanding(False)
         tabs.tabBar().setUsesScrollButtons(False)

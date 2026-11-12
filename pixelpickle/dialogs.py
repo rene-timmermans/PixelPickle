@@ -1328,7 +1328,17 @@ class AboutDialog(QDialog):
         v = QVBoxLayout(self)
         top = QHBoxLayout()
         pic = QLabel()
-        pic.setPixmap(icon.pixmap(96, 96))
+        # alleen de augurk, zonder de paarse achtergrond van het programma-icoon
+        import os
+        from PySide6.QtGui import QPixmap
+        art = QPixmap(os.path.join(os.path.dirname(__file__), "data", "icons", "pickle.png"))
+        if art.isNull():
+            pic.setPixmap(icon.pixmap(96, 96))
+        else:
+            dpr = self.devicePixelRatioF()
+            art = art.scaledToHeight(round(120 * dpr), Qt.TransformationMode.SmoothTransformation)
+            art.setDevicePixelRatio(dpr)
+            pic.setPixmap(art)
         pic.setAlignment(Qt.AlignmentFlag.AlignTop)
         top.addWidget(pic)
         url = "https://github.com/rene-timmermans/pixelpickle"

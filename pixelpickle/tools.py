@@ -988,6 +988,7 @@ class SelectTool(SelectionBase):
         if self.try_move(cv, pt, ev) or ev.button() != LB:
             return
         self.a = self.b = pt
+        self.zoom = cv.zoom
         self.mode = sel_mode_from(ev, self.o["sel_mode"])
 
     def move(self, cv, pt, ev):
@@ -997,15 +998,32 @@ class SelectTool(SelectionBase):
             self.b = pt
             cv.update()
 
+    def _grid(self):
+        """Begin- en eindpunt op de dichtstbijzijnde pixelgrens, maar minstens één pixel breed en hoog: zo
+        selecteert slepen binnen één pixelkolom of -rij precies die ene kolom of rij, met scherpe randen."""
+        a, b = self.a, self.b
+
+        def span(p, q):
+            lo, hi = min(p, q), max(p, q)
+            x0, x1 = round(lo), round(hi)
+            if x1 <= x0:  # te smal om af te ronden: de pixel onder het begin
+                x0 = math.floor(lo)
+                x1 = x0 + 1
+            return x0, x1
+        x0, x1 = span(a.x(), b.x())
+        y0, y1 = span(a.y(), b.y())
+        return QPointF(x0, y0), QPointF(x1, y1)
+
     def path(self):
-        return shape_path(self.o["sel_shape"], self.a, self.b, square_types=(1, 3, 5))
+        a, b = self._grid()
+        return shape_path(self.o["sel_shape"], a, b, square_types=(1, 3, 5))
 
     def release(self, cv, pt, ev):
         if self.end_drag() or self.a is None:
             return
         d = cv.doc
-        r = QRectF(self.a, self.b).normalized()
-        if r.width() < 1 or r.height() < 1:
+        moved = math.hypot(self.b.x() - self.a.x(), self.b.y() - self.a.y()) * getattr(self, "zoom", 1.0)
+        if moved < 3:  # een klik zonder te slepen: selectie opheffen
             if self.mode == "replace" and d.sel is not None:
                 d.push_undo("Niets selecteren")
                 d.set_selection(None)
@@ -1343,8 +1361,19 @@ class StrokeTool(Tool):
         return w
 
     # -- verloop van een streek
+    # Ctrl ingedrukt: tijdelijk een pipet (links voorgrondkleur, rechts achtergrondkleur), zoals gebruikelijk
+    ctrl_picks = False
+
+    def hover_cursor(self, cv, pt):
+        if self.ctrl_picks and QApplication.keyboardModifiers() & CTRL:
+            return tool_cursor("💧")
+        return None
+
     def press(self, cv, pt, ev):
         if ev.button() not in (LB, RB):
+            return
+        if self.ctrl_picks and ev.modifiers() & CTRL:
+            self.main.tools[0xd030].pick(cv, pt, ev.button() == LB)
             return
         self.right = ev.button() == RB
         self.cv = cv
@@ -1422,6 +1451,7 @@ class StrokeTool(Tool):
 
 class PaintBrushTool(StrokeTool):
     cid, glyph = 0xd091, "🖌"
+    ctrl_picks = True
     tip = "Schilder met de voorgrondkleur (rechts: achtergrondkleur). Shift+klik: rechte lijn vanaf vorige punt"
     erase = False
 
@@ -2185,6 +2215,7 @@ class AirbrushTool(PaintBrushTool):
 
 class EraserTool(PaintBrushTool):
     cid, glyph = 0xd0b0, "⌫"
+    ctrl_picks = False  # de wisser heeft geen kleur
     tip = "Wis pixels naar transparant"
     erase = True
 
@@ -2510,8 +2541,30 @@ class HueTool(PixelBrush):
         return _hsl_op(a, lambda h, s, l: (h + k, s, l))
 
 
-class ChangeToTargetTool(PixelBrush):
+class _NoBuildUp:
+    """Ook over meerdere streken niet opbouwen: zolang niemand anders de laag verandert, gaan volgende
+    streken uit van dezelfde oorspronkelijke pixels (en hun hoogste sterkte tot nu toe)."""
+
+    def begin(self, cv, pt):
+        layer = cv.doc.layer()
+        keep = getattr(self, "_keep", None)
+        if (not self.o.get("continuous", False) and keep is not None
+                and keep[0] == (id(cv.doc), id(layer), layer.image.cacheKey())):
+            self.make_stamp()
+            self.snap, self.wmax = keep[1], keep[2]
+            return
+        super().begin(cv, pt)
+
+    def end(self, cv):
+        layer = cv.doc.layer()
+        if self.snap is not None:
+            self._keep = ((id(cv.doc), id(layer), layer.image.cacheKey()), self.snap, self.wmax)
+        super().end(cv)
+
+
+class ChangeToTargetTool(_NoBuildUp, PixelBrush):
     snapshot = True
+    ctrl_picks = True
     cid, glyph = 0xd0ab, "🎯"
     tip = "Naar doel overgaan: kleurt pixels naar de voorgrondkleur met behoud van detail (rechts: achtergrondkleur)"
 
@@ -2524,7 +2577,7 @@ class ChangeToTargetTool(PixelBrush):
         th, ts, tl = t.hslHueF(), t.hslSaturationF(), t.lightnessF()
         th = max(th, 0)
         mode = self.o["target_mode"]
-        k = 0.5
+        k = 1.0  # helemaal naar het doel; de dekking bepaalt de sterkte
 
         def fn(h, s, l):
             if mode in (0, 1):
@@ -2540,6 +2593,7 @@ class ChangeToTargetTool(PixelBrush):
 
 class ColorReplacerTool(PixelBrush):
     cid, glyph = 0xd0ac, "🔁"
+    ctrl_picks = True
     tip = "Vervangt de achtergrondkleur door de voorgrondkleur waar je sleept (rechts: andersom)"
 
     def options(self):

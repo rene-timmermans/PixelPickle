@@ -112,6 +112,11 @@ Arabisch (van rechts naar links). Bij de eerste start is de taal Engels. Kies ee
 
 ## Wat er nieuw is
 
+**1.1.0** Met Ctrl ingedrukt kies je bij het penseel, Kleur vervangen en Naar doel overgaan meteen een kleur met
+de pipet. Spiegelen zonder selectie spiegelt een laag op haar eigen plek. Naar doel overgaan wordt niet sterker als
+je twee keer over dezelfde plek gaat. Selecties van 1 pixel breed of hoog lukken nu altijd. Verder een schuifbalk
+bij de laagdekking, smallere tabbladen boven de kleurkiezer en de augurk in het infovenster.
+
 **1.0.4** De rechterkolom met Materialen en Lagen is nu veel smaller te slepen.
 
 **1.0.3** De kleurvakken in het materialenpalet zijn precies uitgelijnd met het kleurenspectrum ernaast.

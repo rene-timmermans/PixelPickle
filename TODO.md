@@ -26,6 +26,9 @@ Geen bekende beperkingen op dit moment.
 
 Wat al gebouwd is, met de versie waarin het verscheen.
 
+- [x] Ctrl kiest een kleur bij kleurpenselen; spiegelen op de eigen plek; Naar doel overgaan zonder opbouw;
+  1-pixel selecties; schuifbalk bij laagdekking; smallere kleurtabbladen; augurk in het infovenster (1.1.0)
+- [x] Rechterkolom met Materialen en Lagen smaller te slepen; nieuw programma-icoon (1.0.4)
 - [x] Kleurvakken in het materialenpalet uitgelijnd met het spectrum (1.0.3)
 - [x] Strakker materialenpalet: stijlknopjes tegen elkaar, palet smaller (1.0.2)
 - [x] Sneltoetsen van de gereedschappen en Ctrl+F4/Ctrl+W hersteld; voorkeuren Transparantie en arcering en

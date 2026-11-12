@@ -546,7 +546,16 @@ class Canvas(QWidget):
                 pos = self.rect().center()
             self.main.show_canvas_menu(self, QPointF(pos))
 
+    def _refresh_cursor(self):
+        """Cursor opnieuw bepalen (bijvoorbeeld een pipet zolang Ctrl is ingedrukt)."""
+        if self.space or self._pan is not None or self.mouse_doc is None:
+            return
+        c = self.main.tool.hover_cursor(self, self.mouse_doc)
+        self.setCursor(c if c is not None else self.main.tool.cursor)
+
     def keyPressEvent(self, e):
+        if e.key() == Qt.Key.Key_Control:
+            self._refresh_cursor()
         if e.key() == Qt.Key.Key_Space and not e.isAutoRepeat():
             self.space = True
             self.setCursor(Qt.CursorShape.OpenHandCursor)
@@ -602,6 +611,8 @@ class Canvas(QWidget):
         return True
 
     def keyReleaseEvent(self, e):
+        if e.key() == Qt.Key.Key_Control:
+            QTimer.singleShot(0, self._refresh_cursor)  # na het loslaten: de gewone cursor terug
         if e.key() == Qt.Key.Key_Space and not e.isAutoRepeat():
             self.space = False
             self.apply_cursor()
