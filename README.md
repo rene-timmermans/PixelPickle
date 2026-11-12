@@ -112,6 +112,8 @@ Arabisch (van rechts naar links). Bij de eerste start is de taal Engels. Kies ee
 
 ## Wat er nieuw is
 
+**1.3.2** Klikken op een stap in het palet Geschiedenis gaat nu meteen, ook bij grote afbeeldingen met veel stappen.
+
 **1.3.1** Spiegelen en omdraaien van een lagengroep gebeurt als geheel, op dezelfde plek. In het lagenpalet zijn
 het oogje en het uitklappijltje nu ook op de geselecteerde rij altijd goed te zien, in elk thema.
 
