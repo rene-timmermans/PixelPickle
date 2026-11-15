@@ -1232,34 +1232,54 @@
    "keys": [],
    "items": [
     {
-     "text": "Eénstaps-fotocorrect&ie",
-     "id": 33344,
+     "text": "&Foto verbeteren",
+     "id": 0,
      "keys": [],
-     "items": []
-    },
-    {
-     "text": "Sli&mme fotocorrectie...",
-     "id": 33496,
-     "keys": [],
-     "items": []
-    },
-    {
-     "text": "Eé&nstaps-grofkorreligheid verwijderen",
-     "id": 33521,
-     "keys": [],
-     "items": []
-    },
-    {
-     "text": "Gr&ofkorreligheid van digitale camera verwijderen...",
-     "id": 33473,
-     "keys": [],
-     "items": []
-    },
-    {
-     "text": "K&leurbalans...",
-     "id": 33500,
-     "keys": [],
-     "items": []
+     "items": [
+      {
+       "text": "Eénstaps-fotocorrect&ie",
+       "id": 33344,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Sli&mme fotocorrectie...",
+       "id": 33496,
+       "keys": [],
+       "items": []
+      },
+      null,
+      {
+       "text": "Eé&nstaps-grofkorreligheid verwijderen",
+       "id": 33521,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Gr&ofkorreligheid van digitale camera verwijderen...",
+       "id": 33473,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "K&leurbalans...",
+       "id": 33500,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "Ve&rhelderen...",
+       "id": 32874,
+       "keys": [],
+       "items": []
+      },
+      {
+       "text": "&High-pass verscherpen...",
+       "id": 33499,
+       "keys": [],
+       "items": []
+      }
+     ]
     },
     null,
     {

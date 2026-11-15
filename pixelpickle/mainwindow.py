@@ -17,7 +17,7 @@ from .document import BG_NAMES, Document, Layer, apply_region, new_image, paint_
 from .i18n import tr
 from .materials import MaterialsPalette
 from .palettes import HistoryPalette, LayersPalette
-from .psplayout import PALETTES_MENU, PHOTO_MENU, STANDARD_TOOLBAR, TOOLBAR, load_layout
+from .psplayout import STANDARD_TOOLBAR, TOOLBAR, load_layout
 from .tools import DEFAULT_OPTS, TextTool, create_tools, recorded_keys
 from . import presets as psp_presets
 from .effectdialog import EffectBrowser, EffectDialog
@@ -202,6 +202,7 @@ class MainWindow(QMainWindow):
         if state is not None:
             self.restoreState(state)
         self.update_actions()
+        self.sync_bar_checks()
 
     # ================================================================ opbouw
     def tool_key(self, tool):
@@ -215,6 +216,7 @@ class MainWindow(QMainWindow):
         tb.setIconSize(QSize(24, 24))
         self.addToolBar(Qt.ToolBarArea.LeftToolBarArea, tb)
         self.tools_toolbar = tb
+        tb.visibilityChanged.connect(lambda _: self.sync_bar_checks())
         # past de balk niet in het venster, dan valt de pijlknop op in de accentkleur van het thema
         tb.setStyleSheet("QToolButton#qt_toolbar_ext_button { background-color: palette(highlight);"
                          " border-radius: 4px; }")
@@ -310,7 +312,7 @@ class MainWindow(QMainWindow):
             0x8021: self.toggle_grid,
             0x8185: lambda: self.toggle_dock(self.dock_mat), 0x81ae: lambda: self.toggle_dock(self.dock_layers),
             0x8002: lambda: self.toggle_dock(self.dock_hist), 0x81ba: lambda: self.opt_bar.setVisible(not self.opt_bar.isVisible()),
-            0x81f9: lambda: self.tools_toolbar.setVisible(not self.tools_toolbar.isVisible()),
+            0x81f9: lambda: (self.tools_toolbar.setVisible(not self.tools_toolbar.isVisible()), self.sync_bar_checks()),
             0x8216: self.toggle_magnifier,
             0x8022: lambda: self.toggle_dock(self.dock_histogram), 0x8159: lambda: self.toggle_dock(self.dock_overview),
             0x822d: lambda: self.toggle_dock(self.dock_variance),
@@ -324,7 +326,7 @@ class MainWindow(QMainWindow):
             **{cid: (lambda k=k, a=a: self.object_command(k, a)) for cid, (k, a) in self.OBJECT_COMMANDS.items()},
             0x8125: self.check_updates,
             0xe800: lambda: self.std_toolbar.setVisible(not self.std_toolbar.isVisible()),
-            0xe801: lambda: self.statusBar().setVisible(not self.statusBar().isVisible()),
+            0xe801: lambda: (self.statusBar().setVisible(not self.statusBar().isVisible()), self.sync_bar_checks()),
             # Afbeelding
             0x8242: D(lambda d: d.rotate(90)), 0x8243: D(lambda d: d.rotate(-90)), 0x800e: self.free_rotate,
             0x80d1: self.image_resize, 0x80d2: self.image_canvas, 0x807a: self.add_borders,
@@ -442,7 +444,8 @@ class MainWindow(QMainWindow):
     CHECKABLE = {0x821f: None, 0x8185: "dock_mat", 0x81ae: "dock_layers", 0x8002: "dock_hist", 0x82ce: None, 0x8021: None,
                  0x811a: None, 0x81ba: "opt_bar", 0x8216: None, 0x81f4: None, 0x810a: None, 0x817c: None,
                  0x817a: None, 0x817b: None, 0x8022: "dock_histogram", 0x8159: "dock_overview",
-                 0x822d: "dock_variance", 0x821d: None, 0x821c: None}
+                 0x822d: "dock_variance", 0x821d: None, 0x821c: None,
+                 0x801d: None, 0xe800: None, 0xe801: None, 0x81f9: None}
 
     @staticmethod
     def _tidy_menu(menu):
@@ -487,6 +490,9 @@ class MainWindow(QMainWindow):
                     self.recent_menu.aboutToShow.connect(self._fill_recent)
                     continue
                 cid = it["id"]
+                if cid in self.actions_by_id:  # staat ook al elders (bijvoorbeeld in Foto verbeteren): dezelfde opdracht
+                    menu.addAction(self.actions_by_id[cid])
+                    continue
                 fn = H.get(cid)
                 if fn is None:  # nog niet gebouwd: niet tonen (komt vanzelf terug zodra het werkt)
                     self.hidden_menu_items += 1
@@ -542,40 +548,18 @@ class MainWindow(QMainWindow):
         icons = {0xe100: glyph_icon("new"), 0xe101: glyph_icon("open"),
                  0xe103: glyph_icon("💾"), 0xe104: glyph_icon("save_as"), 0x82ec: glyph_icon("🖨"),
                  0xe12b: glyph_icon("↶"), 0xe12c: glyph_icon("↷"), 0x80d1: glyph_icon("⤢"),
-                 0x8242: glyph_icon("↻"), 0x8243: glyph_icon("↺")}
+                 0x8242: glyph_icon("↻"), 0x8243: glyph_icon("↺"), 0x801d: glyph_icon("fullscreen"),
+                 0x8136: glyph_icon("zoom_out"), 0x8132: glyph_icon("zoom_in")}
         for item in STANDARD_TOOLBAR:
             if item is None:
                 tb.addSeparator()
-            elif isinstance(item, str):
-                btn = QToolButton()
-                btn.setText(tr(item) + " ")
-                btn.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
-                m = QMenu(btn)
-                for cid in (PHOTO_MENU if item == "Foto verbeteren" else PALETTES_MENU):
-                    if cid is None:
-                        m.addSeparator()
-                    elif cid == 0x81ba and hasattr(self, "tools_toolbar"):
-                        # ook de gereedschapsbalk aan- en uitzetten, net als via het balkmenu
-                        act = self.tools_toolbar.toggleViewAction()
-                        act.setText(tr("Gereedschappen"))
-                        m.addAction(act)
-                        m.addAction(self.actions_by_id[cid])
-                    elif cid in self.actions_by_id:
-                        m.addAction(self.actions_by_id[cid])
-                btn.setMenu(m)
-                tb.addWidget(btn)
             elif item in self.actions_by_id:
                 a = self.actions_by_id[item]
-                if item in (0x8136, 0x8132):
-                    btn = QToolButton()
-                    btn.setDefaultAction(a)
-                    btn.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
-                    tb.addWidget(btn)
-                    btn.setText(("🔍− 100% uitzoomen" if item == 0x8136 else "🔍+ 100% inzoomen"))
-                    continue
                 if item in icons:
                     a.setIcon(icons[item])
                 tb.addAction(a)
+        # vinkjes in Beeld > Werkbalken bijhouden, ook als een balk via het rechtsklikmenu dicht gaat
+        tb.visibilityChanged.connect(lambda _: self.sync_bar_checks())
 
     def _build_status(self):
         sb = self.statusBar()
@@ -2664,6 +2648,25 @@ class MainWindow(QMainWindow):
     # ================================================================ beeld en venster
     def toggle_fullscreen(self):
         self.showNormal() if self.isFullScreen() else self.showFullScreen()
+        self.sync_bar_checks()
+
+    def sync_bar_checks(self):
+        """Vinkjes en knopstand van Beeld > Werkbalken en Bewerking op volledig scherm gelijk aan de werkelijkheid."""
+        a = getattr(self, "actions_by_id", {})
+        for cid, on in ((0xe800, lambda: not self.std_toolbar.isHidden()),
+                        (0xe801, lambda: not self.statusBar().isHidden()),
+                        (0x81f9, lambda: not self.tools_toolbar.isHidden()), (0x801d, lambda: self.isFullScreen())):
+            act = a.get(cid)
+            if act is not None:
+                try:
+                    act.setChecked(bool(on()))
+                except AttributeError:  # balk bestaat (nog) niet
+                    pass
+
+    def changeEvent(self, e):
+        super().changeEvent(e)
+        if e.type() == QEvent.Type.WindowStateChange:
+            self.sync_bar_checks()
 
     # werkbalken Effecten en Foto (Beeld > Werkbalken): snelkoppelingen naar veelgebruikte opdrachten
     EFFECTS_BAR = [0x807b, None, 0x809e, 0x80b2, 0x80b3, 0x80a0, 0x809f, 0x80a2]

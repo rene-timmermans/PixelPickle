@@ -63,6 +63,26 @@ def zoom(p, fill):
     p.drawLine(P(14.5, 14.5), P(20, 20))
 
 
+def _zoom_sign(p, plus):
+    pen = p.pen()
+    w = pen.widthF()
+    p.drawEllipse(P(10, 10), 6.5, 6.5)
+    p.drawLine(P(7, 10), P(13, 10))
+    if plus:
+        p.drawLine(P(10, 7), P(10, 13))
+    pen.setWidthF(w * 1.6)
+    p.setPen(pen)
+    p.drawLine(P(15, 15), P(20.5, 20.5))
+
+
+def zoom_in(p, fill):
+    _zoom_sign(p, True)
+
+
+def zoom_out(p, fill):
+    _zoom_sign(p, False)
+
+
 def dropper(p, fill):
     p.drawLine(P(5, 19), P(14, 10))
     p.drawLine(P(11.5, 7.5), P(16.5, 12.5))
@@ -587,6 +607,12 @@ def resize(p, fill):
     p.drawRect(QRectF(3, 3, 18, 18))
 
 
+def fullscreen(p, fill):
+    """Bewerking op volledig scherm: vier hoeken van een scherm."""
+    for x, y, dx, dy in ((3, 4, 1, 1), (21, 4, -1, 1), (21, 20, -1, -1), (3, 20, 1, -1)):
+        p.drawPolyline(QPolygonF([P(x, y + 5 * dy), P(x, y), P(x + 6 * dx, y)]))
+
+
 def _rotate(p, clockwise):
     r = 7
     if clockwise:
@@ -748,7 +774,7 @@ ICONS = {
     "⛶": crop, "▭": rect, "⬭": ellipse, "✶": star, "💬": bubble, "✒": pen_tool, "A": text,
     # standaardwerkbalk
     "new": new_doc, "open": open_doc, "💾": save, "save_as": save_as, "🖨": printer, "↶": undo, "↷": redo,
-    "⤢": resize, "↻": rotate_cw, "↺": rotate_ccw,
+    "⤢": resize, "↻": rotate_cw, "↺": rotate_ccw, "fullscreen": fullscreen, "zoom_in": zoom_in, "zoom_out": zoom_out,
     # paletten
     "layer_new": layer_new, "delete": delete, "gear": gear, "up": up, "down": down, "merge_down": merge_down,
     "opacity": opacity, "lock": lock, "eye": eye, "eye_off": eye_off, "folder": folder, "mask": mask,

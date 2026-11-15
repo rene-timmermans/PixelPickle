@@ -286,5 +286,31 @@ assert res == 1 and len(d8.undo_stack) == 1, (res, len(d8.undo_stack))
 cv8.mousePressEvent  # canvas werkt daarna weer gewoon
 d8.set_modified(False)
 print("17 effectvenster niet modaal (geen KDE-verduistering), hoofdvenster wel geblokkeerd; OK werkt")
+# 18. standaardwerkbalk zonder Foto verbeteren/Paletten, met volledig scherm; Foto verbeteren in Aanpassen;
+#     vinkjes bij Beeld > Werkbalken
+from PySide6.QtWidgets import QToolButton as _TB
+A = w.actions_by_id
+assert not [b for b in w.std_toolbar.findChildren(_TB) if b.menu() is not None and b.popupMode() == _TB.ToolButtonPopupMode.InstantPopup]
+assert A[0x801d] in w.std_toolbar.actions() and A[0x801d].isCheckable()
+A[0x801d].trigger(); app.processEvents()
+assert w.isFullScreen() and A[0x801d].isChecked()
+A[0x801d].trigger(); app.processEvents()
+assert not w.isFullScreen() and not A[0x801d].isChecked()
+adj = w.top_menus["Aanpassen"]
+from PySide6.QtWidgets import QMenu as _QM
+fv = [x for x in adj.findChildren(_QM) if x.title().replace("&", "") == "Foto verbeteren"]
+assert fv and adj.actions()[0].text().replace("&", "") == "Foto verbeteren", "Foto verbeteren staat bovenaan in Aanpassen"
+ids = {cid for cid, act in A.items() if act in fv[0].actions()}
+assert ids == {0x8240, 0x82d8, 0x82f1, 0x82c1, 0x82dc, 0x806a, 0x82db}, sorted(map(hex, ids))
+assert sum(1 for a in adj.actions() if a in (A[0x8240], A[0x82d8])) == 0, "losse items niet meer bovenaan"
+for cid, bar in ((0xe800, w.std_toolbar), (0x81f9, w.tools_toolbar)):
+    assert A[cid].isCheckable() and A[cid].isChecked()
+    A[cid].trigger(); app.processEvents(); assert bar.isHidden() and not A[cid].isChecked()
+    A[cid].trigger(); app.processEvents(); assert not bar.isHidden() and A[cid].isChecked()
+w.std_toolbar.hide(); app.processEvents(); assert not A[0xe800].isChecked(), "sluiten via balkmenu: vinkje weg"
+w.std_toolbar.show(); app.processEvents()
+A[0xe801].trigger(); app.processEvents(); assert w.statusBar().isHidden() and not A[0xe801].isChecked()
+A[0xe801].trigger(); app.processEvents(); assert A[0xe801].isChecked()
+print("18 werkbalk opgeschoond met knop volledig scherm, Foto verbeteren in Aanpassen, vinkjes bij Werkbalken")
 d.set_modified(False)
 print("ALLES OK")

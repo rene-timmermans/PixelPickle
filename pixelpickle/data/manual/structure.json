@@ -2640,64 +2640,12 @@
    ]
   },
   {
-   "id": "8240",
-   "name": "Eénstaps-fotocorrectie",
-   "menu": [
-    "Aanpassen"
-   ],
-   "params": []
-  },
-  {
-   "id": "82f1",
-   "name": "Eénstaps-grofkorreligheid verwijderen",
-   "menu": [
-    "Aanpassen"
-   ],
-   "params": []
-  },
-  {
    "id": "82d9",
    "name": "Eénstaps-paarse uitvloeiingscorrectie",
    "menu": [
     "Aanpassen"
    ],
    "params": []
-  },
-  {
-   "id": "82c1",
-   "name": "Grofkorreligheid van digitale camera verwijderen",
-   "menu": [
-    "Aanpassen"
-   ],
-   "params": [
-    {
-     "label": "Correctie (sterkte)",
-     "type": "int",
-     "range": [
-      0,
-      100
-     ],
-     "default": 50
-    },
-    {
-     "label": "Details behouden %",
-     "type": "int",
-     "range": [
-      0,
-      100
-     ],
-     "default": 50
-    },
-    {
-     "label": "Verscherpen",
-     "type": "int",
-     "range": [
-      0,
-      100
-     ],
-     "default": 0
-    }
-   ]
   },
   {
    "id": "8307",
@@ -2763,55 +2711,6 @@
    ]
   },
   {
-   "id": "82dc",
-   "name": "Kleurbalans",
-   "menu": [
-    "Aanpassen"
-   ],
-   "params": [
-    {
-     "label": "Bereik",
-     "type": "choice",
-     "choices": [
-      "Schaduwen",
-      "Middentonen",
-      "Lichte tonen"
-     ]
-    },
-    {
-     "label": "Cyaan - rood",
-     "type": "int",
-     "range": [
-      -100,
-      100
-     ],
-     "default": 0
-    },
-    {
-     "label": "Magenta - groen",
-     "type": "int",
-     "range": [
-      -100,
-      100
-     ],
-     "default": 0
-    },
-    {
-     "label": "Geel - blauw",
-     "type": "int",
-     "range": [
-      -100,
-      100
-     ],
-     "default": 0
-    },
-    {
-     "label": "Helderheid behouden",
-     "type": "bool"
-    }
-   ]
-  },
-  {
    "id": "806e",
    "name": "Rode ogen verwijderen",
    "menu": [
@@ -2835,64 +2734,6 @@
       15
      ],
      "default": 4
-    }
-   ]
-  },
-  {
-   "id": "82d8",
-   "name": "Slimme fotocorrectie",
-   "menu": [
-    "Aanpassen"
-   ],
-   "params": [
-    {
-     "label": "Helderheid algemeen",
-     "type": "int",
-     "range": [
-      -100,
-      100
-     ],
-     "default": 0
-    },
-    {
-     "label": "Schaduwen",
-     "type": "int",
-     "range": [
-      -100,
-      100
-     ],
-     "default": 0
-    },
-    {
-     "label": "Lichte delen",
-     "type": "int",
-     "range": [
-      -100,
-      100
-     ],
-     "default": 0
-    },
-    {
-     "label": "Verzadiging",
-     "type": "int",
-     "range": [
-      -100,
-      100
-     ],
-     "default": 0
-    },
-    {
-     "label": "Focus (verscherpen)",
-     "type": "int",
-     "range": [
-      0,
-      100
-     ],
-     "default": 0
-    },
-    {
-     "label": "Automatisch kleurbalans/niveaus",
-     "type": "bool"
     }
    ]
   },
@@ -2965,6 +2806,170 @@
       100
      ],
      "default": 50
+    }
+   ]
+  },
+  {
+   "id": "8240",
+   "name": "Eénstaps-fotocorrectie",
+   "menu": [
+    "Aanpassen",
+    "Foto verbeteren"
+   ],
+   "params": []
+  },
+  {
+   "id": "82f1",
+   "name": "Eénstaps-grofkorreligheid verwijderen",
+   "menu": [
+    "Aanpassen",
+    "Foto verbeteren"
+   ],
+   "params": []
+  },
+  {
+   "id": "82c1",
+   "name": "Grofkorreligheid van digitale camera verwijderen",
+   "menu": [
+    "Aanpassen",
+    "Foto verbeteren"
+   ],
+   "params": [
+    {
+     "label": "Correctie (sterkte)",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Details behouden %",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 50
+    },
+    {
+     "label": "Verscherpen",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 0
+    }
+   ]
+  },
+  {
+   "id": "82dc",
+   "name": "Kleurbalans",
+   "menu": [
+    "Aanpassen",
+    "Foto verbeteren"
+   ],
+   "params": [
+    {
+     "label": "Bereik",
+     "type": "choice",
+     "choices": [
+      "Schaduwen",
+      "Middentonen",
+      "Lichte tonen"
+     ]
+    },
+    {
+     "label": "Cyaan - rood",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Magenta - groen",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Geel - blauw",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Helderheid behouden",
+     "type": "bool"
+    }
+   ]
+  },
+  {
+   "id": "82d8",
+   "name": "Slimme fotocorrectie",
+   "menu": [
+    "Aanpassen",
+    "Foto verbeteren"
+   ],
+   "params": [
+    {
+     "label": "Helderheid algemeen",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Schaduwen",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Lichte delen",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Verzadiging",
+     "type": "int",
+     "range": [
+      -100,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Focus (verscherpen)",
+     "type": "int",
+     "range": [
+      0,
+      100
+     ],
+     "default": 0
+    },
+    {
+     "label": "Automatisch kleurbalans/niveaus",
+     "type": "bool"
     }
    ]
   },
