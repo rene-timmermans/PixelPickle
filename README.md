@@ -112,6 +112,9 @@ Arabisch (van rechts naar links). Bij de eerste start is de taal Engels. Kies ee
 
 ## Wat er nieuw is
 
+**1.4.1** De gebruikershandleiding is een zelfstandig venster: het kan ook achter het hoofdvenster, heeft een eigen
+plek op de taakbalk en sluit mee met PixelPickle.
+
 **1.4.0** Vernieuwde gebruikershandleiding (F1): genummerde hoofdstukken met een klikbare inhoudsopgave, een
 zoekbalk die alle treffers markeert en de knoppen Inhoud, Vorige en Volgende. Het venster kan naast je werk open
 blijven staan.
