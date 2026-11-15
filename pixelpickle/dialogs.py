@@ -130,6 +130,15 @@ class CanvasSizeDialog(QDialog):
         return [0, dx // 2, dx][a % 3], [0, dy // 2, dy][a // 3]
 
 
+def swatch_style(btn, color, min_width=60):
+    """Kleurknop egaal in precies deze kleur. De stijlregel geldt alleen voor deze knop: zonder afbakening
+    neemt alles wat eraan hangt (een kleurkiezer, een tooltip) de achtergrondkleur over."""
+    btn.setObjectName("ppColorSwatch")
+    btn.setStyleSheet(f"QPushButton#ppColorSwatch {{ background: {QColor(color).name()}; border: 1px solid palette(mid);"
+                      f" border-radius: 3px; min-width: {min_width}px; min-height: 22px; }}"
+                      "QPushButton#ppColorSwatch:hover { border: 1px solid palette(highlight); }")
+
+
 class AdjustDialog(QDialog):
     """Generiek venster met schuifregelaars en live voorbeeld op de actieve laag."""
 
@@ -267,7 +276,7 @@ class BordersDialog(QDialog):
             self._paint()
 
     def _paint(self):
-        self.cbtn.setStyleSheet(f"background:{self.color.name()}; min-width:60px;")
+        swatch_style(self.cbtn, self.color, 60)
 
     def values(self):
         t, b, l, r = (sp.value() for sp in self.s)
@@ -553,7 +562,7 @@ class LayerPropertiesDialog(QDialog):
             self._paint()
 
     def _paint(self):
-        self.hl_btn.setStyleSheet(f"background:{self.hl_color.name()};")
+        swatch_style(self.hl_btn, self.hl_color)
 
     def values(self):
         return dict(name=self.name.text() or "Laag", opacity=self.op.value() / 100, mode=self.mode.currentIndex(),
@@ -952,8 +961,8 @@ class GifExportDialog(QDialog):
             self.timer.start()
 
     def _paint_btns(self):
-        self.mbtn.setStyleSheet(f"background:{self.match.name()}; min-width:40px;")
-        self.bbtn.setStyleSheet(f"background:{self.blend.name()}; min-width:40px;")
+        swatch_style(self.mbtn, self.match, 40)
+        swatch_style(self.bbtn, self.blend, 40)
 
     def result(self):
         rgb = lambda c: (c.red(), c.green(), c.blue())  # noqa: E731

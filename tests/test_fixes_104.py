@@ -204,5 +204,14 @@ w.history.set_doc(d4); w.history.refresh()
 w.history.jump(w.history.list.item(5)); assert names_at() == full
 d4.set_modified(False)
 print("13 springen in de geschiedenis gebeurt in één keer en klopt met stap voor stap")
+# 14. kleurvakje in effectvensters: de kleurkiezer neemt de kleur van het vakje niet over
+from PySide6.QtWidgets import QColorDialog
+from pixelpickle.effectdialog import ColorButton
+sw = ColorButton((89, 255, 60)); sw.show(); app.processEvents()
+assert sw.grab().toImage().pixelColor(sw.width() // 2, sw.height() // 2) == QColor(89, 255, 60)
+cdlg = QColorDialog(sw); cdlg.setOption(QColorDialog.ColorDialogOption.DontUseNativeDialog); cdlg.show(); app.processEvents()
+assert cdlg.grab().toImage().pixelColor(5, 5) != QColor(89, 255, 60), "kleurkiezer is in de vakjeskleur getekend"
+cdlg.close(); sw.close()
+print("14 kleurvakje toont de exacte kleur en kleurt de kleurkiezer niet mee")
 d.set_modified(False)
 print("ALLES OK")

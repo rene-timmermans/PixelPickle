@@ -154,10 +154,12 @@ class ColorButton(QPushButton):
         self._paint()
 
     def _paint(self):
-        self.setStyleSheet(f"background: rgb{self.rgb};")
+        # alleen dit vakje kleuren (anders werd ook de kleurkiezer die eraan hangt in deze kleur getekend)
+        from .dialogs import swatch_style
+        swatch_style(self, QColor(*self.rgb), 0)
 
     def _pick(self):
-        c = QColorDialog.getColor(QColor(*self.rgb), self)
+        c = QColorDialog.getColor(QColor(*self.rgb), self.window())
         if c.isValid():
             self.rgb = (c.red(), c.green(), c.blue())
             self._paint()
