@@ -637,6 +637,16 @@ class MainWindow(QMainWindow):
         for a in self.doc_actions:
             a.setEnabled(has)
         self._tools_enabled(has or bool(self.mdi.subWindowList()))
+        self.update_undo_actions()
+
+    def update_undo_actions(self):
+        """Ongedaan maken en Opnieuw grijs als er niets (meer) ongedaan te maken of opnieuw uit te voeren is."""
+        acts = getattr(self, "actions_by_id", {})
+        d = self._active_doc if self.canvas() is not None else None
+        for cid, stack in ((0xe12b, "undo_stack"), (0xe12c, "redo_stack")):
+            a = acts.get(cid)
+            if a is not None:
+                a.setEnabled(bool(d is not None and getattr(d, stack)))
 
     def _tools_enabled(self, on):
         """Gereedschapsbalk en optiebalk alleen actief als er een afbeelding open is."""
@@ -664,9 +674,17 @@ class MainWindow(QMainWindow):
         else:
             doc = sw.canvas.doc
         if doc is not self._active_doc:
+            old = self._active_doc
+            if old is not None:
+                try:
+                    old.historyChanged.disconnect(self.update_undo_actions)
+                except (RuntimeError, TypeError):
+                    pass
             self._active_doc = doc
             self.layers.set_doc(doc)
             self.history.set_doc(doc)
+            if doc is not None:
+                doc.historyChanged.connect(self.update_undo_actions)
         self.update_actions()
         if hasattr(self, "actions_by_id"):
             self._sync_seledit_check()

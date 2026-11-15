@@ -213,5 +213,21 @@ cdlg = QColorDialog(sw); cdlg.setOption(QColorDialog.ColorDialogOption.DontUseNa
 assert cdlg.grab().toImage().pixelColor(5, 5) != QColor(89, 255, 60), "kleurkiezer is in de vakjeskleur getekend"
 cdlg.close(); sw.close()
 print("14 kleurvakje toont de exacte kleur en kleurt de kleurkiezer niet mee")
+# 15. Ongedaan maken en Opnieuw grijs als er niets ongedaan te maken of opnieuw uit te voeren is
+d5 = Document(40, 30, QColor(255, 255, 255)); w.add_document(d5); app.processEvents()
+U, R = w.actions_by_id[0xe12b], w.actions_by_id[0xe12c]
+assert not U.isEnabled() and not R.isEnabled(), "nieuwe afbeelding: beide grijs"
+d5.add_layer(); app.processEvents()
+assert U.isEnabled() and not R.isEnabled()
+U.trigger(); app.processEvents()
+assert not U.isEnabled() and R.isEnabled(), "na ongedaan maken tot het begin"
+R.trigger(); app.processEvents()
+assert U.isEnabled() and not R.isEnabled()
+d6 = Document(40, 30, QColor(255, 255, 255)); w.add_document(d6); app.processEvents()
+assert not U.isEnabled() and not R.isEnabled(), "andere afbeelding zonder geschiedenis"
+w.mdi.setActiveSubWindow([sw for sw in w.mdi.subWindowList() if sw.canvas.doc is d5][0]); app.processEvents()
+assert U.isEnabled(), "terug naar de afbeelding met geschiedenis"
+d5.set_modified(False); d6.set_modified(False)
+print("15 Ongedaan maken en Opnieuw worden grijs als er niets meer te doen is, ook bij wisselen van afbeelding")
 d.set_modified(False)
 print("ALLES OK")
