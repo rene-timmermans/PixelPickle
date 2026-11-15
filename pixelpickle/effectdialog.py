@@ -182,7 +182,7 @@ class EffectDialog(QDialog):
         if mode == "apply" and layer.kind == "group":
             self.orig = doc.composite(None, self.targets)
         else:
-            self.orig = QImage(layer.image)
+            self.orig = self.origs[0] if self.targets == [layer] else QImage(layer.image)
         self.rect = doc.selection_bbox() if doc.sel is not None else doc.rect()
         if mode == "params":  # aanpassingslaag: voorbeeld op de samengestelde lagen eronder
             below = doc.layers[:doc.active] if layer.adjust else doc.layers[:doc.active + 1]
@@ -300,6 +300,16 @@ class EffectDialog(QDialog):
         self.timer.timeout.connect(self.update_preview)
         self.img_timer = QTimer(self, singleShot=True, interval=450)
         self.img_timer.timeout.connect(self.update_on_image)
+        # exact voorbeeld: het effect op de volle resolutie, op de achtergrond berekend zodra je even stopt met
+        # schuiven. Het snelle voorbeeld op een verkleinde kopie wijkt bij randen en fijne details af.
+        self._full = None        # (instellingen, resultaat als QImage op volle resolutie van het gebied)
+        self._job = None         # (instellingen, future)
+        self._pool = None
+        self._src_rgba = None
+        self.exact_timer = QTimer(self, singleShot=True, interval=350)
+        self.exact_timer.timeout.connect(self._start_exact)
+        self.poll_timer = QTimer(self, interval=40)
+        self.poll_timer.timeout.connect(self._poll_exact)
         self.on_image.toggled.connect(lambda _: self.img_timer.start())
         self._fill_presets()
         start = params or self._stored("last") or defaults(eff, self.ctx)
@@ -378,8 +388,13 @@ class EffectDialog(QDialog):
         if getattr(self, "_loading", False):
             return
         self.timer.start()
-        if self.on_image.isChecked():
+        # bij één laag levert het exacte voorbeeld het resultaat; dat zet het daarna op de afbeelding
+        if self.on_image.isChecked() and not self._exact_feeds_image():
             self.img_timer.start()
+
+    def _exact_feeds_image(self):
+        return (self.mode == "apply" and len(self.targets) == 1 and self.origs[0] is self.orig
+                and self.region.width() * self.region.height() <= self.EXACT_MAX)
 
     # ---------------------------------------------------------------- voorinstellingen
     def _key(self):
@@ -515,11 +530,87 @@ class EffectDialog(QDialog):
         # res staat op schaal 'zoom' met linksboven op bronpunt (x0, y0)
         img = self._draw(res, (cx - x0) * self.zoom, (cy - y0) * self.zoom, 1.0)
         self.after.setPixmap(checker_pixmap(img))
+        self.exact_timer.start()
+
+    # ---------------------------------------------------------------- exact voorbeeld (volle resolutie)
+    EXACT_MAX = 16_000_000  # pixels; grotere gebieden alleen met het snelle voorbeeld
+
+    def _pkey(self):
+        return json.dumps(self.params(), sort_keys=True, default=list)
+
+    def _start_exact(self):
+        if self.region.width() * self.region.height() > self.EXACT_MAX:
+            return
+        key = self._pkey()
+        if self._full is not None and self._full[0] == key:
+            self._show_exact()
+            return
+        if self._job is not None and self._job[0] == key:
+            return  # wordt al berekend
+        if self._pool is None:
+            from concurrent.futures import ThreadPoolExecutor
+            self._pool = ThreadPoolExecutor(max_workers=1)
+            self._src_rgba = ops.qimage_to_rgba(self.region)
+        if self._job is not None:
+            self._job[1].cancel()
+        eff, ctx, params, src = self.eff, Ctx(self.ctx.fg, self.ctx.bg, 1.0, self.ctx.seed), self.params(), self._src_rgba
+        self._job = (key, self._pool.submit(lambda: run_effect(eff, src.copy(), ctx, params)))
+        self.poll_timer.start()
+
+    def _poll_exact(self):
+        if self._job is None:
+            self.poll_timer.stop()
+            return
+        key, fut = self._job
+        if not fut.done():
+            return
+        self.poll_timer.stop()
+        self._job = None
+        try:
+            res = fut.result()
+        except Exception as e:  # nooit het venster laten crashen
+            print("effect fout:", e)
+            return
+        self._full = (key, ops.rgba_to_qimage(res))
+        if key == self._pkey():
+            self._show_exact()
+            if self.on_image.isChecked() and self.mode == "apply":
+                self.update_on_image()
+        else:  # instellingen intussen veranderd: opnieuw
+            self.exact_timer.start()
+
+    def _show_exact(self):
+        """Het exacte resultaat in het Na-voorbeeld, op dezelfde zoom en plek als het snelle voorbeeld."""
+        cx, cy, vw, vh = self._view()
+        full = self._full[1]
+        m = 2
+        r = QRectF(cx - vw / 2 - m, cy - vh / 2 - m, vw + 2 * m, vh + 2 * m).toAlignedRect().intersected(full.rect())
+        if r.isEmpty():
+            return
+        part = full.copy(r)
+        if self.zoom != 1:
+            part = part.scaled(max(1, round(r.width() * self.zoom)), max(1, round(r.height() * self.zoom)),
+                               Qt.AspectRatioMode.IgnoreAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        img = self._draw(part, (cx - r.x()) * self.zoom, (cy - r.y()) * self.zoom, 1.0)
+        self.after.setPixmap(checker_pixmap(img))
+
+    def _stop_exact(self):
+        self.exact_timer.stop()
+        self.poll_timer.stop()
+        if self._job is not None:
+            self._job[1].cancel()
+            self._job = None
+        if self._pool is not None:
+            self._pool.shutdown(wait=False, cancel_futures=True)
+            self._pool = None
 
     def result_image(self, orig=None):
         orig = self.orig if orig is None else orig
-        region = orig.copy(self.rect)
-        res = ops.rgba_to_qimage(run_effect(self.eff, ops.qimage_to_rgba(region), self.ctx, self.params()))
+        if orig is self.orig and self._full is not None and self._full[0] == self._pkey():
+            res = self._full[1]  # al berekend voor het exacte voorbeeld
+        else:
+            region = orig.copy(self.rect)
+            res = ops.rgba_to_qimage(run_effect(self.eff, ops.qimage_to_rgba(region), self.ctx, self.params()))
         out = QImage(orig)
         apply_region(out, self.rect, res, self.doc.sel)
         return out
@@ -531,6 +622,7 @@ class EffectDialog(QDialog):
     def update_on_image(self):
         if self.mode != "apply":
             return
+        key = self._pkey()
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         try:
             for l, o in zip(self.targets, self.origs):
@@ -538,6 +630,9 @@ class EffectDialog(QDialog):
         finally:
             QApplication.restoreOverrideCursor()
         self.doc.changed.emit(QRect())
+        # tijdens het rekenen verder geschoven? Dan nog een keer, zodat de afbeelding nooit een tussenstand toont
+        if self.on_image.isChecked() and self._pkey() != key:
+            self.img_timer.start()
 
     def _remember(self):
         allp = self._all_presets()
@@ -547,6 +642,7 @@ class EffectDialog(QDialog):
     def accept(self):
         self.timer.stop()
         self.img_timer.stop()
+        self._stop_exact()
         self._remember()
         if self.mode == "apply":
             QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
@@ -565,6 +661,7 @@ class EffectDialog(QDialog):
     def reject(self):
         self.timer.stop()
         self.img_timer.stop()
+        self._stop_exact()
         if self.mode == "apply" and any(l.image is not o for l, o in zip(self.targets, self.origs)):
             self._restore()
             self.doc.changed.emit(QRect())

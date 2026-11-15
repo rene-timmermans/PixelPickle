@@ -8,6 +8,53 @@ from .document import apply_region
 from . import imageops as ops
 
 
+def exec_live(dlg, main):
+    """Als dlg.exec(), maar zonder het venster bij de vensterbeheerder als modaal aan te melden.
+
+    KDE (het effect "Dialoogvenster-ouder") maakt het hoofdvenster achter een modaal venster donkerder en valer.
+    Bij vensters met "Voorbeeld op afbeelding" zie je dan niet de echte kleuren. Daarom blijft het venster
+    niet-modaal en houdt PixelPickle zelf klikken en toetsen in het hoofdvenster tegen zolang het open is.
+    Geeft het resultaat terug zoals exec()."""
+    import types
+    from PySide6.QtCore import QEvent, QEventLoop, QObject
+    from PySide6.QtWidgets import QApplication
+    if isinstance(QDialog.exec, types.FunctionType):  # tests vervangen exec(): dan gewoon die gebruiken
+        return dlg.exec()
+    blocked = {QEvent.Type.MouseButtonPress, QEvent.Type.MouseButtonRelease, QEvent.Type.MouseButtonDblClick,
+               QEvent.Type.Wheel, QEvent.Type.KeyPress, QEvent.Type.KeyRelease, QEvent.Type.ShortcutOverride,
+               QEvent.Type.ContextMenu, QEvent.Type.DragEnter, QEvent.Type.Drop, QEvent.Type.TabletPress}
+
+    class _Guard(QObject):
+        def eventFilter(self, obj, ev):
+            t = ev.type()
+            if isinstance(obj, QWidget) and obj.window() is main:
+                if t in blocked:
+                    if t == QEvent.Type.MouseButtonPress:  # klik in het hoofdvenster: het venster naar voren
+                        dlg.raise_()
+                        dlg.activateWindow()
+                    return True
+                if t == QEvent.Type.Close and obj is main:
+                    ev.ignore()
+                    return True
+            return False
+
+    guard = _Guard()
+    loop = QEventLoop()
+    dlg.finished.connect(loop.quit)
+    dlg.setModal(False)
+    dlg.setWindowModality(Qt.WindowModality.NonModal)
+    app = QApplication.instance()
+    app.installEventFilter(guard)
+    try:
+        dlg.show()
+        dlg.raise_()
+        dlg.activateWindow()
+        loop.exec()
+    finally:
+        app.removeEventFilter(guard)
+    return dlg.result()
+
+
 def _buttons(dlg):
     bb = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
     bb.button(QDialogButtonBox.StandardButton.Ok).setText("OK")

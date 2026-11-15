@@ -229,5 +229,62 @@ w.mdi.setActiveSubWindow([sw for sw in w.mdi.subWindowList() if sw.canvas.doc is
 assert U.isEnabled(), "terug naar de afbeelding met geschiedenis"
 d5.set_modified(False); d6.set_modified(False)
 print("15 Ongedaan maken en Opnieuw worden grijs als er niets meer te doen is, ook bij wisselen van afbeelding")
+# 16. effectvenster: exact voorbeeld op volle resolutie, en Voorbeeld op afbeelding toont nooit een tussenstand
+import time as _time
+d7 = Document(400, 300, QColor(255, 255, 255)); w.add_document(d7); app.processEvents()
+arr = np.zeros((300, 400, 4), np.uint8); arr[..., 3] = 255
+arr[::7, :, :3] = 200; arr[:, ::11, 1] = 120; arr[100:200, 150:250, 0] = 255
+d7.layers[0].image = ops.rgba_to_qimage(arr)
+ed = EffectDialog(w, d7, w.effects[0x80a7]); ed.show(); ed.fit_preview(); app.processEvents()
+ed.on_image.setChecked(True)
+def _wait(cond, sec=20):
+    t0 = _time.time()
+    while not cond() and _time.time() - t0 < sec:
+        app.processEvents()
+for val in (10, 40, 70):  # snel achter elkaar schuiven
+    ed.widgets[next(iter(ed.widgets))][1].setValue(val) if ed.widgets[next(iter(ed.widgets))][0] == "int" else None
+    app.processEvents()
+_wait(lambda: ed._full is not None and ed._full[0] == ed._pkey() and ed._job is None)
+_wait(lambda: False, 0.6)
+want = ed.result_image(ed.origs[0])
+assert d7.layers[0].image == want, "afbeelding toont niet het resultaat van de laatste instellingen"
+from PySide6.QtCore import Qt as _Qt
+from pixelpickle.effectdialog import checker_pixmap
+cx, cy, _, _ = ed._view(); full = want.copy(ed.rect)
+sc = full.scaled(round(full.width() * ed.zoom), round(full.height() * ed.zoom), _Qt.AspectRatioMode.IgnoreAspectRatio,
+                 _Qt.TransformationMode.SmoothTransformation)
+exp = checker_pixmap(ed._draw(sc, cx * ed.zoom, cy * ed.zoom, 1.0)).toImage()
+diff = np.abs(ops.qimage_to_rgba(ed.after.pixmap().toImage().convertToFormat(ops.FMT)).astype(int)
+              - ops.qimage_to_rgba(exp.convertToFormat(ops.FMT)).astype(int)).mean()
+assert diff < 1, diff
+ed.reject(); d7.set_modified(False)
+print("16 exact voorbeeld gelijk aan het resultaat; voorbeeld op afbeelding volgt de laatste instellingen")
+# 17. vensters met Voorbeeld op afbeelding: niet modaal voor de vensterbeheerder (KDE maakt het hoofdvenster
+#     anders donker en vaal), maar klikken en toetsen in het hoofdvenster worden wel tegengehouden
+from PySide6.QtCore import QTimer as _QT
+from PySide6.QtGui import QMouseEvent as _ME
+from pixelpickle import dialogs as _dlgs
+d8 = Document(80, 60, QColor(200, 30, 30)); cv8 = w.add_document(d8).canvas; app.processEvents()
+ed8 = EffectDialog(w, d8, w.effects[0x82d8])
+seen = {}
+def _probe():
+    seen["modal"] = ed8.isModal() or ed8.windowModality() != Qt.WindowModality.NonModal
+    seen["visible"] = ed8.isVisible()
+    before = len(d8.undo_stack)
+    w.select_tool(w.tools[0xd091])
+    pos = QPointF(cv8.width() / 2, cv8.height() / 2)
+    for t in (QEvent.Type.MouseButtonPress, QEvent.Type.MouseButtonRelease):
+        app.sendEvent(cv8, _ME(t, pos, pos, Qt.MouseButton.LeftButton,
+                               Qt.MouseButton.LeftButton if t == QEvent.Type.MouseButtonPress else Qt.MouseButton.NoButton,
+                               Qt.KeyboardModifier.NoModifier))
+    seen["painted"] = len(d8.undo_stack) != before
+    ed8.accept()
+_QT.singleShot(200, _probe)
+res = _dlgs.exec_live(ed8, w)
+assert seen == {"modal": False, "visible": True, "painted": False}, seen
+assert res == 1 and len(d8.undo_stack) == 1, (res, len(d8.undo_stack))
+cv8.mousePressEvent  # canvas werkt daarna weer gewoon
+d8.set_modified(False)
+print("17 effectvenster niet modaal (geen KDE-verduistering), hoofdvenster wel geblokkeerd; OK werkt")
 d.set_modified(False)
 print("ALLES OK")

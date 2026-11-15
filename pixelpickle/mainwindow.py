@@ -1676,7 +1676,7 @@ class MainWindow(QMainWindow):
     def adjust(self, title, fn, params):
         if not self._group_effect_ok(self.doc()):
             return
-        dialogs.AdjustDialog(self, self.doc(), title, fn, params).exec()
+        dialogs.exec_live(dialogs.AdjustDialog(self, self.doc(), title, fn, params), self)
 
     # ================================================================ lagen
     def layer_properties(self):
@@ -1694,7 +1694,7 @@ class MainWindow(QMainWindow):
                 d.structureChanged.emit()
             return
         dlg = dialogs.LayerPropertiesDialog(self, l, d)
-        if dlg.exec():
+        if dialogs.exec_live(dlg, self):
             d.push_undo("Laageigenschappen")
             for k, v in dlg.values().items():
                 setattr(l, k, v)
@@ -2247,7 +2247,7 @@ class MainWindow(QMainWindow):
             finally:
                 QApplication.restoreOverrideCursor()
             return
-        EffectDialog(self, d, eff).exec()
+        dialogs.exec_live(EffectDialog(self, d, eff), self)
 
     # ================================================================ selecties
     def select_all(self):
