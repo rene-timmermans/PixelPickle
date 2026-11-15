@@ -112,6 +112,10 @@ Arabisch (van rechts naar links). Bij de eerste start is de taal Engels. Kies ee
 
 ## Wat er nieuw is
 
+**1.6.0** Een rustigere standaardwerkbalk met alleen iconen, met een nieuwe knop voor Bewerking op volledig scherm.
+Foto verbeteren staat nu als submenu bovenaan in Aanpassen; in Beeld staan de werkbalken en de paletten elk in een
+eigen submenu, met vinkjes.
+
 **1.5.0** Voorbeeld op afbeelding toont de echte kleuren: het hoofdvenster wordt niet meer verduisterd zolang een
 effectvenster open is. Het Na-voorbeeld in effectvensters wordt op volle resolutie berekend en is daardoor gelijk aan
 het eindresultaat, en de afbeelding volgt altijd de laatste instellingen.
