@@ -117,7 +117,7 @@
   "80d4": "Ouvre une copie de l'image active avec tous ses calques comme nouveau document non enregistré (Shift+D).",
   "80d5": "Redimensionne la fenêtre flottante pour qu'elle s'ajuste à l'image au zoom actuel (Ctrl+W). Non disponible avec les onglets.",
   "81d0": "Zoome l'image pour qu'elle tienne entièrement dans sa fenêtre.",
-  "e142": "Ouvre ce manuel d'utilisation.",
+  "e142": "Ouvre ce guide de l'utilisateur (F1), dans une fenêtre qui peut rester ouverte à côté de votre travail. En haut se trouvent une barre de recherche et les boutons Sommaire, Précédent et Suivant.",
   "8028": "Affiche la liste de tous les raccourcis clavier des outils et des commandes de menu.",
   "e140": "Affiche des informations sur PixelPickle, comme la version.",
   "8125": "Ouvre la page du projet PixelPickle sur GitHub dans votre navigateur web. La dernière version et ses notes de version y sont indiquées.",

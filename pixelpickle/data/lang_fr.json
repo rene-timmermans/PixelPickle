@@ -2116,5 +2116,18 @@
  "Kies een lagengroep met minstens drie lagen om te verdelen.": "Choisissez un groupe de calques contenant au moins trois calques à répartir.",
  "Kies een lagengroep met minstens twee lagen.": "Choisissez un groupe de calques contenant au moins deux calques.",
  "Deze lagengroep bevat geen rasterlagen om te bewerken.": "Ce groupe de calques ne contient aucun calque raster à modifier.",
- "Tekst- en vectorlagen in de groep worden overgeslagen.": "Les calques de texte et vectoriels du groupe sont ignorés."
+ "Tekst- en vectorlagen in de groep worden overgeslagen.": "Les calques de texte et vectoriels du groupe sont ignorés.",
+ "Inhoudsopgave": "Table des matières",
+ "Zoek met Ctrl+F of in de zoekbalk bovenaan; F3 gaat naar de volgende treffer en Shift+F3 naar de vorige. Vorige en Volgende springen naar het vorige of volgende onderwerp, Inhoud brengt je terug naar de inhoudsopgave. Het venster kan naast je werk open blijven staan.": "Recherchez avec Ctrl+F ou dans la barre de recherche en haut ; F3 passe au résultat suivant et Maj+F3 au précédent. Précédent et Suivant passent au sujet précédent ou suivant, Sommaire ramène à la table des matières. La fenêtre peut rester ouverte à côté de votre travail.",
+ "Klik op een onderwerp om er direct naartoe te gaan. Inhoud brengt je terug; Vorige en Volgende bladeren door de onderwerpen.": "Cliquez sur un sujet pour y accéder directement. Sommaire vous ramène ici ; Précédent et Suivant parcourent les sujets.",
+ "Ctrl+F: zoeken · F3: volgende treffer · Shift+F3: vorige treffer": "Ctrl+F : rechercher · F3 : résultat suivant · Maj+F3 : résultat précédent",
+ "Zoeken in de handleiding…": "Rechercher dans le guide…",
+ "Vorige": "Précédent",
+ "Volgende": "Suivant",
+ "Terug naar de inhoudsopgave": "Retour à la table des matières",
+ "Vorig onderwerp": "Sujet précédent",
+ "Volgend onderwerp": "Sujet suivant",
+ "Gevonden: {}": "Trouvé : {}",
+ "Gevonden: {} ({} treffers)": "Trouvé : {} ({} résultats)",
+ "Niet gevonden: {}": "Introuvable : {}"
 }

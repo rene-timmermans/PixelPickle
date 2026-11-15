@@ -2116,5 +2116,18 @@
  "Kies een lagengroep met minstens drie lagen om te verdelen.": "Выберите группу слоёв минимум с тремя слоями для распределения.",
  "Kies een lagengroep met minstens twee lagen.": "Выберите группу слоёв минимум с двумя слоями.",
  "Deze lagengroep bevat geen rasterlagen om te bewerken.": "В этой группе слоёв нет растровых слоёв для обработки.",
- "Tekst- en vectorlagen in de groep worden overgeslagen.": "Текстовые и векторные слои группы пропускаются."
+ "Tekst- en vectorlagen in de groep worden overgeslagen.": "Текстовые и векторные слои группы пропускаются.",
+ "Inhoudsopgave": "Оглавление",
+ "Zoek met Ctrl+F of in de zoekbalk bovenaan; F3 gaat naar de volgende treffer en Shift+F3 naar de vorige. Vorige en Volgende springen naar het vorige of volgende onderwerp, Inhoud brengt je terug naar de inhoudsopgave. Het venster kan naast je werk open blijven staan.": "Ищите с помощью Ctrl+F или в строке поиска сверху; F3 переходит к следующему совпадению, Shift+F3 — к предыдущему. «Назад» и «Далее» переходят к предыдущей или следующей теме, «Содержание» возвращает к оглавлению. Окно может оставаться открытым рядом с вашей работой.",
+ "Klik op een onderwerp om er direct naartoe te gaan. Inhoud brengt je terug; Vorige en Volgende bladeren door de onderwerpen.": "Щёлкните тему, чтобы сразу перейти к ней. «Содержание» возвращает сюда; «Назад» и «Далее» листают темы.",
+ "Ctrl+F: zoeken · F3: volgende treffer · Shift+F3: vorige treffer": "Ctrl+F: поиск · F3: следующее совпадение · Shift+F3: предыдущее совпадение",
+ "Zoeken in de handleiding…": "Поиск в руководстве…",
+ "Vorige": "Назад",
+ "Volgende": "Далее",
+ "Terug naar de inhoudsopgave": "Вернуться к оглавлению",
+ "Vorig onderwerp": "Предыдущая тема",
+ "Volgend onderwerp": "Следующая тема",
+ "Gevonden: {}": "Найдено: {}",
+ "Gevonden: {} ({} treffers)": "Найдено: {} (совпадений: {})",
+ "Niet gevonden: {}": "Не найдено: {}"
 }

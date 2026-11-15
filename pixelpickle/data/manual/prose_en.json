@@ -117,7 +117,7 @@
   "80d4": "Opens a copy of the active image with all its layers as a new, unsaved document (Shift+D).",
   "80d5": "Resizes the floating window to fit the image at the current zoom (Ctrl+W). Not available with tabs.",
   "81d0": "Zooms the image so it fits entirely in its window.",
-  "e142": "Opens this user manual.",
+  "e142": "Opens this user manual (F1), in a window that can stay open next to your work. At the top are a search bar and the Contents, Previous and Next buttons.",
   "8028": "Shows a list of all keyboard shortcuts for tools and menu commands.",
   "e140": "Shows information about PixelPickle, such as the version.",
   "8125": "Opens the PixelPickle project page on GitHub in your web browser. The latest version and its release notes are listed there.",

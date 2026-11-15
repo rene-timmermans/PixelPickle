@@ -2116,5 +2116,18 @@
  "Kies een lagengroep met minstens drie lagen om te verdelen.": "Scegli un gruppo di livelli con almeno tre livelli da distribuire.",
  "Kies een lagengroep met minstens twee lagen.": "Scegli un gruppo di livelli con almeno due livelli.",
  "Deze lagengroep bevat geen rasterlagen om te bewerken.": "Questo gruppo di livelli non contiene livelli raster da modificare.",
- "Tekst- en vectorlagen in de groep worden overgeslagen.": "I livelli di testo e vettoriali del gruppo vengono saltati."
+ "Tekst- en vectorlagen in de groep worden overgeslagen.": "I livelli di testo e vettoriali del gruppo vengono saltati.",
+ "Inhoudsopgave": "Sommario",
+ "Zoek met Ctrl+F of in de zoekbalk bovenaan; F3 gaat naar de volgende treffer en Shift+F3 naar de vorige. Vorige en Volgende springen naar het vorige of volgende onderwerp, Inhoud brengt je terug naar de inhoudsopgave. Het venster kan naast je werk open blijven staan.": "Cerca con Ctrl+F o nella barra di ricerca in alto; F3 va al risultato successivo e Maiusc+F3 a quello precedente. Precedente e Successivo passano all'argomento precedente o successivo, Indice riporta al sommario. La finestra può restare aperta accanto al tuo lavoro.",
+ "Klik op een onderwerp om er direct naartoe te gaan. Inhoud brengt je terug; Vorige en Volgende bladeren door de onderwerpen.": "Fai clic su un argomento per andarci direttamente. Indice ti riporta qui; Precedente e Successivo scorrono gli argomenti.",
+ "Ctrl+F: zoeken · F3: volgende treffer · Shift+F3: vorige treffer": "Ctrl+F: cerca · F3: risultato successivo · Maiusc+F3: risultato precedente",
+ "Zoeken in de handleiding…": "Cerca nella guida…",
+ "Vorige": "Precedente",
+ "Volgende": "Successivo",
+ "Terug naar de inhoudsopgave": "Torna al sommario",
+ "Vorig onderwerp": "Argomento precedente",
+ "Volgend onderwerp": "Argomento successivo",
+ "Gevonden: {}": "Trovato: {}",
+ "Gevonden: {} ({} treffers)": "Trovato: {} ({} risultati)",
+ "Niet gevonden: {}": "Non trovato: {}"
 }

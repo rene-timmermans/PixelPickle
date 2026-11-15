@@ -2870,8 +2870,25 @@ class MainWindow(QMainWindow):
     def show_manual(self):
         """Uitgebreide handleiding (per gereedschap, menu en effect); zonder die bestanden de beknopte."""
         from . import manual
-        page = manual.build() if os.path.exists(os.path.join(manual.DATA, "prose_en.json")) else self.manual_html()
-        dialogs.text_window(self, tr("Gebruikershandleiding"), page, (900, 820)).show()
+        if not os.path.exists(os.path.join(manual.DATA, "prose_en.json")):
+            dialogs.text_window(self, tr("Gebruikershandleiding"), self.manual_html(), (900, 820)).show()
+            return
+        # één venster dat naast het werk open kan blijven; nogmaals openen brengt het naar voren
+        win = getattr(self, "_manual_win", None)
+        try:
+            if win is not None and win.isVisible():
+                win.raise_()
+                win.activateWindow()
+                return
+        except RuntimeError:  # al opgeruimd
+            pass
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        try:
+            self._manual_win = manual.ManualWindow(self)
+        finally:
+            QApplication.restoreOverrideCursor()
+        self._manual_win.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        self._manual_win.show()
 
     # ---------------------------------------------------------------- automatisch opslaan
     def autosave_settings(self):

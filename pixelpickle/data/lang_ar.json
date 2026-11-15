@@ -2116,5 +2116,18 @@
  "Kies een lagengroep met minstens drie lagen om te verdelen.": "اختر مجموعة طبقات تحتوي على ثلاث طبقات على الأقل للتوزيع.",
  "Kies een lagengroep met minstens twee lagen.": "اختر مجموعة طبقات تحتوي على طبقتين على الأقل.",
  "Deze lagengroep bevat geen rasterlagen om te bewerken.": "لا تحتوي مجموعة الطبقات هذه على طبقات نقطية لتحريرها.",
- "Tekst- en vectorlagen in de groep worden overgeslagen.": "يتم تخطي الطبقات النصية والمتجهة في المجموعة."
+ "Tekst- en vectorlagen in de groep worden overgeslagen.": "يتم تخطي الطبقات النصية والمتجهة في المجموعة.",
+ "Inhoudsopgave": "جدول المحتويات",
+ "Zoek met Ctrl+F of in de zoekbalk bovenaan; F3 gaat naar de volgende treffer en Shift+F3 naar de vorige. Vorige en Volgende springen naar het vorige of volgende onderwerp, Inhoud brengt je terug naar de inhoudsopgave. Het venster kan naast je werk open blijven staan.": "ابحث باستخدام Ctrl+F أو في شريط البحث في الأعلى؛ ينتقل F3 إلى النتيجة التالية وShift+F3 إلى السابقة. ينتقل «السابق» و«التالي» إلى الموضوع السابق أو التالي، ويعيدك «المحتويات» إلى جدول المحتويات. يمكن أن تبقى النافذة مفتوحة بجانب عملك.",
+ "Klik op een onderwerp om er direct naartoe te gaan. Inhoud brengt je terug; Vorige en Volgende bladeren door de onderwerpen.": "انقر على موضوع للانتقال إليه مباشرة. «المحتويات» يعيدك إلى هنا؛ «السابق» و«التالي» يتنقلان بين المواضيع.",
+ "Ctrl+F: zoeken · F3: volgende treffer · Shift+F3: vorige treffer": "Ctrl+F: بحث · F3: النتيجة التالية · Shift+F3: النتيجة السابقة",
+ "Zoeken in de handleiding…": "ابحث في الدليل…",
+ "Vorige": "السابق",
+ "Volgende": "التالي",
+ "Terug naar de inhoudsopgave": "العودة إلى جدول المحتويات",
+ "Vorig onderwerp": "الموضوع السابق",
+ "Volgend onderwerp": "الموضوع التالي",
+ "Gevonden: {}": "تم العثور: {}",
+ "Gevonden: {} ({} treffers)": "تم العثور: {} ({} نتيجة)",
+ "Niet gevonden: {}": "لم يتم العثور: {}"
 }

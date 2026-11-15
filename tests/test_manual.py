@@ -55,4 +55,21 @@ for code, _ in i18n.LANGUAGES:
     has_prose = os.path.exists(os.path.join(DATA, f"prose_{code}.json")) or code == "en"
     assert not absent and len(page) > 100000, (code, absent[:5], len(page))
     print(f"3 {code}: {len(page)} tekens, eigen uitleg: {'ja' if has_prose else 'nee (Engels)'}")
+# 4. venster: elk onderwerp vindbaar, Vorige/Volgende/Inhoud en zoeken werken, in elke taal
+for code, _ in i18n.LANGUAGES:
+    i18n.load(code)
+    page, topics = manual.build(with_topics=True)
+    win = manual.ManualWindow()
+    want = [a for a, _ in topics if a != "contents"]
+    assert win.topics == want, (code, set(want) - set(win.topics))
+    assert not win.prev_btn.isEnabled() and win.next_btn.isEnabled()
+    win.step(1); assert win.index == 0 and win.topics[0].startswith("s-")
+    win.go("tools"); win.step(1); assert win.topics[win.index].startswith("t-")
+    win.go(win.topics[-1]); assert not win.next_btn.isEnabled()
+    win.go("contents"); assert win.index == -1 and not win.prev_btn.isEnabled()
+    word = i18n.tr("Gereedschappen")
+    win.search.setText(word); win.find()
+    assert win.browser.textCursor().hasSelection() and len(win.browser.extraSelections()) >= 2, code
+    win.close()
+print("4 venster met inhoud, vorige, volgende en zoeken werkt in elke taal")
 print("ALLES OK")
