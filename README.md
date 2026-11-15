@@ -112,6 +112,10 @@ Arabisch (van rechts naar links). Bij de eerste start is de taal Engels. Kies ee
 
 ## Wat er nieuw is
 
+**1.4.0** Vernieuwde gebruikershandleiding (F1): genummerde hoofdstukken met een klikbare inhoudsopgave, een
+zoekbalk die alle treffers markeert en de knoppen Inhoud, Vorige en Volgende. Het venster kan naast je werk open
+blijven staan.
+
 **1.3.2** Klikken op een stap in het palet Geschiedenis gaat nu meteen, ook bij grote afbeeldingen met veel stappen.
 
 **1.3.1** Spiegelen en omdraaien van een lagengroep gebeurt als geheel, op dezelfde plek. In het lagenpalet zijn
