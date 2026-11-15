@@ -112,6 +112,9 @@ Arabisch (van rechts naar links). Bij de eerste start is de taal Engels. Kies ee
 
 ## Wat er nieuw is
 
+**1.4.2** De kleurkiezer bij effecten met een kleurinstelling (zoals Als knop) neemt niet meer de gekozen kleur
+over. Kleurvakjes tonen de kleur nu egaal en exact.
+
 **1.4.1** De gebruikershandleiding is een zelfstandig venster: het kan ook achter het hoofdvenster, heeft een eigen
 plek op de taakbalk en sluit mee met PixelPickle.
 
