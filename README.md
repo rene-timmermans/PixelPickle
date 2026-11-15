@@ -112,6 +112,8 @@ Arabisch (van rechts naar links). Bij de eerste start is de taal Engels. Kies ee
 
 ## Wat er nieuw is
 
+**1.4.3** Ongedaan maken en Opnieuw worden grijs als er niets meer ongedaan te maken of opnieuw uit te voeren is.
+
 **1.4.2** De kleurkiezer bij effecten met een kleurinstelling (zoals Als knop) neemt niet meer de gekozen kleur
 over. Kleurvakjes tonen de kleur nu egaal en exact.
 
