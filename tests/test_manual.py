@@ -43,6 +43,7 @@ print("2 uitleg compleet:", len(saved["tools"]), "gereedschappen,", len(saved["e
       sum(len(m["items"]) for m in saved["menus"]), "menu-opdrachten")
 
 # 3. per taal opbouwen
+from PySide6.QtCore import Qt  # noqa: E402
 from PySide6.QtWidgets import QApplication  # noqa: E402
 app = QApplication(sys.argv)
 from pixelpickle import i18n, manual  # noqa: E402
@@ -72,4 +73,18 @@ for code, _ in i18n.LANGUAGES:
     assert win.browser.textCursor().hasSelection() and len(win.browser.extraSelections()) >= 2, code
     win.close()
 print("4 venster met inhoud, vorige, volgende en zoeken werkt in elke taal")
+# 5. losstaand venster: niet aan het hoofdvenster vast (anders blijft het er altijd boven)
+from pixelpickle.mainwindow import MainWindow  # noqa: E402
+i18n.load("nl")
+mw = MainWindow(); mw.show(); mw.show_manual(); app.processEvents()
+mwin = mw._manual_win
+assert mwin.parent() is None and mwin.windowFlags() & Qt.WindowType.Window and mwin.isVisible()
+mw.show_manual(); assert mw._manual_win is mwin  # tweede keer: hetzelfde venster naar voren
+mw.close(); app.processEvents()
+try:
+    still_open = mwin.isVisible()
+except RuntimeError:  # gesloten en opgeruimd
+    still_open = False
+assert not still_open, "handleiding moet mee sluiten met het hoofdvenster"
+print("5 handleiding is een zelfstandig venster en sluit mee met het hoofdvenster")
 print("ALLES OK")

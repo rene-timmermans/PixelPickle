@@ -2884,7 +2884,10 @@ class MainWindow(QMainWindow):
             pass
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         try:
-            self._manual_win = manual.ManualWindow(self)
+            # zonder ouder: een zelfstandig venster (eigen plek op de taakbalk) dat ook achter het hoofdvenster
+            # kan; met het hoofdvenster als ouder houdt de vensterbeheerder het er altijd boven
+            self._manual_win = manual.ManualWindow(None)
+            self._manual_win.setWindowIcon(self.windowIcon())
         finally:
             QApplication.restoreOverrideCursor()
         self._manual_win.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
@@ -2945,6 +2948,12 @@ class MainWindow(QMainWindow):
             self.settings.setValue("geometry", self.saveGeometry())
             self.settings.setValue("state2", self.saveState())
         self.autosaver.shutdown()
+        win = getattr(self, "_manual_win", None)  # de losse handleiding gaat mee dicht
+        try:
+            if win is not None:
+                win.close()
+        except RuntimeError:
+            pass
         e.accept()
 
 

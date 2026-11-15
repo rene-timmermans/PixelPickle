@@ -198,7 +198,9 @@ class ManualWindow(QDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle(tr("Gebruikershandleiding"))
+        if parent is None:  # zelfstandig venster: met minimaliseren/maximaliseren, ook achter het hoofdvenster
+            self.setWindowFlags(Qt.WindowType.Window)
+        self.setWindowTitle(tr("Gebruikershandleiding") + " - PixelPickle")
         self.setSizeGripEnabled(True)
         self.resize(900, 820)
         v = QVBoxLayout(self)
