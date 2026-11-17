@@ -312,5 +312,55 @@ w.std_toolbar.show(); app.processEvents()
 A[0xe801].trigger(); app.processEvents(); assert w.statusBar().isHidden() and not A[0xe801].isChecked()
 A[0xe801].trigger(); app.processEvents(); assert A[0xe801].isChecked()
 print("18 werkbalk opgeschoond met knop volledig scherm, Foto verbeteren in Aanpassen, vinkjes bij Werkbalken")
+# 19. slepen en neerzetten vanuit andere programma's
+from PySide6.QtCore import QMimeData, QUrl, QPoint
+from PySide6.QtGui import QDragEnterEvent, QDropEvent
+tmpd = tempfile.mkdtemp()
+pngp = os.path.join(tmpd, "gesleept.png"); QImage(30, 20, QImage.Format.Format_ARGB32).save(pngp)
+txtp = os.path.join(tmpd, "notitie.txt"); open(txtp, "w").write("x")
+def _drag(mime):
+    ev = QDragEnterEvent(QPoint(50, 50), Qt.DropAction.CopyAction, mime, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
+    w.dragEnterEvent(ev); return ev.isAccepted()
+def _drop(mime):
+    ev = QDropEvent(QPointF(50, 50), Qt.DropAction.CopyAction, mime, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
+    w.dropEvent(ev); app.processEvents(); return ev.isAccepted()
+mf = QMimeData(); mf.setUrls([QUrl.fromLocalFile(pngp)])
+mt = QMimeData(); mt.setUrls([QUrl.fromLocalFile(txtp)])
+mi = QMimeData(); img = QImage(12, 9, QImage.Format.Format_ARGB32); img.fill(QColor(0, 200, 0)); mi.setImageData(img)
+assert w.acceptDrops() and _drag(mf) and _drag(mi) and not _drag(mt), "bestand en afbeelding wel, tekstbestand niet"
+n = len(w.mdi.subWindowList())
+assert _drop(mf) and w.doc().path == pngp and len(w.mdi.subWindowList()) == n + 1
+assert _drop(mi) and (w.doc().w, w.doc().h) == (12, 9) and w.doc().layers[0].image.pixelColor(3, 3) == QColor(0, 200, 0)
+assert not _drop(mt) and len(w.mdi.subWindowList()) == n + 2
+assert not w.mdi.viewport().acceptDrops() and not w.canvas().acceptDrops(), "canvas mag de sleepactie niet onderscheppen"
+for sw in w.mdi.subWindowList():
+    sw.canvas.doc.set_modified(False)
+print("19 bestanden en afbeeldingen uit andere programma's neerzetten opent ze; andere bestanden niet")
+# 20. met Ctrl neerzetten op een geopende afbeelding: nieuwe laag, met het midden op de plek van loslaten
+d9 = Document(200, 150, QColor(255, 255, 255)); cv9 = w.add_document(d9).canvas
+w.resize(1200, 800); app.processEvents()
+red = QImage(20, 10, QImage.Format.Format_ARGB32); red.fill(QColor(255, 0, 0))
+redp = os.path.join(tmpd, "rood.png"); red.save(redp)
+mr = QMimeData(); mr.setUrls([QUrl.fromLocalFile(redp)])
+target = cv9.to_widget(QPointF(60, 40)).toPoint()
+gpos = cv9.mapTo(w, target)
+assert w._canvas_at(gpos) is cv9, "canvas onder de muis gevonden"
+n_win, n_lay = len(w.mdi.subWindowList()), len(d9.layers)
+ev = QDropEvent(QPointF(gpos), Qt.DropAction.CopyAction, mr, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.ControlModifier)
+w.dropEvent(ev); app.processEvents()
+assert ev.isAccepted() and len(w.mdi.subWindowList()) == n_win and len(d9.layers) == n_lay + 1
+nl = d9.layer()
+assert nl.name == "rood" and nl.image.pixelColor(60, 40) == QColor(255, 0, 0) and nl.image.pixelColor(50, 35) == QColor(255, 0, 0)
+assert nl.image.pixelColor(49, 40).alpha() == 0 and nl.image.pixelColor(70, 40).alpha() == 0
+mi2 = QMimeData(); mi2.setImageData(red)
+ev = QDropEvent(QPointF(gpos), Qt.DropAction.CopyAction, mi2, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.ControlModifier)
+w.dropEvent(ev); app.processEvents()
+assert len(d9.layers) == n_lay + 2 and len(w.mdi.subWindowList()) == n_win
+ev = QDropEvent(QPointF(gpos), Qt.DropAction.CopyAction, mr, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
+w.dropEvent(ev); app.processEvents()
+assert len(w.mdi.subWindowList()) == n_win + 1, "zonder Ctrl: als eigen afbeelding openen"
+for sw in w.mdi.subWindowList():
+    sw.canvas.doc.set_modified(False)
+print("20 met Ctrl neerzetten op een afbeelding voegt een laag toe op de plek van loslaten")
 d.set_modified(False)
 print("ALLES OK")

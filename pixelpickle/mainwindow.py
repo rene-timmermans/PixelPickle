@@ -159,6 +159,7 @@ class MainWindow(QMainWindow):
         self.last_command = None
 
         self.mdi = QMdiArea()
+        self.setAcceptDrops(True)  # bestanden en afbeeldingen uit andere programma's hierheen slepen
         self.mdi.setBackground(QColor(112, 112, 112))
         self.mdi.subWindowActivated.connect(self.on_active)
         self.mdi.viewport().setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
@@ -1041,6 +1042,92 @@ class MainWindow(QMainWindow):
         self.settings.setValue("lastdir", os.path.dirname(path))
         self._add_recent(path)
         self.add_document(doc)
+
+    # ---------------------------------------------------------------- slepen en neerzetten
+    @staticmethod
+    def _image_ext():
+        import re
+        return {e.lower() for e in re.findall(r"\*\.(\w+)", fileio.OPEN_FILTER.split(";;")[0])}
+
+    def _dropped_files(self, mime):
+        """Lokale afbeeldingsbestanden uit een sleepactie (andere bestanden en internetadressen niet)."""
+        exts = self._image_ext()
+        out = []
+        for u in mime.urls() if mime.hasUrls() else []:
+            path = u.toLocalFile()
+            if path and os.path.isfile(path) and os.path.splitext(path)[1][1:].lower() in exts:
+                out.append(path)
+        return out
+
+    def dragEnterEvent(self, e):
+        m = e.mimeData()
+        if self._dropped_files(m) or m.hasImage():
+            e.acceptProposedAction()
+        else:
+            e.ignore()
+
+    def dragMoveEvent(self, e):
+        self.dragEnterEvent(e)
+
+    def _canvas_at(self, pos):
+        """Het canvas onder een punt in het hoofdvenster, of None."""
+        from .canvas import Canvas
+        w = self.childAt(pos)
+        while w is not None and not isinstance(w, Canvas):
+            w = w.parentWidget()
+        return w
+
+    def _drop_as_layers(self, cv, pos, images):
+        """Afbeeldingen als nieuwe lagen in de afbeelding van cv, met het midden op de plek van loslaten."""
+        d = cv.doc
+        c = cv.to_doc(cv.mapFrom(self, pos))
+        for name, img in images:
+            img = img.convertToFormat(ops.FMT)
+            x, y = round(c.x() - img.width() / 2), round(c.y() - img.height() / 2)
+            layer_img, _ = self._centered_layer(d, img, (x, y))
+            d.add_layer(Layer(name or d.next_raster_name(), layer_img), label="Laag invoegen door slepen")
+        for sw in self.mdi.subWindowList():
+            if sw.canvas is cv:
+                self.mdi.setActiveSubWindow(sw)
+        d.changed.emit(QRect())
+        d.structureChanged.emit()
+
+    def dropEvent(self, e):
+        m = e.mimeData()
+        files = self._dropped_files(m)
+        pos = e.position().toPoint()
+        mods = e.modifiers() if hasattr(e, "modifiers") else QApplication.keyboardModifiers()
+        cv = self._canvas_at(pos) if mods & Qt.KeyboardModifier.ControlModifier else None
+        if cv is not None:  # Ctrl: als nieuwe laag(en) in de afbeelding waarop je loslaat
+            images = []
+            for path in files:
+                try:
+                    images.append((os.path.splitext(os.path.basename(path))[0], fileio.load(path).flattened()))
+                except Exception as ex:
+                    QMessageBox.warning(self, APP, f"Kan het bestand niet openen:\n{path}\n\n{ex}")
+            if not files and m.hasImage():
+                img = QImage(m.imageData())
+                if not img.isNull():
+                    images.append(("", img))
+            if images:
+                e.acceptProposedAction()
+                self._drop_as_layers(cv, pos, images)
+                return
+        if files:
+            e.acceptProposedAction()
+            for path in files:
+                self.open_path(path)
+            return
+        if m.hasImage():  # afbeelding zonder bestand (bijvoorbeeld uit een browser): nieuwe afbeelding
+            img = QImage(m.imageData())
+            if not img.isNull():
+                e.acceptProposedAction()
+                img = img.convertToFormat(ops.FMT)
+                doc = Document(img.width(), img.height(), None)
+                doc.layers[0].image = img
+                self.add_document(doc)
+                return
+        e.ignore()
 
     def _recent(self):
         """Recente bestanden als lijst. Qt geeft één bewaard item soms terug als tekst; die niet per

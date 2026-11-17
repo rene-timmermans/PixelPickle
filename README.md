@@ -20,6 +20,10 @@ niet hoeft te zoeken.
 - Meerdere afbeeldingen tegelijk, als tabbladen of als losse vensters.
 - Snelmenu's met de rechtermuisknop op de afbeelding, het lege werkvlak, de tabbladen, de lagen, de Pen en
   vectorobjecten.
+- Sleep afbeeldingen vanuit je bestandsbeheerder, een schermafdruk of een browser naar het venster om ze te
+  openen; met Ctrl erbij komen ze als nieuwe laag in de afbeelding waarop je ze loslaat.
+- Een rustige standaardwerkbalk met alleen iconen, waaronder Bewerking op volledig scherm; werkbalken en
+  paletten aan en uit te zetten via Beeld.
 - Strakke lijniconen in de accentkleur van je eigen thema; ziet er goed uit op licht en donker.
 - Schuifbalken rond grote afbeeldingen; ruitjespatroon en arcering instelbaar in de voorkeuren.
 - In negen talen: Engels, Nederlands, Duits, Frans, Spaans, Italiaans, Russisch, Chinees en Arabisch.
@@ -39,7 +43,8 @@ niet hoeft te zoeken.
 - Makeover voor portretten (vlekken verwijderen, tanden witter, oogwit helderder, zonnebruin, slanker
   maken) en Object verwijderen: trek een lijn om iets, kies een bron en het verdwijnt naadloos.
 - Penseel, airbrush, wisser, vlakvulling en kleurwisselaar; eigen penselen te maken uit een selectie of
-  een afbeelding, en penseelvariantie voor een natuurlijke streek.
+  een afbeelding, en penseelvariantie voor een natuurlijke streek. Met Ctrl kies je tijdens het schilderen
+  meteen een kleur met de pipet.
 - Retoucheerpenselen: lichter/donkerder, tegenhouden, doordrukken, vegen, duwen, verzachten,
   verscherpen, reliëf, verzadiging, tint en meer.
 - Kunstmedia: olieverfpenseel, paletmes, krijt, pastel, kleurkrijt, kleurpotlood en markering, elk met een
@@ -52,6 +57,8 @@ niet hoeft te zoeken.
   omzetten in curven.
 - Menu Objecten voor vectorobjecten: kiezen, uitlijnen, verdelen, even groot maken, schikken, groeperen
   en eigenschappen.
+- Klik met Selecteren op iets in de afbeelding en die laag wordt meteen actief; sleep, schaal en draai
+  hem direct.
 
 **Materialen**
 - Kleur, verloop (lineair, rechthoekig, zonnestraal, radiaal; met hoek, herhalingen en middelpunt) en
@@ -67,11 +74,14 @@ niet hoeft te zoeken.
   eronder ligt.
 - Koppelingssets, transparantie vergrendelen en lagen markeren met een kleur; snel lagen tonen of verbergen
   via Lagen > Beeld.
+- Lagengroepen werken als één geheel: verplaatsen, schalen, draaien, spiegelen, uitlijnen, verdelen en
+  aanpassingen en effecten op alle lagen in de groep tegelijk.
 
 **Aanpassen en effecten**
 - 142 aanpassingen en effecten met een Vóór/Na voorbeeld waarin je kunt zoomen en schuiven, een
-  voorbeeld op de afbeelding zelf en voorinstellingen.
-- Effecten zoeken met voorbeelden naast elkaar, en snelle fotocorrecties via Foto verbeteren.
+  voorbeeld op de afbeelding zelf en voorinstellingen. Het voorbeeld wordt op volle resolutie berekend en
+  is precies gelijk aan het eindresultaat.
+- Effecten zoeken met voorbeelden naast elkaar, en snelle fotocorrecties via Aanpassen > Foto verbeteren.
 - Afbeelding: kleurdiepte verminderen, kanalen splitsen en combineren (RGB, HSL, CMYK), berekeningen
   tussen twee afbeeldingen en fotolijsten.
 
@@ -81,12 +91,15 @@ niet hoeft te zoeken.
   (openen van bestaande bestanden, en opslaan als extra keuze).
 - PNG-optimalisatie, afbeelding met hyperlinks (HTML), afdrukken met voorbeeld en schermopname.
 - Batchverwerking (omzetten en verkleinen) en namen in batch wijzigen.
-- Ongedaan maken en opnieuw, met alle stappen in het palet Geschiedenis; naar de vorige versie terug.
+- Ongedaan maken en opnieuw, met alle stappen in het palet Geschiedenis (klik op een stap en je bent er
+  meteen); naar de vorige versie terug.
 - Automatisch opslaan naar een herstelmap, op een instelbaar interval.
 
 **Hulp**
-- Uitgebreide gebruikershandleiding in negen talen, met een hoofdstuk per gereedschap, elke menu-opdracht
-  en elk effect met al zijn instellingen, plus een overzicht van alle sneltoetsen (menu Help).
+- Uitgebreide gebruikershandleiding in negen talen (F1), met een hoofdstuk per gereedschap, elke
+  menu-opdracht en elk effect met al zijn instellingen. Genummerde hoofdstukken, een klikbare
+  inhoudsopgave, zoeken met markering van alle treffers en de knoppen Inhoud, Vorige en Volgende; het
+  venster blijft naast je werk open. Plus een overzicht van alle sneltoetsen (menu Help).
 
 ## Installeren
 
@@ -102,7 +115,6 @@ of start je het met `pixelpickle`.
 | Fedora | `sudo dnf install ./pixelpickle-<versie>-1.*.noarch.rpm` | `sudo dnf remove pixelpickle` |
 
 Elk pakket wordt bij een release automatisch gebouwd, geïnstalleerd en getest op die distributie.
-Ubuntu 24.04 en Debian 12 worden niet ondersteund.
 
 ## Taal
 
@@ -112,18 +124,21 @@ Arabisch (van rechts naar links). Bij de eerste start is de taal Engels. Kies ee
 
 ## Wat er nieuw is
 
+**1.7.0** Slepen en neerzetten: sleep afbeeldingen vanuit je bestandsbeheerder, een schermafdruk of een browser
+naar het venster en ze gaan meteen open. Houd je Ctrl ingedrukt bij het loslaten boven een geopende afbeelding,
+dan komt de afbeelding daarin als nieuwe laag, met het midden precies waar je loslaat.
+
 **1.6.0** Een rustigere standaardwerkbalk met alleen iconen, met een nieuwe knop voor Bewerking op volledig scherm.
 Foto verbeteren staat nu als submenu bovenaan in Aanpassen; in Beeld staan de werkbalken en de paletten elk in een
 eigen submenu, met vinkjes.
 
-**1.5.0** Voorbeeld op afbeelding toont de echte kleuren: het hoofdvenster wordt niet meer verduisterd zolang een
-effectvenster open is. Het Na-voorbeeld in effectvensters wordt op volle resolutie berekend en is daardoor gelijk aan
+**1.5.0** Voorbeeld op afbeelding toont de echte kleuren, ook terwijl een effectvenster open is. Het Na-voorbeeld in effectvensters wordt op volle resolutie berekend en is daardoor gelijk aan
 het eindresultaat, en de afbeelding volgt altijd de laatste instellingen.
 
-**1.4.3** Ongedaan maken en Opnieuw worden grijs als er niets meer ongedaan te maken of opnieuw uit te voeren is.
+**1.4.3** Ongedaan maken en Opnieuw laten aan hun knop zien of er een stap terug of vooruit is.
 
-**1.4.2** De kleurkiezer bij effecten met een kleurinstelling (zoals Als knop) neemt niet meer de gekozen kleur
-over. Kleurvakjes tonen de kleur nu egaal en exact.
+**1.4.2** Kleurvakjes in effectvensters (zoals bij Als knop) tonen de gekozen kleur egaal en exact, en de kleurkiezer
+opent altijd in de vertrouwde kleuren van je thema.
 
 **1.4.1** De gebruikershandleiding is een zelfstandig venster: het kan ook achter het hoofdvenster, heeft een eigen
 plek op de taakbalk en sluit mee met PixelPickle.
@@ -157,7 +172,7 @@ bij de laagdekking, smallere tabbladen boven de kleurkiezer en de augurk in het 
 **1.0.2** Strakker materialenpalet: de knopjes onder de kleurvakken staan tegen elkaar aan en het palet kan
 smaller.
 
-**1.0.1** De sneltoetsen voor de gereedschappen werken weer, evenals Ctrl+F4 en Ctrl+W. Algemene
+**1.0.1** Elk gereedschap heeft een eigen lettertoets, en Ctrl+F4 en Ctrl+W staan voor je klaar. Algemene
 programmavoorkeuren heeft nu ook Transparantie en arcering (het ruitjespatroon achter doorzichtige delen en
 de arcering bij bijsnijden) en Lettertypen, waarmee je de Microsoft-kernlettertypen met één klik downloadt
 en installeert. Rond een grote afbeelding staan schuifbalken.
@@ -194,9 +209,8 @@ maasvormig verwringen en de kunstmedia olieverfpenseel, krijt, pastel, kleurkrij
 Retoucheerpenselen zoals verscherpen en bosseleren werken nu één keer per streek, met de optie Doorlopend
 om het effect op te bouwen.
 
-**0.5.5** Het beeld schuift alleen nog mee bij de rand tijdens puntsgewijs selecteren, niet meer bij
-penselen en andere gereedschappen. Opgeloste glitch in het kleurenpalet en een vinkje bij Opties voor
-gereedschap.
+**0.5.5** Het beeld schuift mee bij de rand tijdens puntsgewijs selecteren en blijft rustig staan bij penselen
+en andere gereedschappen. Strakker kleurenpalet en een vinkje bij Opties voor gereedschap.
 
 **0.5.4** Een stuk uit een selectie halen of eraan toevoegen met de modus Verwijderen of Toevoegen werkt nu
 ook als je binnen de bestaande selectie klikt.
@@ -205,16 +219,16 @@ ook als je binnen de bestaande selectie klikt.
 
 **0.5.2** Nieuwe omschrijving van het programma in de pakketten en het menu.
 
-**0.5.1** Het effectvenster meldt het wanneer er een selectie actief is, zodat duidelijk is waarom het
-voorbeeld alleen dat gebied toont.
+**0.5.1** Het effectvenster laat zien wanneer het op een selectie werkt, en het voorbeeld toont dan precies
+dat gebied.
 
 **0.5.0** Vooral cosmetisch: eigen lijniconen in de accentkleur van het thema voor alle werkbalken,
 paletten en muisaanwijzers, en een strak uitgelijnde optiebalk. Nieuw: mengbereiken in
 Laageigenschappen.
 
 **0.4.0** Bijsnijden met een aanpasbaar kader, verloop en patroon als materiaal, automatisch opslaan,
-gebruikershandleiding en een nieuw venster Info. Zonder geopende afbeelding is geen gereedschap actief;
-daarna komt het laatst gebruikte gereedschap terug.
+gebruikershandleiding en een nieuw venster Info. Bij het openen van een afbeelding staat het laatst
+gebruikte gereedschap meteen klaar.
 
 **0.3** Engels als tweede taal, pakketten voor Debian, Ubuntu en Fedora, een eigen programma-icoon,
 zoomen en schuiven in het effectvoorbeeld en automatisch meeschuiven bij de rand tijdens het selecteren.
