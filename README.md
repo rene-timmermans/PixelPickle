@@ -124,6 +124,9 @@ Arabisch (van rechts naar links). Bij de eerste start is de taal Engels. Kies ee
 
 ## Wat er nieuw is
 
+**1.7.1** Het exacte voorbeeld in effectvensters werkt op elke Python-versie, ook op Fedora met Python 3.15. Elke
+release doorloopt nu de volledige verzameling tests op Arch en Fedora voordat de pakketten verschijnen.
+
 **1.7.0** Slepen en neerzetten: sleep afbeeldingen vanuit je bestandsbeheerder, een schermafdruk of een browser
 naar het venster en ze gaan meteen open. Houd je Ctrl ingedrukt bij het loslaten boven een geopende afbeelding,
 dan komt de afbeelding daarin als nieuwe laag, met het midden precies waar je loslaat.
