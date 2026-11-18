@@ -1,0 +1,37 @@
+# Draait de volledige verzameling tests uit tests/ (zonder scherm) op Arch en Fedora:
+# bij elke push naar main, bij pull requests, met de hand, en vanuit de releaseworkflow
+# (de pakketten worden pas bij een release gezet als alle tests geslaagd zijn).
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Arch
+            image: archlinux:latest
+            setup: pacman -Syu --noconfirm --needed pyside6 python-numpy python-pillow ttf-dejavu qt6-translations
+          - name: Fedora
+            image: fedora:latest
+            setup: dnf install -y python3-pyside6 python3-numpy python3-pillow dejavu-sans-fonts qt6-qttranslations findutils
+    name: Tests (${{ matrix.name }})
+    container: ${{ matrix.image }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Benodigdheden installeren
+        run: ${{ matrix.setup }}
+      - name: Alle tests
+        run: sh tools/run_tests.sh python3

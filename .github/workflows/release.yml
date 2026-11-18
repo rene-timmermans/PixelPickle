@@ -1,5 +1,7 @@
 # Bouwt bij elke release de installers voor Arch, Debian/Ubuntu en Fedora, installeert ze in een echte
 # omgeving van die distributie, test of PixelPickle opstart (--selftest) en zet ze bij de release.
+# Daarnaast draait de volledige verzameling tests (tests.yml); de installers komen alleen bij de release
+# als ook die allemaal slagen.
 # Met de hand starten (Actions > Pakketten bouwen > Run workflow) bouwt en test zonder te publiceren.
 name: Pakketten bouwen
 
@@ -15,6 +17,9 @@ env:
   QT_QPA_PLATFORM: offscreen
 
 jobs:
+  tests:
+    uses: ./.github/workflows/tests.yml
+
   bron:
     runs-on: ubuntu-latest
     outputs:
@@ -124,7 +129,7 @@ jobs:
 
   publiceren:
     if: github.event_name == 'release'
-    needs: [arch, debian, ubuntu-test, fedora]
+    needs: [tests, arch, debian, ubuntu-test, fedora]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
