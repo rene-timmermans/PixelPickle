@@ -143,6 +143,38 @@ class CurveWidget(QWidget):
         self.drag = None
 
 
+class _Job:
+    """Eén berekening op de achtergrond (een gewone thread; werkt op elke Python-versie). Afvragen met
+    done() en result(); cancel() laat een lopende berekening uitrekenen maar negeert de uitkomst."""
+
+    def __init__(self, fn):
+        import threading
+        self._fn, self._res, self._err = fn, None, None
+        self._done = threading.Event()
+        self.cancelled = False
+        threading.Thread(target=self._run, daemon=True).start()
+
+    def _run(self):
+        try:
+            if not self.cancelled:
+                self._res = self._fn()
+        except Exception as e:  # doorgeven aan result()
+            self._err = e
+        finally:
+            self._done.set()
+
+    def cancel(self):
+        self.cancelled = True
+
+    def done(self):
+        return self._done.is_set()
+
+    def result(self):
+        if self._err is not None:
+            raise self._err
+        return self._res
+
+
 class ColorButton(QPushButton):
     changed = Signal()
 
@@ -304,7 +336,6 @@ class EffectDialog(QDialog):
         # schuiven. Het snelle voorbeeld op een verkleinde kopie wijkt bij randen en fijne details af.
         self._full = None        # (instellingen, resultaat als QImage op volle resolutie van het gebied)
         self._job = None         # (instellingen, future)
-        self._pool = None
         self._src_rgba = None
         self.exact_timer = QTimer(self, singleShot=True, interval=350)
         self.exact_timer.timeout.connect(self._start_exact)
@@ -547,14 +578,12 @@ class EffectDialog(QDialog):
             return
         if self._job is not None and self._job[0] == key:
             return  # wordt al berekend
-        if self._pool is None:
-            from concurrent.futures import ThreadPoolExecutor
-            self._pool = ThreadPoolExecutor(max_workers=1)
+        if self._job is not None and not self._job[1].done():
+            return  # er loopt nog een berekening; als die klaar is, start de volgende met de laatste instellingen
+        if self._src_rgba is None:
             self._src_rgba = ops.qimage_to_rgba(self.region)
-        if self._job is not None:
-            self._job[1].cancel()
         eff, ctx, params, src = self.eff, Ctx(self.ctx.fg, self.ctx.bg, 1.0, self.ctx.seed), self.params(), self._src_rgba
-        self._job = (key, self._pool.submit(lambda: run_effect(eff, src.copy(), ctx, params)))
+        self._job = (key, _Job(lambda: run_effect(eff, src.copy(), ctx, params)))
         self.poll_timer.start()
 
     def _poll_exact(self):
@@ -600,9 +629,6 @@ class EffectDialog(QDialog):
         if self._job is not None:
             self._job[1].cancel()
             self._job = None
-        if self._pool is not None:
-            self._pool.shutdown(wait=False, cancel_futures=True)
-            self._pool = None
 
     def result_image(self, orig=None):
         orig = self.orig if orig is None else orig

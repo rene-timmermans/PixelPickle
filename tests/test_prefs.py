@@ -46,8 +46,9 @@ print("2 voorkeuren: drie onderwerpen; ruitjespatroon, arcering en zwevende bijs
 # lettertypen: installatie nagebootst (geen echte download)
 import shutil  # noqa: E402
 fake_src = tempfile.mkdtemp()
-font = next((p for p in ("/usr/share/fonts/TTF/DejaVuSans.ttf", "/usr/share/fonts/dejavu/DejaVuSans.ttf",
-                          "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf") if os.path.exists(p)), None)
+import glob  # noqa: E402
+# een echt lettertype om te "installeren" (elke distributie zet DejaVu ergens anders)
+font = next(iter(sorted(glob.glob("/usr/share/fonts/**/DejaVuSans.ttf", recursive=True))), None)
 calls = []
 
 
@@ -64,8 +65,11 @@ corefonts.urllib.request.urlopen = lambda req, timeout=60: (calls.append(req.ful
 
 
 def fake_extract(tool, exe, dest):  # in plaats van cabextract: een lettertype "uitpakken"
+    out = os.path.join(dest, os.path.basename(exe).replace(".exe", ".TTF"))
     if font:
-        shutil.copy(font, os.path.join(dest, os.path.basename(exe).replace(".exe", ".TTF")))
+        shutil.copy(font, out)
+    else:  # geen lettertype op dit systeem: een leeg bestand (registreren wordt dan niet getest)
+        open(out, "wb").close()
 
 
 corefonts._extract = fake_extract
