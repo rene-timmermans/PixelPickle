@@ -1,9 +1,9 @@
-"""Automatisch opslaan: bewaart gewijzigde afbeeldingen op gezette tijden in een herstelmap, zodat ze na
-een crash of stroomstoring terug te halen zijn. De eigen bestanden van de gebruiker worden niet
-overschreven. Bij normaal afsluiten, opslaan of sluiten van een afbeelding verdwijnt de herstelkopie.
+"""Autosave: stores modified images at regular intervals in a recovery folder so they can be restored after
+a crash or power failure. The user's own files are never overwritten. The recovery copy disappears on a
+normal exit, when saving, or when closing an image.
 
-Elk lopend PixelPickle gebruikt een eigen map (procesnummer), zodat twee vensters naast elkaar elkaars
-kopieën niet als 'achtergebleven' zien."""
+Each running PixelPickle uses its own folder (process number), so two windows side by side do not see each
+other's copies as 'left behind'."""
 import json
 import os
 import shutil
@@ -28,7 +28,7 @@ def _alive(pid):
 
 
 def leftovers():
-    """Herstelkopieën van een PixelPickle dat niet meer draait: [(map, [info, ...])]."""
+    """Recovery copies of a PixelPickle that is no longer running: [(folder, [info, ...])]."""
     out = []
     root = base_dir()
     if not os.path.isdir(root):
@@ -61,7 +61,7 @@ class AutoSaver(QObject):
         super().__init__(main)
         self.main = main
         self.dir = os.path.join(base_dir(), str(os.getpid()))
-        self.saved = {}  # id(doc) -> (doc-sleutel, document)
+        self.saved = {}  # id(doc) -> (doc key, document)
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.tick)
         self.apply_settings()
@@ -88,7 +88,7 @@ class AutoSaver(QObject):
         return out
 
     def tick(self):
-        """Gewijzigde afbeeldingen bewaren; kopieën van opgeslagen of gesloten afbeeldingen weghalen."""
+        """Store modified images; remove copies of saved or closed images."""
         from . import fileio
         docs = self._docs()
         for key, d in docs.items():
@@ -104,7 +104,7 @@ class AutoSaver(QObject):
                 with open(base + ".json", "w", encoding="utf-8") as f:
                     json.dump({"path": d.path, "title": d.title().rstrip(" *")}, f)
                 self.saved[key] = (d._autosave_key, d)
-            except Exception:  # opslaan in de herstelmap mag het werk nooit onderbreken
+            except Exception:  # saving to the recovery folder must never interrupt the work
                 continue
         self.cleanup(docs)
 
@@ -123,7 +123,7 @@ class AutoSaver(QObject):
                 pass
 
     def shutdown(self):
-        """Normaal afsluiten: alle herstelkopieën van deze sessie weg."""
+        """Normal exit: remove all recovery copies of this session."""
         self.timer.stop()
         shutil.rmtree(self.dir, ignore_errors=True)
         self.saved.clear()

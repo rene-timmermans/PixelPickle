@@ -1,14 +1,14 @@
-"""Selectiebewerkingen (menu Selecties > Wijzigen en verwanten), op maskers als NumPy-arrays.
-Een masker is uint8 (0..255) of bool, even groot als het doek."""
+"""Selection operations (Selections > Modify menu and related), on masks as NumPy arrays.
+A mask is uint8 (0..255) or bool, the same size as the canvas."""
 import numpy as np
 
 from . import imageops as ops
 
 
-# ---------------------------------------------------------------- samenhangende stukken
+# ---------------------------------------------------------------- connected components
 def components(b: np.ndarray):
-    """Samenhangende stukken (4 buren) van een booleaans masker. Geeft (labels per pixel, oppervlak per label);
-    label 0 is de achtergrond, stukken zijn 1..n. Werkt met horizontale stroken, dus ook op grote foto's snel."""
+    """Connected components (4 neighbors) of a boolean mask. Returns (labels per pixel, area per label);
+    label 0 is the background, components are 1..n. Works with horizontal runs, so it is fast on large photos too."""
     h, w = b.shape
     r, s, e = ops._runs(b)
     n = len(r)
@@ -24,11 +24,11 @@ def components(b: np.ndarray):
     rl, sl, el = r.tolist(), s.tolist(), e.tolist()
     rs = np.searchsorted(r, np.arange(h + 1)).tolist()
     for row in range(1, h):
-        a0, a1 = rs[row - 1], rs[row]   # stroken in de vorige rij
-        b0, b1 = rs[row], rs[row + 1]   # stroken in deze rij
+        a0, a1 = rs[row - 1], rs[row]   # runs in the previous row
+        b0, b1 = rs[row], rs[row + 1]   # runs in this row
         i, j = a0, b0
         while i < a1 and j < b1:
-            if sl[i] < el[j] and sl[j] < el[i]:  # overlappen: zelfde stuk
+            if sl[i] < el[j] and sl[j] < el[i]:  # overlap: same component
                 ri, rj = find(i), find(j)
                 if ri != rj:
                     parent[rj] = ri
@@ -48,7 +48,7 @@ def components(b: np.ndarray):
 
 
 def grow_from(sim: np.ndarray, seed: np.ndarray) -> np.ndarray:
-    """De stukken van 'sim' die de beginselectie 'seed' raken (aaneengesloten uitbreiden)."""
+    """The components of 'sim' that touch the initial selection 'seed' (grow contiguously)."""
     lab, _ = components(sim | seed)
     keep = np.unique(lab[seed])
     keep = keep[keep > 0]
@@ -56,7 +56,7 @@ def grow_from(sim: np.ndarray, seed: np.ndarray) -> np.ndarray:
 
 
 def remove_specks_holes(m: np.ndarray, size: int, specks=True, holes=True) -> np.ndarray:
-    """Losse geselecteerde stipjes en kleine gaten in de selectie (kleiner dan 'size' pixels) weghalen."""
+    """Remove isolated selected specks and small holes in the selection (smaller than 'size' pixels)."""
     b = m > 127
     out = m.copy()
     if specks:
@@ -67,7 +67,7 @@ def remove_specks_holes(m: np.ndarray, size: int, specks=True, holes=True) -> np
     if holes:
         hole = ~(out > 127)
         lab, area = components(hole)
-        # een 'gat' raakt de rand van het doek niet (anders is het gewoon de buitenkant)
+        # a 'hole' does not touch the canvas edge (otherwise it is simply the outside)
         edge = np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))
         small = area < size
         small[0] = False
@@ -76,7 +76,7 @@ def remove_specks_holes(m: np.ndarray, size: int, specks=True, holes=True) -> np
     return out
 
 
-# ---------------------------------------------------------------- afstand tot de rand
+# ---------------------------------------------------------------- distance to the edge
 def _dilate(b: np.ndarray) -> np.ndarray:
     nb = b.copy()
     nb[1:] |= b[:-1]
@@ -97,7 +97,7 @@ def erode(b, n):
 
 
 def depth(b: np.ndarray, n: int) -> np.ndarray:
-    """Afstand (in stappen, hoogstens n) van elk geselecteerd pixel tot de rand van de selectie."""
+    """Distance (in steps, at most n) from each selected pixel to the edge of the selection."""
     d = np.zeros(b.shape, np.float32)
     cur = b.copy()
     for k in range(1, int(n) + 1):
@@ -108,41 +108,41 @@ def depth(b: np.ndarray, n: int) -> np.ndarray:
     return d
 
 
-# ---------------------------------------------------------------- bewerkingen
+# ---------------------------------------------------------------- operations
 def feather_side(m: np.ndarray, n: int, side: str) -> np.ndarray:
-    """Doezelen naar binnen ('inside'), naar buiten ('outside') of beide ('both')."""
+    """Feather inward ('inside'), outward ('outside') or both ('both')."""
     b = m > 127
     n = max(1, int(n))
     if side == "inside":
         a = np.clip((depth(b, n) + 1) / (n + 1), 0, 1)
         return (np.where(b, a, 0) * 255).astype(np.uint8)
     if side == "outside":
-        out_d = depth(~b, n)  # afstand buiten de selectie
+        out_d = depth(~b, n)  # distance outside the selection
         a = np.clip(1 - out_d / (n + 1), 0, 1)
         return (np.where(b, 1.0, np.where(out_d < n, a, 0)) * 255).astype(np.uint8)
     return np.clip(ops.box_blur(m.astype(np.float32), n), 0, 255).astype(np.uint8)
 
 
 def unfeather(m: np.ndarray, threshold: int) -> np.ndarray:
-    """Doezelen opheffen: harde rand op de drempel (1..100 %)."""
+    """Remove feathering: hard edge at the threshold (1..100 %)."""
     return np.where(m >= threshold * 2.55, 255, 0).astype(np.uint8)
 
 
 def smooth(m: np.ndarray, amount: int) -> np.ndarray:
-    """Hoekige randen gladmaken: vervagen en weer scherp maken op de helft, met een zachte rand."""
+    """Smooth angular edges: blur and sharpen again at the midpoint, with a soft edge."""
     soft = ops.box_blur(m.astype(np.float32), max(1, int(amount)))
     b = soft >= 127.5
     return ops.antialias_mask(b, "outside")
 
 
 def antialias(m: np.ndarray, where: str) -> np.ndarray:
-    """Op vorm gebaseerde anti-alias: kartelranden zacht maken, binnen of buiten de rand."""
+    """Shape-based anti-alias: soften jagged edges, inside or outside the edge."""
     return ops.antialias_mask(m > 127, where)
 
 
 def recover_antialias(m: np.ndarray, layer_alpha: np.ndarray) -> np.ndarray:
-    """Anti-alias herstellen: langs de rand van de selectie de half doorzichtige randpixels van de laag
-    (de anti-alias van het voorwerp) weer meenemen."""
+    """Restore anti-alias: along the edge of the selection, pick up the half transparent edge pixels of the layer
+    (the object's anti-alias) again."""
     b = m > 127
     band = dilate(b, 2) & ~erode(b, 2)
     out = m.astype(np.float32)
@@ -151,7 +151,7 @@ def recover_antialias(m: np.ndarray, layer_alpha: np.ndarray) -> np.ndarray:
 
 
 def borders(m: np.ndarray, width: int, side: str, aa=True) -> np.ndarray:
-    """Selectieranden selecteren: een band langs de rand, binnen, buiten of aan beide kanten."""
+    """Select borders: a band along the edge, inside, outside or on both sides."""
     b = m > 127
     n = max(1, int(width))
     if side == "inside":
@@ -165,13 +165,13 @@ def borders(m: np.ndarray, width: int, side: str, aa=True) -> np.ndarray:
 
 
 def similar_colors(rgba: np.ndarray, m: np.ndarray, tol: int) -> np.ndarray:
-    """Alle pixels die op een kleur uit de selectie lijken (tolerantie 0..200 zoals de toverstaf)."""
+    """All pixels that resemble a color in the selection (tolerance 0..200 like the magic wand)."""
     sel = m > 127
     if not sel.any():
         return sel
     rgb = rgba[..., :3].astype(np.int16)
     cols = rgb[sel]
-    # representatieve kleuren: afgerond en ontdubbeld (hoogstens enkele honderden)
+    # representative colors: rounded and de-duplicated (at most a few hundred)
     step = max(4, int(tol * 1.275) // 2 or 4)
     q = np.unique((cols // step) * step + step // 2, axis=0)
     if len(q) > 512:
@@ -187,7 +187,7 @@ def similar_colors(rgba: np.ndarray, m: np.ndarray, tol: int) -> np.ndarray:
 
 
 def color_range(rgba: np.ndarray, color, tol: int, softness: int) -> np.ndarray:
-    """Kleurbereik: hoe sterk elke pixel op 'color' lijkt (0..255), met een zachte overgang."""
+    """Color range: how strongly each pixel resembles 'color' (0..255), with a soft transition."""
     d = np.abs(rgba[..., :3].astype(np.float32) - np.array(color[:3], np.float32)).max(axis=2)
     t = tol * 1.275
     s = max(1.0, softness * 1.275)

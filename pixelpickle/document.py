@@ -1,4 +1,4 @@
-"""Documentmodel: lagen, selectie en geschiedenis (ongedaan maken)."""
+"""Document model: layers, selection and history (undo)."""
 import numpy as np
 from PySide6.QtCore import QObject, QPoint, QRect, QRectF, Qt, Signal
 from PySide6.QtGui import QColor, QImage, QPainter, QTransform
@@ -8,7 +8,8 @@ from . import imageops as ops
 FMT = ops.FMT
 CM = QPainter.CompositionMode
 
-# Mengmodi in exact dezelfde volgorde als PSP XI. (Nederlandse naam, Qt modus of None = NumPy, OpenRaster naam)
+# Blend modes in the same order as in Paint Shop Pro XI (compatible with the blend modes in .pspimage files).
+# (Dutch name, Qt mode or None = NumPy, OpenRaster name)
 BLEND_MODES = [
     ("Normaal", CM.CompositionMode_SourceOver, "svg:src-over"),
     ("Donkerder", CM.CompositionMode_Darken, "svg:darken"),
@@ -32,7 +33,7 @@ BLEND_MODES = [
     ("Doordrukken", CM.CompositionMode_ColorBurn, "svg:color-burn"),
     ("Uitsluiting", CM.CompositionMode_Exclusion, "svg:exclusion"),
 ]
-# Gereedschappen hebben er in PSP nog één extra: alleen schilderen waar de laag transparant is
+# Tools have one extra: paint only where the layer is transparent
 TOOL_BLEND_MODES = BLEND_MODES + [("Achter tekenen", CM.CompositionMode_DestinationOver, None)]
 
 _DISSOLVE = {}
@@ -76,8 +77,8 @@ def _set_sat(c, s):
 
 
 def _blend_fn(key, cb, cs):
-    """Niet-scheidbare mengfuncties. cb = onderlaag, cs = bovenlaag, waarden 0..1."""
-    if key.endswith("-legacy"):  # oude PSP methode: HSL componenten vervangen
+    """Non-separable blend functions. cb = backdrop layer, cs = source layer, values 0..1."""
+    if key.endswith("-legacy"):  # classic method (compatible with older .pspimage files): replace HSL components
         hb, sb, lb = ops.rgb_to_hsl(cb * 255)
         hs, ss, ls = ops.rgb_to_hsl(cs * 255)
         if "hue" in key:
@@ -100,8 +101,8 @@ def _blend_fn(key, cb, cs):
 
 def blend_onto(dst: QImage, src: QImage, mode: int, opacity=1.0, src_rect: QRect | None = None,
                origin=QPoint(0, 0), modes=TOOL_BLEND_MODES) -> QImage:
-    """Meng src (of het deel src_rect daarvan) over dst; geeft het resultaat terug (dst wordt aangepast).
-    origin: positie van dst in documentcoördinaten (voor 'Oplossen')."""
+    """Blend src (or the part src_rect of it) over dst; returns the result (dst is modified).
+    origin: position of dst in document coordinates (for 'Oplossen' (Dissolve))."""
     name, qt_mode, key = modes[mode]
     if src_rect is None:
         src_rect = QRect(0, 0, dst.width(), dst.height())
@@ -135,7 +136,7 @@ def blend_onto(dst: QImage, src: QImage, mode: int, opacity=1.0, src_rect: QRect
 
 
 UNDO_LIMIT = 60
-BG_NAMES = {"Achtergrond", "Background"}  # de achtergrondlaag, ongeacht de taal
+BG_NAMES = {"Achtergrond", "Background"}  # the background layer, regardless of the language
 
 
 def bg_name():
@@ -155,7 +156,7 @@ def new_image(w, h, color=None) -> QImage:
 
 
 def apply_region(dst: QImage, rect: QRect, new_local: QImage, mask: QImage | None):
-    """Zet new_local (formaat van rect) in dst op rect, alleen binnen het masker."""
+    """Put new_local (size of rect) into dst at rect, only inside the mask."""
     if rect.isEmpty():
         return
     if mask is None:
@@ -184,7 +185,7 @@ def apply_region(dst: QImage, rect: QRect, new_local: QImage, mask: QImage | Non
 
 
 def paint_layer(layer, rect: QRect, new_local: QImage, mask: QImage | None):
-    """Schrijf pixels naar een laag; respecteert 'transparantie vergrendelen'."""
+    """Write pixels to a layer; respects 'transparantie vergrendelen' (lock transparency)."""
     if rect.isEmpty():
         return
     if getattr(layer, "lock_alpha", False):
@@ -205,19 +206,19 @@ class Layer:
         self.visible = visible
         self.mode = mode
         self.lock_alpha = lock_alpha
-        self.adjust = None      # aanpassingslaag: (effect cid, parameters); image is dan het masker
-        self.link_set = 0       # koppelingsset: lagen met hetzelfde nummer bewegen samen
-        self.highlight = None   # markeerkleur in het lagenpalet (QColor) of None
-        self.kind = "raster"    # "raster", "group" (lagengroep) of "mask" (maskerlaag)
-        self.group = None       # de groep (kop-laag) waar deze laag in zit, of None
-        self.collapsed = False  # groep ingeklapt in het lagenpalet
-        self.text = None        # bewerkbare tekst (zie textlayer.py); image is dan de weergave
-        self.blend_ranges = None  # mengbereiken: {kanaal: (deze laag, onderliggend)}, zie BLEND_CHANNELS
-        self.vector = None      # vectorlaag: [object, ...] (zie vectorlayer.py); image is dan de weergave
-        self.role = None        # "floating" (zwevende selectie) of "seledit" (selectie bewerken), anders None
+        self.adjust = None      # adjustment layer: (effect cid, parameters); image is then the mask
+        self.link_set = 0       # link set: layers with the same number move together
+        self.highlight = None   # highlight color in the layers palette (QColor) or None
+        self.kind = "raster"    # "raster", "group" (layer group) or "mask" (mask layer)
+        self.group = None       # the group (header layer) this layer is in, or None
+        self.collapsed = False  # group collapsed in the layers palette
+        self.text = None        # editable text (see textlayer.py); image is then the rendering
+        self.blend_ranges = None  # blend ranges: {channel: (this layer, underlying)}, see BLEND_CHANNELS
+        self.vector = None      # vector layer: [object, ...] (see vectorlayer.py); image is then the rendering
+        self.role = None        # "floating" (floating selection) or "seledit" (edit selection), otherwise None
 
     def clone(self):
-        # QImage kopie deelt pixels tot er geschreven wordt (copy on write)
+        # QImage copy shares pixels until written to (copy on write)
         l = Layer(self.name, QImage(self.image), self.opacity, self.visible, self.mode, self.lock_alpha)
         l.adjust = (self.adjust[0], dict(self.adjust[1])) if self.adjust else None
         l.link_set = self.link_set
@@ -233,7 +234,7 @@ class Layer:
 
 
 def clone_layers(layers):
-    """Kloon een lagenlijst en laat de groepsverwijzingen naar de nieuwe kopieën wijzen."""
+    """Clone a layer list and make the group references point to the new copies."""
     clones = [l.clone() for l in layers]
     m = {id(o): c for o, c in zip(layers, clones)}
     for c in clones:
@@ -241,10 +242,10 @@ def clone_layers(layers):
     return clones
 
 
-# ---------------------------------------------------------------- mengbereiken
-# Per kanaal twee bereiken (deze laag en de onderliggende lagen), elk vier punten a <= b <= c <= d (0..255):
-# onder a en boven d is de laag onzichtbaar, tussen b en c volledig zichtbaar, daartussen een zachte
-# overgang. Alle bereiken samen worden vermenigvuldigd.
+# ---------------------------------------------------------------- blend ranges
+# Two ranges per channel (this layer and the underlying layers), each four points a <= b <= c <= d (0..255):
+# below a and above d the layer is invisible, between b and c fully visible, with a soft transition in
+# between. All ranges are multiplied together.
 BLEND_CHANNELS = ["Grijs", "Rood", "Groen", "Blauw"]
 FULL_RANGE = (0, 0, 255, 255)
 
@@ -264,7 +265,7 @@ def _channel_values(rgb, ch):
 
 
 def range_weight(v, rng):
-    """Zichtbaarheid 0..1 voor waarden v (0..255) volgens bereik (a, b, c, d)."""
+    """Visibility 0..1 for values v (0..255) according to range (a, b, c, d)."""
     a, b, c, d = (float(x) for x in rng)
     w = np.ones_like(v, dtype=np.float32)
     if a > 0 or b > 0:
@@ -277,8 +278,8 @@ def range_weight(v, rng):
 
 
 def apply_blend_ranges(src: QImage, under: QImage, ranges) -> QImage:
-    """Laagpixels (src) minder dekkend maken waar ze, of de onderliggende pixels (under, zelfde
-    grootte), buiten de mengbereiken vallen."""
+    """Make layer pixels (src) less opaque where they, or the underlying pixels (under, same
+    size), fall outside the blend ranges."""
     if not ranges_active(ranges):
         return src
     s = ops.qimage_to_rgba(src).astype(np.float32)
@@ -294,7 +295,7 @@ def apply_blend_ranges(src: QImage, under: QImage, ranges) -> QImage:
 
 
 def apply_mask(out: QImage, layer, r: QRect) -> QImage:
-    """Maskerlaag: wit toont, zwart verbergt wat eronder ligt (binnen dezelfde groep)."""
+    """Mask layer: white shows, black hides what lies below it (within the same group)."""
     base = ops.qimage_to_rgba(out).astype(np.float32)
     m = ops.qimage_to_rgba(layer.image.copy(r)).astype(np.float32)
     lum = (m[..., 0] * 0.299 + m[..., 1] * 0.587 + m[..., 2] * 0.114) / 255 * (m[..., 3] / 255)
@@ -304,7 +305,7 @@ def apply_mask(out: QImage, layer, r: QRect) -> QImage:
 
 
 def apply_adjustment(out: QImage, layer, r: QRect) -> QImage:
-    """Pas het effect van een aanpassingslaag toe op wat eronder ligt, via het masker van de laag."""
+    """Apply an adjustment layer's effect to what lies below it, through the layer's mask."""
     from .effects import REGISTRY, Ctx, load_all
     if not REGISTRY:
         load_all()
@@ -322,8 +323,8 @@ def apply_adjustment(out: QImage, layer, r: QRect) -> QImage:
 
 
 class Document(QObject):
-    changed = Signal(QRect)        # beeldgebied gewijzigd (leeg = alles)
-    structureChanged = Signal()    # lagenlijst of eigenschappen
+    changed = Signal(QRect)        # image area changed (empty = all)
+    structureChanged = Signal()    # layer list or properties
     selectionChanged = Signal()
     sizeChanged = Signal()
     historyChanged = Signal()
@@ -349,14 +350,15 @@ class Document(QObject):
         self.undo_stack = []
         self.redo_stack = []
         self.raster_counter = 1
-        self.px_per_pt = 1.0  # tekst in punten: 72 dpi (bij PSP bestanden uit de resolutie berekend)
-        # alfakanalen: bewaarde selecties en maskers [(naam, QImage)], even groot als het doek; de waarde
-        # zit in de alfa, zodat ze met dezelfde bewerkingen als lagen meedraaien, -schalen en -snijden
+        self.px_per_pt = 1.0  # text in points: 72 dpi (derived from the resolution for .pspimage files)
+        # alpha channels: saved selections and masks [(name, QImage)], same size as the canvas; the value
+        # is in the alpha, so they rotate, scale and crop along with the same operations as layers
         self.channels = []
         self._vsel = ([], None)
-        self.guides = {"h": [], "v": []}  # hulplijnen (documentcoördinaten), gesleept uit de linialen  # gekozen vectorobjecten (indexen) en de laag waar ze bij horen
+        self.guides = {"h": [], "v": []}  # guide lines (document coordinates), dragged out of the rulers
+        # selected vector objects (indices) and the layer they belong to
 
-    # ------------------------------------------------------------ algemeen
+    # ------------------------------------------------------------ general
     def rect(self):
         return QRect(0, 0, self.w, self.h)
 
@@ -381,7 +383,7 @@ class Document(QObject):
         self.raster_counter += 1
         return raster_name(self.raster_counter)
 
-    # ------------------------------------------------------------ geschiedenis
+    # ------------------------------------------------------------ history
     def snapshot(self):
         return dict(w=self.w, h=self.h, layers=clone_layers(self.layers),
                     active=self.active, sel=QImage(self.sel) if self.sel is not None else None,
@@ -424,18 +426,18 @@ class Document(QObject):
         self.historyChanged.emit()
 
     def jump_history(self, k):
-        """Naar stap k van de geschiedenis (k = aantal stappen op de ongedaan-maakstapel), in één keer:
-        alleen de eindtoestand wordt hersteld en alles wordt één keer bijgewerkt, in plaats van na elke stap."""
+        """Go to step k of the history (k = number of steps on the undo stack), in one go:
+        only the final state is restored and everything is updated once, instead of after every step."""
         n = len(self.undo_stack)
         if k == n or k < 0 or k > n + len(self.redo_stack):
             return
         cur = self.snapshot()
-        if k < n:  # terug: elke tussenstand gaat op de opnieuw-stapel
+        if k < n:  # undo: every intermediate state goes on the redo stack
             for _ in range(n - k):
                 label, s = self.undo_stack.pop()
                 self.redo_stack.append((label, cur))
                 cur = s
-        else:  # vooruit
+        else:  # redo
             for _ in range(k - n):
                 label, s = self.redo_stack.pop()
                 self.undo_stack.append((label, cur))
@@ -453,15 +455,15 @@ class Document(QObject):
         self.set_modified(True)
         self.historyChanged.emit()
 
-    # ------------------------------------------------------------ samenstellen
+    # ------------------------------------------------------------ compositing
     def children(self, g, layers=None):
-        """Directe kinderen van groep g (None = hoofdniveau), van onder naar boven."""
+        """Direct children of group g (None = top level), from bottom to top."""
         L = self.layers if layers is None else layers
         ids = {id(x) for x in L}
         return [l for l in L if l.group is g or (g is None and l.group is not None and id(l.group) not in ids)]
 
     def subtree(self, l):
-        """De laag zelf plus (bij een groep) alles erin, in lijstvolgorde."""
+        """The layer itself plus (for a group) everything in it, in list order."""
         out = []
         for x in self.layers:
             p = x
@@ -479,7 +481,7 @@ class Document(QObject):
         return d
 
     def normalize(self):
-        """Zorg dat de inhoud van elke groep direct onder de groepskop staat."""
+        """Make sure the content of each group sits directly below the group header."""
         act = self.layers[self.active] if self.layers else None
         out = []
 
@@ -499,7 +501,7 @@ class Document(QObject):
         def comp(items):
             out = new_image(r.width(), r.height())
             for l in items:
-                if not l.visible or l.opacity <= 0 or l.role == "seledit":  # selectie bewerken: alleen als rode laag
+                if not l.visible or l.opacity <= 0 or l.role == "seledit":  # edit selection: only as a red layer
                     continue
                 if l.kind == "group":
                     buf = comp(self.children(l, L))
@@ -528,7 +530,7 @@ class Document(QObject):
             return out
         return img
 
-    # ------------------------------------------------------------ selectie
+    # ------------------------------------------------------------ selection
     def set_selection(self, mask: QImage | None, lines=None):
         if mask is not None:
             arr = ops.qimage_to_mask(mask)
@@ -574,14 +576,14 @@ class Document(QObject):
         arr = 255 - ops.qimage_to_mask(self.sel)
         self.set_selection(ops.mask_to_qimage(arr))
 
-    # ------------------------------------------------------------ lagen
+    # ------------------------------------------------------------ layers
     def add_layer(self, layer=None, index=None, label="Nieuwe rasterlaag"):
         self.push_undo(label)
         if layer is None:
             layer = Layer(self.next_raster_name(), new_image(self.w, self.h))
         act = self.layer()
         if index is None:
-            # nieuwe laag boven de actieve, in dezelfde groep (in een groep als de kop actief is)
+            # new layer above the active one, in the same group (inside a group if the header is active)
             layer.group = act if act.kind == "group" else act.group
             idx = self.active if act.kind == "group" else self.active + 1
         else:
@@ -615,7 +617,7 @@ class Document(QObject):
     def delete_layer(self):
         gone = self.subtree(self.layer())
         if not any(l.kind == "raster" for l in self.layers if l not in gone):
-            return  # er moet altijd minstens één gewone laag overblijven
+            return  # at least one regular layer must always remain
         self.push_undo("Laag verwijderen")
         first = self.layers.index(gone[0])
         self.layers = [l for l in self.layers if l not in gone]
@@ -625,8 +627,8 @@ class Document(QObject):
         self.changed.emit(QRect())
 
     def move_layer(self, delta, label="Laag verplaatsen"):
-        """Verplaats de actieve laag (met inhoud, bij een groep) tussen de lagen van hetzelfde niveau.
-        delta mag groter dan 1 zijn; wordt begrensd tot boven- of onderaan."""
+        """Move the active layer (with content, for a group) among the layers of the same level.
+        delta may be larger than 1; it is clamped to the top or bottom."""
         act = self.layer()
         sib = self.children(act.group)
         i = sib.index(act)
@@ -636,7 +638,7 @@ class Document(QObject):
         self.push_undo(label)
         sib.insert(j, sib.pop(i))
         rank = {id(l): k for k, l in enumerate(sib)}
-        # herorden door de broers en zussen in hun nieuwe volgorde terug te zetten
+        # reorder by putting the siblings back in their new order
         order = []
         for l in self.layers:
             if id(l) in rank:
@@ -677,7 +679,7 @@ class Document(QObject):
         self.changed.emit(QRect())
 
     def ancestors(self, l):
-        """De groepen waar laag l (direct of indirect) in zit."""
+        """The groups that layer l is in (directly or indirectly)."""
         out, g = [], l.group
         while g is not None:
             out.append(g)
@@ -685,11 +687,11 @@ class Document(QObject):
         return out
 
     def layer_view(self, how):
-        """Lagen > Beeld: welke lagen zichtbaar zijn.
-        current: alleen de actieve laag (met de groepen eromheen en, bij een groep, alles erin);
-        all / none: alle lagen aan of uit; invert: elke laag omgekeerd (groepen blijven aan, zodat
-        omgedraaide lagen erin te zien zijn); link_show / link_hide: de koppelingsset van de actieve
-        laag tonen of verbergen (zonder koppelingsset: alleen de actieve laag)."""
+        """Layers > View: which layers are visible.
+        current: only the active layer (with the groups around it and, for a group, everything in it);
+        all / none: all layers on or off; invert: every layer inverted (groups stay on, so that
+        inverted layers in them can be seen); link_show / link_hide: show or hide the link set of the
+        active layer (without a link set: only the active layer)."""
         act = self.layer()
         if how == "current":
             keep = set(map(id, self.subtree(act) + self.ancestors(act)))
@@ -704,7 +706,7 @@ class Document(QObject):
             new = {id(l): l.visible for l in self.layers}
             for l in members:
                 new[id(l)] = vis
-                if vis:  # tonen: ook de groepen eromheen aanzetten
+                if vis:  # showing: also turn on the groups around it
                     for g in self.ancestors(l):
                         new[id(g)] = True
         if all(l.visible == new[id(l)] for l in self.layers):
@@ -741,7 +743,7 @@ class Document(QObject):
         self.structureChanged.emit()
         self.changed.emit(QRect())
 
-    # ------------------------------------------------------------ groepen en maskers
+    # ------------------------------------------------------------ groups and masks
     def _wrap_in_group(self, layer, name):
         g = Layer(name, new_image(self.w, self.h))
         g.kind = "group"
@@ -794,7 +796,7 @@ class Document(QObject):
         self.changed.emit(QRect())
 
     def move_into_group(self):
-        """Lagen > Schikken > In groep zetten: in de groep direct boven of onder de laag."""
+        """Layers > Arrange > Put in group: in the group directly above or below the layer."""
         act = self.layer()
         sib = self.children(act.group)
         i = sib.index(act)
@@ -823,7 +825,7 @@ class Document(QObject):
         self.changed.emit(QRect())
 
     def mask_image(self, source, invert=False):
-        """Maak een grijswaardenmasker: show_all, hide_all, show_sel, hide_sel, luminance, alpha."""
+        """Make a grayscale mask: show_all, hide_all, show_sel, hide_sel, luminance, alpha."""
         if source in ("show_all", "hide_all"):
             return new_image(self.w, self.h, QColor(255, 255, 255) if source == "show_all" else QColor(0, 0, 0))
         if source in ("show_sel", "hide_sel"):
@@ -871,10 +873,10 @@ class Document(QObject):
         self.structureChanged.emit()
         self.changed.emit(QRect())
 
-    # ------------------------------------------------------------ gekozen vectorobjecten
+    # ------------------------------------------------------------ selected vector objects
     @property
     def vsel(self):
-        """Indexen van de gekozen objecten op de actieve vectorlaag (in kiesvolgorde)."""
+        """Indices of the selected objects on the active vector layer (in selection order)."""
         sel, layer = self._vsel
         lay = self.layer()
         if layer is not lay or lay.vector is None:
@@ -886,13 +888,13 @@ class Document(QObject):
         self._vsel = (list(sel), self.layer())
         self.selectionChanged.emit()
 
-    # ------------------------------------------------------------ zwevende selectie
+    # ------------------------------------------------------------ floating selection
     def floating_layer(self):
         return next((l for l in self.layers if l.role == "floating"), None)
 
     def float_selection(self, fill_bg: QColor | None = None):
-        """Zwevend: de geselecteerde pixels gaan naar een eigen laag boven de actieve laag; op de laag zelf
-        blijft een gat (op de achtergrondlaag gevuld met de achtergrondkleur)."""
+        """Floating: the selected pixels go to a layer of their own above the active layer; on the layer itself
+        a hole remains (filled with the background color on the background layer)."""
         src = self.layer()
         if self.sel is None or src.kind != "raster" or src.adjust is not None or self.floating_layer() is not None:
             return False
@@ -927,7 +929,7 @@ class Document(QObject):
         return True
 
     def defloat_selection(self):
-        """Niet-zwevend: de zwevende selectie wordt weer onderdeel van de laag eronder."""
+        """Not floating: the floating selection becomes part of the layer below it again."""
         fl = self.floating_layer()
         if fl is None:
             return False
@@ -935,7 +937,7 @@ class Document(QObject):
         below = next((l for l in reversed(self.layers[:i]) if l.kind == "raster" and l.adjust is None
                       and l.group is fl.group), None)
         self.push_undo("Niet-zwevend")
-        if below is None:  # geen laag eronder: de zwevende laag wordt een gewone laag
+        if below is None:  # no layer below: the floating layer becomes a regular layer
             fl.role = None
         else:
             img = QImage(below.image)
@@ -950,14 +952,14 @@ class Document(QObject):
         self.changed.emit(QRect())
         return True
 
-    # ------------------------------------------------------------ selectie bewerken
+    # ------------------------------------------------------------ edit selection
     def seledit_layer(self):
         return next((l for l in self.layers if l.role == "seledit"), None)
 
     def toggle_selection_edit(self):
-        """Selectie bewerken (zoals PSP): de selectie wordt een grijze laag (wit = geselecteerd) die je met de
-        penselen, vulemmer en andere gereedschappen bijwerkt; niet geselecteerde delen worden rood getoond.
-        Nogmaals kiezen maakt er weer een selectie van."""
+        """Edit selection: the selection becomes a gray layer (white = selected) that you update with the
+        brushes, paint bucket and other tools; unselected areas are shown in red.
+        Choosing it again turns it back into a selection."""
         from .i18n import tr
         lay = self.seledit_layer()
         if lay is None:
@@ -981,7 +983,7 @@ class Document(QObject):
         self.changed.emit(QRect())
 
     def selection_from_vectors(self, layer=None, indices=None):
-        """Selectie uit vectorobjecten (de gekozen objecten, of alle op de vectorlaag): vulling en lijn."""
+        """Selection from vector objects (the selected objects, or all on the vector layer): fill and line."""
         from . import vectorlayer as V
         layer = layer or self.layer()
         if layer.vector is None:
@@ -1005,14 +1007,14 @@ class Document(QObject):
         return True
 
     def apply_selection_array(self, arr, label):
-        """Nieuwe selectie uit een masker (0..255) met één stap ongedaan maken."""
+        """New selection from a mask (0..255) with one undo step."""
         self.push_undo(label)
         self.set_selection(ops.mask_to_qimage(np.ascontiguousarray(np.clip(arr, 0, 255).astype(np.uint8))))
 
-    # ------------------------------------------------------------ alfakanalen
+    # ------------------------------------------------------------ alpha channels
     @staticmethod
     def _channel_image(arr):
-        """Grijswaarden (uint8, 0..255) als kanaalbeeld: wit met de waarde als alfa."""
+        """Grayscale (uint8, 0..255) as a channel image: white with the value as alpha."""
         a = np.zeros(arr.shape + (4,), np.uint8)
         a[..., :3] = 255
         a[..., 3] = arr
@@ -1025,7 +1027,7 @@ class Document(QObject):
         return [n for n, _ in self.channels]
 
     def store_channel(self, name, arr, label):
-        """Kanaal bewaren; een bestaand kanaal met dezelfde naam wordt overschreven."""
+        """Save a channel; an existing channel with the same name is overwritten."""
         self.push_undo(label)
         img = self._channel_image(np.ascontiguousarray(arr, dtype=np.uint8))
         names = self.channel_names()
@@ -1043,7 +1045,7 @@ class Document(QObject):
         self.structureChanged.emit()
 
     def mask_values(self, l=None) -> np.ndarray:
-        """Waarden (0..255) van een maskerlaag: helderheid maal dekking."""
+        """Values (0..255) of a mask layer: brightness times opacity."""
         l = l or self.layer()
         a = ops.qimage_to_rgba(l.image).astype(np.float32)
         return np.clip((a[..., 0] * 0.299 + a[..., 1] * 0.587 + a[..., 2] * 0.114) * a[..., 3] / 255, 0, 255
@@ -1057,7 +1059,7 @@ class Document(QObject):
         self.combine_selection(ops.mask_to_qimage(arr), mode)
 
     def mask_from_channel(self, i, invert=False):
-        """Nieuwe maskerlaag op de actieve laag, met het kanaal als inhoud (wit = zichtbaar)."""
+        """New mask layer on the active layer, with the channel as content (white = visible)."""
         if self.layer().kind == "mask":
             return False
         arr = self.channel_mask(i)
@@ -1081,7 +1083,7 @@ class Document(QObject):
         self.push_undo("Selectie vanuit masker")
         self.set_selection(ops.mask_to_qimage(v))
 
-    # ------------------------------------------------------------ geometrie
+    # ------------------------------------------------------------ geometry
     def render_text(self, layer):
         from .textlayer import render
         layer.image = render(layer.text, self.w, self.h, self.px_per_pt)
@@ -1091,7 +1093,7 @@ class Document(QObject):
         layer.image = render(layer.vector or [], self.w, self.h)
 
     def new_vector_layer(self, name=None, undo=True):
-        """Nieuwe, lege vectorlaag boven de actieve laag (in dezelfde groep)."""
+        """New, empty vector layer above the active layer (in the same group)."""
         from .i18n import tr
         n = sum(1 for l in self.layers if l.vector is not None) + 1
         lay = Layer(name or tr("Vector {}").format(n), new_image(self.w, self.h))
@@ -1109,7 +1111,7 @@ class Document(QObject):
         return lay
 
     def _move_text(self, tmap: QTransform, layers=None):
-        """Tekst- en vectorlagen meebewegen met een geometrische bewerking, zodat ze bewerkbaar blijven."""
+        """Move text and vector layers along with a geometric operation, so that they stay editable."""
         from .textlayer import set_transform, transform
         from . import vectorlayer
         for l in (layers if layers is not None else self.layers):
@@ -1179,9 +1181,9 @@ class Document(QObject):
         if self.sel is not None and self.layer().text is None and self.layer().vector is None \
                 and self.layer().kind != "group":
             return self._mirror_selection(horizontal)
-        # zonder selectie: om het midden van de laaginhoud (een losse figuur blijft op zijn plek);
-        # bij een volle laag is dat gewoon het midden van de afbeelding. Een lagengroep spiegelt als geheel
-        # om het midden van de inhoud van alle lagen erin.
+        # without a selection: around the center of the layer content (a lone shape stays in place);
+        # for a full layer that is simply the center of the image. A layer group flips as a whole
+        # around the center of the content of all layers in it.
         layer = self.layer()
         targets = [l for l in self.subtree(layer) if l.kind != "group"] if layer.kind == "group" else [layer]
         box = QRectF()
@@ -1217,8 +1219,8 @@ class Document(QObject):
         self.structureChanged.emit()
 
     def _mirror_selection(self, horizontal):
-        """Spiegelen/omdraaien met een selectie: de geselecteerde pixels draaien op hun eigen plek om,
-        binnen het kader van de selectie, en het selectiekader draait mee."""
+        """Mirror/flip with a selection: the selected pixels flip in place, within the frame of the
+        selection, and the selection frame flips along."""
         r = self.selection_bbox()
         if r.isEmpty():
             return
@@ -1251,10 +1253,10 @@ class Document(QObject):
         self.changed.emit(r)
         self.structureChanged.emit()
 
-    # ------------------------------------------------------------ pixelfilters
+    # ------------------------------------------------------------ pixel filters
     def effect_targets(self):
-        """Lagen waarop een aanpassing of effect werkt: de actieve laag, of bij een lagengroep elke rasterlaag
-        erin (tekst-, vector- en aanpassingslagen in de groep worden overgeslagen)."""
+        """Layers an adjustment or effect works on: the active layer, or for a layer group every raster layer
+        in it (text, vector and adjustment layers in the group are skipped)."""
         act = self.layer()
         if act.kind != "group":
             return [act]
@@ -1262,7 +1264,7 @@ class Document(QObject):
                 and l.vector is None and l.role is None]
 
     def apply_to_layer(self, fn, label, base: QImage | None = None, push=True):
-        """Pas fn(rgba)->rgba toe op de actieve laag (of elke rasterlaag van een actieve groep), binnen de selectie."""
+        """Apply fn(rgba)->rgba to the active layer (or every raster layer of an active group), within the selection."""
         targets = [self.layer()] if base is not None else self.effect_targets()
         r = self.selection_bbox() if self.sel is not None else self.rect()
         if r.isEmpty() or not targets:
@@ -1281,7 +1283,7 @@ class Document(QObject):
         self.changed.emit(r)
         self.structureChanged.emit()
 
-    # ------------------------------------------------------------ uitbreidingen
+    # ------------------------------------------------------------ extensions
     def rotate_free(self, degrees, crop=False, fill: QColor | None = None):
         import math
         t = QTransform().rotate(degrees)
@@ -1325,9 +1327,9 @@ class Document(QObject):
         self.changed.emit(QRect())
 
     def perspective(self, quad, crop=False, fill: QColor | None = None):
-        """Perspectiefcorrectie: de vierhoek quad (4 punten: linksboven, rechtsboven, rechtsonder,
-        linksonder) wordt een rechthoek. Zonder bijsnijden blijft het formaat van de afbeelding gelijk
-        en wordt alles meegetrokken; met bijsnijden blijft alleen de rechtgetrokken rechthoek over."""
+        """Perspective correction: the quadrilateral quad (4 points: top left, top right, bottom right,
+        bottom left) becomes a rectangle. Without cropping the image size stays the same
+        and everything is stretched along; with cropping only the straightened rectangle remains."""
         import math
         from PySide6.QtCore import QPointF
         from PySide6.QtGui import QPolygonF
@@ -1358,7 +1360,7 @@ class Document(QObject):
             p.drawImage(0, 0, l.image)
             p.end()
             l.image = out
-            l.text = None  # tekst en vectoren worden een gewone (vervormde) rasterlaag
+            l.text = None  # text and vectors become a regular (distorted) raster layer
             l.vector = None
         chans = []
         for n, im in self.channels:
@@ -1414,7 +1416,7 @@ class Document(QObject):
             b = arr > 127
             if kind == "contract":
                 b = ~b
-            for _ in range(n):  # dilatatie, 1 pixel per stap
+            for _ in range(n):  # dilation, 1 pixel per step
                 nb = b.copy()
                 nb[1:] |= b[:-1]
                 nb[:-1] |= b[1:]

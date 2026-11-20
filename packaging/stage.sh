@@ -1,9 +1,9 @@
 #!/bin/sh
-# Zet de PixelPickle bestanden in een systeemboom onder $1 (gedeeld door Arch, Debian en Fedora).
-# Gebruik: packaging/stage.sh <doelmap>     (uitvoeren vanuit de hoofdmap van de broncode)
+# Put the PixelPickle files in a system tree under $1 (shared by Arch, Debian and Fedora).
+# Usage: packaging/stage.sh <target folder>     (run from the root of the source tree)
 set -e
 DEST="$1"
-[ -n "$DEST" ] || { echo "gebruik: $0 <doelmap>" >&2; exit 1; }
+[ -n "$DEST" ] || { echo "usage: $0 <target dir>" >&2; exit 1; }
 install -d "$DEST/usr/share/pixelpickle"
 cp -r pixelpickle "$DEST/usr/share/pixelpickle/"
 find "$DEST/usr/share/pixelpickle" -name '__pycache__' -prune -exec rm -rf {} +

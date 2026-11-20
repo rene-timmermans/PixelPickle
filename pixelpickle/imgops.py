@@ -1,11 +1,11 @@
-"""Bewerkingen van het menu Afbeelding: kleurdiepte verminderen, kanalen splitsen en combineren,
-berekeningen tussen twee afbeeldingen en fotolijsten. Alles werkt op RGBA-arrays (uint8)."""
+"""Operations of the Image menu: reduce color depth, split and combine channels,
+calculations between two images and photo frames. Everything works on RGBA arrays (uint8)."""
 import math
 
 import numpy as np
 from PIL import Image
 
-# ---------------------------------------------------------------- kleurdiepte verminderen
+# ---------------------------------------------------------------- reduce color depth
 METHODS = ("nearest", "diffusion", "ordered")
 _BAYER = np.array([[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]], np.float32) / 16 - 0.5
 
@@ -15,7 +15,7 @@ def _bayer(h, w):
 
 
 def web_palette():
-    """Vast palet van 216 kleuren (6 niveaus per kanaal)."""
+    """Fixed palette of 216 colors (6 levels per channel)."""
     lv = [0, 51, 102, 153, 204, 255]
     return [(r, g, b) for r in lv for g in lv for b in lv]
 
@@ -27,10 +27,10 @@ def standard16():
 
 
 def make_palette(rgba_list, colors, kind="optimal"):
-    """Palet (Pillow 'P'-beeld) voor deze beelden samen: optimaal (mediaansnede) of vast (web/standaard)."""
+    """Palette (Pillow 'P' image) for these images together: optimal (median cut) or fixed (web/standard)."""
     if kind == "optimal":
         joined = np.concatenate([a[..., :3].reshape(-1, 3) for a in rgba_list], axis=0)
-        if len(joined) > 1_500_000:  # voor het palet volstaat een steekproef
+        if len(joined) > 1_500_000:  # a sample suffices for the palette
             joined = joined[np.random.default_rng(1).choice(len(joined), 1_500_000, replace=False)]
         side = int(math.ceil(math.sqrt(len(joined))))
         pad = np.zeros((side * side, 3), np.uint8)
@@ -50,10 +50,10 @@ def make_palette(rgba_list, colors, kind="optimal"):
 
 
 def quantize(rgba: np.ndarray, palette_img, method="diffusion") -> np.ndarray:
-    """Kleuren terugbrengen naar het palet. method: dichtstbijzijnde kleur, foutdiffusie of geordende dithering."""
+    """Reduce colors to the palette. method: nearest color, error diffusion or ordered dithering."""
     rgb = rgba[..., :3]
     if method == "ordered":
-        # geordende dithering: kleine ruis volgens een Bayer-patroon, daarna dichtstbijzijnde kleur
+        # ordered dithering: small noise following a Bayer pattern, then nearest color
         spread = 48.0
         rgb = np.clip(rgb.astype(np.float32) + _bayer(*rgb.shape[:2])[..., None] * spread, 0, 255).astype(np.uint8)
     img = Image.fromarray(np.ascontiguousarray(rgb), "RGB")
@@ -64,7 +64,7 @@ def quantize(rgba: np.ndarray, palette_img, method="diffusion") -> np.ndarray:
 
 
 def two_colors(rgba: np.ndarray, method="diffusion") -> np.ndarray:
-    """Zwart-wit (2 kleuren) op basis van de helderheid."""
+    """Black and white (2 colors) based on brightness."""
     y = rgba[..., 0] * 0.299 + rgba[..., 1] * 0.587 + rgba[..., 2] * 0.114
     if method == "diffusion":
         img = Image.fromarray(np.clip(y, 0, 255).astype(np.uint8), "L").convert("1")  # Floyd-Steinberg
@@ -79,7 +79,7 @@ def two_colors(rgba: np.ndarray, method="diffusion") -> np.ndarray:
 
 
 def reduce_bits(rgba: np.ndarray, bits=(5, 5, 5), ordered=False) -> np.ndarray:
-    """32.000 kleuren (5-5-5 bits) of 64.000 kleuren (5-6-5 bits), eventueel met geordende dithering."""
+    """32,000 colors (5-5-5 bits) or 64,000 colors (5-6-5 bits), optionally with ordered dithering."""
     out = rgba.copy()
     noise = _bayer(*rgba.shape[:2]) if ordered else None
     for c, b in enumerate(bits):
@@ -91,9 +91,9 @@ def reduce_bits(rgba: np.ndarray, bits=(5, 5, 5), ordered=False) -> np.ndarray:
     return out
 
 
-# ---------------------------------------------------------------- kanalen
+# ---------------------------------------------------------------- channels
 def split(rgba: np.ndarray, model: str):
-    """Kanalen als grijswaardenbeelden: [(naam, uint8 array)]. model: rgb, hsl of cmyk."""
+    """Channels as grayscale images: [(name, uint8 array)]. model: rgb, hsl or cmyk."""
     rgb = rgba[..., :3].astype(np.float32) / 255
     if model == "rgb":
         return [("Rood", rgba[..., 0]), ("Groen", rgba[..., 1]), ("Blauw", rgba[..., 2])]
@@ -112,7 +112,7 @@ def split(rgba: np.ndarray, model: str):
 
 
 def combine(channels, model: str) -> np.ndarray:
-    """Kanalen (grijswaardenarrays, zelfde grootte) weer samenvoegen tot een RGBA-beeld."""
+    """Merge channels (grayscale arrays, same size) back into an RGBA image."""
     h, w = channels[0].shape
     out = np.full((h, w, 4), 255, np.uint8)
     if model == "rgb":
@@ -139,14 +139,14 @@ def gray_of(rgba: np.ndarray) -> np.ndarray:
     return np.clip(rgba[..., 0] * 0.299 + rgba[..., 1] * 0.587 + rgba[..., 2] * 0.114 + 0.5, 0, 255).astype(np.uint8)
 
 
-# ---------------------------------------------------------------- berekeningen
+# ---------------------------------------------------------------- calculations
 FUNCTIONS = ("add", "subtract", "multiply", "difference", "lighter", "darker", "average", "and", "or", "xor")
 
 
 def arithmetic(a: np.ndarray, b: np.ndarray, func: str, channel=None, divisor=1, bias=0, clip=True) -> np.ndarray:
-    """Twee afbeeldingen (RGBA, zelfde grootte) met elkaar verrekenen: resultaat = (a f b) / deler + verschuiving.
-    channel: None = alle kleurkanalen, anders 0/1/2 (de andere kanalen komen uit a). clip: afkappen op 0..255,
-    anders rond laten lopen."""
+    """Combine two images (RGBA, same size): result = (a f b) / divisor + offset.
+    channel: None = all color channels, otherwise 0/1/2 (the other channels come from a). clip: cut off at 0..255,
+    otherwise wrap around."""
     A = a[..., :3].astype(np.int32)
     B = b[..., :3].astype(np.int32)
     if func == "add":
@@ -180,13 +180,13 @@ def arithmetic(a: np.ndarray, b: np.ndarray, func: str, channel=None, divisor=1,
     return out
 
 
-# ---------------------------------------------------------------- fotolijsten
+# ---------------------------------------------------------------- photo frames
 FRAMES = ("simple", "wood", "gold", "silver", "mat", "polaroid", "shadow")
 
 
 def frame_image(W, H, style, t, color):
-    """Fotolijst als laag (W x H, midden doorzichtig) met lijstbreedte t pixels. color: QColor (voor de
-    eenvoudige lijst, de rand van het passe-partout en de achtergrond van de schaduwlijst)."""
+    """Photo frame as a layer (W x H, transparent center) with frame width t pixels. color: QColor (for the
+    simple frame, the edge of the mat and the background of the shadow frame)."""
     from PySide6.QtCore import QPointF, QRectF, Qt
     from PySide6.QtGui import QBrush, QColor, QLinearGradient, QPainter, QPainterPath, QPen, QPolygonF, QTransform
     from . import material as M
@@ -199,7 +199,7 @@ def frame_image(W, H, style, t, color):
     o = QRectF(0, 0, W, H)
     i = QRectF(t, t, W - 2 * t, H - t - bottom_t)
     if style == "shadow":
-        # schaduw rond het midden (de lijst ligt onder de foto): zachte, donkere rand naar rechtsonder
+        # shadow around the center (the frame lies under the photo): soft, dark edge toward the bottom right
         p.fillRect(o, QColor(color))
         for k in range(12, 0, -1):
             a = int(10 + (12 - k) * 6)
@@ -208,7 +208,7 @@ def frame_image(W, H, style, t, color):
         p.fillRect(i, Qt.GlobalColor.transparent)
         p.end()
         return img
-    sides = {  # vier trapezia met verstek: (punten, kant)
+    sides = {  # four trapezoids with miter: (points, side)
         "top": [o.topLeft(), o.topRight(), i.topRight(), i.topLeft()],
         "right": [o.topRight(), o.bottomRight(), i.bottomRight(), i.topRight()],
         "bottom": [o.bottomRight(), o.bottomLeft(), i.bottomLeft(), i.bottomRight()],
@@ -221,7 +221,7 @@ def frame_image(W, H, style, t, color):
         if style in ("gold", "silver"):
             preset = "Goud" if style == "gold" else "Zilver"
             lut = M.gradient_lut(preset, QColor(0, 0, 0), QColor(255, 255, 255))
-            a, b = pts[0], pts[3]  # van de buitenrand naar de binnenrand
+            a, b = pts[0], pts[3]  # from the outer edge to the inner edge
             if name in ("top", "bottom"):
                 g = QLinearGradient(QPointF(0, a.y()), QPointF(0, b.y()))
             else:
@@ -246,7 +246,7 @@ def frame_image(W, H, style, t, color):
         if style not in ("polaroid", "mat", "simple"):
             p.setBrush(shade[name])
             p.drawPolygon(poly)
-    if style == "mat":  # passe-partout: smalle lijst buiten, schuine snede binnen
+    if style == "mat":  # mat: narrow frame outside, slanted cut inside
         outer = max(2, t // 4)
         path = QPainterPath()
         path.addRect(o)

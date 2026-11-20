@@ -1,6 +1,6 @@
-"""3D-effecten, kunstzinnige effecten (Art Media) en artistieke effecten (menu Effecten).
+"""3D effects, artistic effects (Art Media) and artistic effects (Effects menu).
 
-Eigen benaderingen van de Paint Shop Pro XI effecten; alleen NumPy en Pillow.
+Own approximations of effects compatible with Paint Shop Pro XI; only NumPy and Pillow.
 """
 import math
 
@@ -13,7 +13,7 @@ from .common import blur, blur as _gblur, gray, hsl_to_rgb, noise, remap, rgb_to
 BEVEL_SHAPES = ["Schuin", "Rond", "Hol", "Dubbel", "Rug", "Getrapt"]
 
 
-# ---------------------------------------------------------------- hulpfuncties
+# ---------------------------------------------------------------- helpers
 
 def _px(v, ctx, lo=1.0):
     return max(lo, v * ctx.scale)
@@ -36,7 +36,7 @@ def _out(a, rgb, alpha=None):
 
 
 def _shift(x, dy, dx, fill=0.0):
-    """Verschuif een 2D array over (dy, dx) gehele pixels; vrijgekomen ruimte krijgt fill."""
+    """Shift a 2D array by (dy, dx) whole pixels; freed space gets fill."""
     h, w = x.shape[:2]
     out = np.full_like(x, fill)
     dy, dx = int(round(dy)), int(round(dx))
@@ -49,13 +49,13 @@ def _shift(x, dy, dx, fill=0.0):
 
 
 def _blur1(x, r):
-    """Eén doorgang boxvervaging (lineaire helling bij randen)."""
+    """One pass of box blur (linear slope at the edges)."""
     r = int(round(r))
     return box_blur(x.astype(np.float32), r, passes=1) if r >= 1 else x.astype(np.float32)
 
 
 def _dist_inside(mask, w, pad=True):
-    """0 op de rand van het masker (of de beeldrand), oplopend tot 1 op afstand w binnenin."""
+    """0 at the edge of the mask (or the image edge), rising to 1 at distance w inside."""
     w = max(1, int(round(w)))
     if pad:
         p = w + 1
@@ -67,7 +67,7 @@ def _dist_inside(mask, w, pad=True):
 
 
 def _dist_outside(mask, w):
-    """1 binnen het masker, aflopend naar 0 op afstand w erbuiten."""
+    """1 inside the mask, falling to 0 at distance w outside."""
     w = max(1, int(round(w)))
     return np.clip(2 * _blur1(mask, w), 0, 1)
 
@@ -94,8 +94,8 @@ def _profile(d, shape):
 
 
 def _light(H, angle, elev, shininess=0):
-    """Belichting van hoogteveld H (pixels). angle: 0 = boven, met de klok mee (graden).
-    Geeft (diffuus verschil t.o.v. vlak, spiegeling) terug."""
+    """Lighting of height field H (pixels). angle: 0 = top, clockwise (degrees).
+    Returns (diffuse difference relative to flat, specular)."""
     gx, gy = sobel(H)
     gx /= 8
     gy /= 8
@@ -132,7 +132,7 @@ def _hash(*arrs, seed=1):
 
 
 def _strokes(h, w, angle, width, length, seed=1):
-    """Streeptextuur: (waarde per streek 0..1, profiel 0..1 dwars en langs de streek)."""
+    """Stroke texture: (value per stroke 0..1, profile 0..1 across and along the stroke)."""
     yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
     ca, sa = math.cos(math.radians(angle)), math.sin(math.radians(angle))
     u = xx * ca + yy * sa
@@ -154,7 +154,7 @@ def _edges(g, r=1.0):
     return np.hypot(gx, gy)
 
 
-# ---------------------------------------------------------------- 3D-effecten
+# ---------------------------------------------------------------- 3D effects
 
 @effect(0x80a0, "Als knop", [Int("height", "Hoogte", 1, 250, 34), Int("width", "Breedte", 1, 250, 34),
                               Int("opacity", "Dekking", 1, 100, 75),
@@ -165,7 +165,7 @@ def buttonize(a, ctx, height, width, opacity, edge, color):
     hh = min(_px(height, ctx), max(1.0, h / 2))
     ww = min(_px(width, ctx), max(1.0, w / 2))
     yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
-    d = np.stack([yy / hh, xx / ww, (w - 1 - xx) / ww, (h - 1 - yy) / hh])  # boven, links, rechts, onder
+    d = np.stack([yy / hh, xx / ww, (w - 1 - xx) / ww, (h - 1 - yy) / hh])  # top, left, right, bottom
     reg = np.argmin(d, axis=0)
     m = np.min(d, axis=0)
     band = m < 1
@@ -280,7 +280,7 @@ def outer_bevel(a, ctx, shape, width, smoothness, depth, ambience, shininess, an
     al = _alpha(a)
     wpx = _px(width, ctx)
     rgb = _rgb(a)
-    if al.min() > 0.98:  # geen transparantie: de beeldrand is de selectierand
+    if al.min() > 0.98:  # no transparency: the image edge is the selection edge
         d = _dist_inside(al, wpx)
         res = _bevel_light(rgb, d, ctx, shape, width, smoothness, depth, ambience, shininess, angle,
                            intensity, elevation, color)
@@ -299,7 +299,7 @@ def outer_bevel(a, ctx, shape, width, smoothness, depth, ambience, shininess, an
     return _out(a, res, oa)
 
 
-# ---------------------------------------------------------------- kunstzinnige effecten (Art Media)
+# ---------------------------------------------------------------- artistic effects (Art Media)
 
 def _paper(h, w, ctx, amount=10):
     return (smooth_noise(h, w, 2 * ctx.scale + 1, ctx.seed + 3) - 0.5) * amount + \
@@ -422,7 +422,7 @@ def brush_strokes(a, ctx, softness, bristles, width, opacity, length, density, a
     return _out(a, res)
 
 
-# ---------------------------------------------------------------- artistieke effecten
+# ---------------------------------------------------------------- artistic effects
 
 @effect(0x80c4, "Oude krant", [Int("years", "Aantal jaren", 10, 100, 80)])
 def aged_newspaper(a, ctx, years):
@@ -602,7 +602,7 @@ def halftone(a, ctx, pattern, size, angle, scheme):
         cx = np.clip(np.rint(cu * ca - cv * sn), 0, w - 1).astype(np.int64)
         cy = np.clip(np.rint(cu * sn + cv * ca), 0, h - 1).astype(np.int64)
         lv = val[cy, cx] / 255
-        cover = (1 - lv) if scheme == 0 else lv  # inktaandeel
+        cover = (1 - lv) if scheme == 0 else lv  # ink share
         du, dv = u - cu, v - cv
         if pattern == 0:
             dist = np.hypot(du, dv)

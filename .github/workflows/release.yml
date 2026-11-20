@@ -1,8 +1,8 @@
-# Bouwt bij elke release de installers voor Arch, Debian/Ubuntu en Fedora, installeert ze in een echte
-# omgeving van die distributie, test of PixelPickle opstart (--selftest) en zet ze bij de release.
-# Daarnaast draait de volledige verzameling tests (tests.yml); de installers komen alleen bij de release
-# als ook die allemaal slagen.
-# Met de hand starten (Actions > Pakketten bouwen > Run workflow) bouwt en test zonder te publiceren.
+# Builds the installers for Arch, Debian/Ubuntu and Fedora on every release, installs them in a real
+# environment of that distribution, tests whether PixelPickle starts (--selftest) and attaches them to the release.
+# In addition the full test suite runs (tests.yml); the installers are only attached to the release
+# if all of those pass as well.
+# Started by hand (Actions > Pakketten bouwen > Run workflow) it builds and tests without publishing.
 name: Pakketten bouwen
 
 on:
@@ -93,7 +93,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: ["ubuntu:latest", "ubuntu:rolling"]   # nieuwste LTS en nieuwste versie (24.04 heeft geen PySide6)
+        image: ["ubuntu:latest", "ubuntu:rolling"]   # latest LTS and latest release (24.04 has no PySide6)
     container: ${{ matrix.image }}
     steps:
       - uses: actions/download-artifact@v4

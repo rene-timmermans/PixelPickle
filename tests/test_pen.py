@@ -19,7 +19,7 @@ doc = Document(300, 200, QColor(255, 255, 255)); cv = w.add_document(doc).canvas
 P, LB = QPointF, Qt.MouseButton.LeftButton
 pen = w.tools[0xd110]; w.select_tool(pen)
 w.set_color(QColor(0, 0, 0), True); w.set_color(QColor(255, 0, 0), False)
-w.opts.update(line_width=4, antialias=False, pen_vector=False)  # eerst: pixels op de laag
+w.opts.update(line_width=4, antialias=False, pen_vector=False)  # first: pixels on the layer
 
 
 def ev(t, p):
@@ -42,50 +42,50 @@ def key(k):
     return pen.key(cv, QKeyEvent(QEvent.Type.KeyPress, k, Qt.KeyboardModifier.NoModifier))
 
 
-# 1. lijnen en polylijnen: twee aaneengesloten segmenten, nog niet op de laag tot Enter
+# 1. lines and polylines: two connected segments, not on the layer until Enter
 w.opts["pen_mode"] = 1
 drag([P(20, 20), P(120, 20)]); drag([P(120, 20), P(120, 100)])
 assert len(pen.paths) == 1 and len(pen.paths[0]["nodes"]) == 3, pen.paths
-assert px(70, 20) == QColor(255, 255, 255), "nog niet toegepast"
+assert px(70, 20) == QColor(255, 255, 255), "not applied yet"
 assert key(Qt.Key.Key_Return)
 assert px(70, 20) == QColor(0, 0, 0) and px(120, 60) == QColor(0, 0, 0) and not pen.paths
-print("1 polylijn OK")
+print("1 polyline OK")
 
-# 2. punt tot punt: kromme met handvatten, sluiten op het eerste punt, gevuld met achtergrondkleur
+# 2. point to point: curve with handles, close on the first point, filled with background color
 w.opts["pen_mode"] = 2
 drag([P(160, 120)]); drag([P(260, 120), P(280, 150)]); drag([P(210, 190)])
-drag([P(160, 120)])  # klik op het eerste punt: sluiten
+drag([P(160, 120)])  # click on the first point: close
 sub = pen.paths[0]
 assert sub["closed"] and len(sub["nodes"]) == 3 and sub["nodes"][1][2] is not None, sub
 pen.apply()
 assert px(210, 140) == QColor(255, 0, 0), px(210, 140).name()
-print("2 bézier gesloten en gevuld OK")
+print("2 bezier closed and filled OK")
 
-# 3. bewerken: knooppunt verslepen voor het toepassen, Delete verwijdert, Esc gooit weg
+# 3. edit: drag a node before applying, Delete removes, Esc discards
 w.opts["pen_mode"] = 1
 drag([P(20, 150), P(100, 150)])
 w.opts["pen_mode"] = 0
 drag([P(100, 150), P(100, 190)])
 assert pen.paths[0]["nodes"][1][0] == P(100, 190)
 key(Qt.Key.Key_Escape); assert not pen.paths
-assert px(60, 150) == QColor(255, 255, 255), "weggegooid, niets getekend"
-print("3 bewerken en Esc OK")
+assert px(60, 150) == QColor(255, 255, 255), "discarded, nothing drawn"
+print("3 editing and Esc OK")
 
-# 4. uit de vrije hand met tracking: veel punten worden er weinig; wisselen van gereedschap past toe
+# 4. freehand with tracking: many points become few; switching tools applies
 w.opts.update(pen_mode=3, pen_tracking=10)
 drag([P(20 + k, 60 + 10 * np.sin(k / 10)) for k in range(0, 200)])
 n = len(pen.paths[0]["nodes"])
 assert 3 <= n < 60, n
 w.select_tool(w.tools[0xd001])
 assert not pen.paths and (ops.qimage_to_rgba(doc.layers[0].image)[50:72, 20:220, 0] < 50).any()
-print("4 vrije hand,", n, "knooppunten; toegepast bij wisselen OK")
+print("4 freehand,", n, "nodes; applied on switching OK")
 
-# 5. lijnstijl streepjes en ronde verbinding: geeft onderbroken lijn
+# 5. dashed line style and round join: gives a broken line
 w.select_tool(pen); w.opts.update(pen_mode=1, pen_style=1, line_width=3)
 drag([P(20, 120), P(140, 120)]); pen.apply()
 row = ops.qimage_to_rgba(doc.layers[0].image)[120, 20:140, 0]
-assert (row < 50).any() and (row > 200).any(), "streepjes"
-# 6. hoekpunt achteraf omzetten naar kromme: Ctrl + slepen, en via het snelmenu vloeiend/hoekpunt
+assert (row < 50).any() and (row > 200).any(), "dashes"
+# 6. convert a corner point to a curve afterwards: Ctrl + drag, and via the context menu smooth/corner
 w.opts.update(pen_mode=1, pen_style=0)
 drag([P(20, 170), P(150, 170)]); drag([P(150, 170), P(280, 170)])
 w.opts["pen_mode"] = 0
@@ -99,4 +99,4 @@ names = [a[0] for a in pen.context_actions(cv)]
 assert "Vloeiend knooppunt" in names and "Hoekpunt" in names, names
 key(Qt.Key.Key_Escape)
 doc.set_modified(False)
-print("ALLES OK")
+print("ALL OK")

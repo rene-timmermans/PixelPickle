@@ -1,9 +1,9 @@
-"""Eigen penselen, vormen en fotolijsten van de gebruiker, en de mappen waar die staan
-(Bestand > Voorkeuren > Bestandslocaties). Standaard in ~/.local/share/PixelPickle/<soort>.
+"""The user's own brushes, shapes and picture frames, and the folders where they are stored
+(File > Preferences > File locations). Default in ~/.local/share/PixelPickle/<kind>.
 
-- penseel: PNG in grijswaarden; zwart (en dekkend) is waar het penseel verf geeft
-- vorm: JSON met contouren, genormaliseerd naar 0..1 binnen het omhullende kader
-- fotolijst: PNG met een doorzichtig midden"""
+- brush: grayscale PNG; black (and opaque) is where the brush applies paint
+- shape: JSON with outlines, normalized to 0..1 within the bounding box
+- picture frame: PNG with a transparent center"""
 import json
 import os
 import re
@@ -44,13 +44,13 @@ def _list(kind, ext):
     return sorted((os.path.splitext(f)[0], os.path.join(d, f)) for f in os.listdir(d) if f.lower().endswith(ext))
 
 
-# ---------------------------------------------------------------- penselen
+# ---------------------------------------------------------------- brushes
 def brush_names():
     return [n for n, _ in _list("brushes", ".png")]
 
 
 def save_brush(name, weight: np.ndarray):
-    """weight: 0..1 (1 = volle verf). Bewaard als grijswaarden-PNG (zwart = verf)."""
+    """weight: 0..1 (1 = full paint). Stored as a grayscale PNG (black = paint)."""
     g = np.clip(255 - weight * 255, 0, 255).astype(np.uint8)
     g = np.ascontiguousarray(g)
     img = QImage(g.data, g.shape[1], g.shape[0], g.strides[0], QImage.Format.Format_Grayscale8).copy()
@@ -60,12 +60,12 @@ def save_brush(name, weight: np.ndarray):
 
 
 def brush_weight_from_image(img: QImage) -> np.ndarray:
-    """Penseelpunt uit een afbeelding: hoe donkerder en dekkender, hoe meer verf (0..1), bijgesneden."""
+    """Brush tip from an image: the darker and more opaque, the more paint (0..1), cropped."""
     from . import imageops as ops
     a = ops.qimage_to_rgba(img.convertToFormat(ops.FMT)).astype(np.float32)
     lum = a[..., 0] * 0.299 + a[..., 1] * 0.587 + a[..., 2] * 0.114
     w = (1 - lum / 255) * (a[..., 3] / 255)
-    if not (a[..., 3] < 255).any() and w.max() < 0.05:  # geheel licht en dekkend: helderheid omkeren
+    if not (a[..., 3] < 255).any() and w.max() < 0.05:  # entirely light and opaque: invert brightness
         w = lum / 255
     ys, xs = np.nonzero(w > 0.01)
     if len(xs):
@@ -85,13 +85,13 @@ def load_brush(name) -> np.ndarray | None:
     return 1 - arr.astype(np.float32) / 255
 
 
-# ---------------------------------------------------------------- vormen
+# ---------------------------------------------------------------- shapes
 def shape_names():
     return [n for n, _ in _list("shapes", ".json")]
 
 
 def save_shape(name, objs):
-    """Vectorobjecten als eigen vorm bewaren (contouren genormaliseerd naar het omhullende kader)."""
+    """Store vector objects as a custom shape (outlines normalized to the bounding box)."""
     from . import vectorlayer as V
     path_all = QPainterPath()
     for o in objs:
@@ -112,7 +112,7 @@ def save_shape(name, objs):
 
 
 def shape_path(name, x, y, w, h) -> QPainterPath | None:
-    """De eigen vorm in het kader (x, y, w, h)."""
+    """The custom shape in the frame (x, y, w, h)."""
     from . import vectorlayer as V
     p = dict(_list("shapes", ".json")).get(name)
     if not p:
@@ -129,7 +129,7 @@ def shape_path(name, x, y, w, h) -> QPainterPath | None:
     return path
 
 
-# ---------------------------------------------------------------- fotolijsten
+# ---------------------------------------------------------------- picture frames
 def frame_names():
     return [n for n, _ in _list("frames", ".png")]
 

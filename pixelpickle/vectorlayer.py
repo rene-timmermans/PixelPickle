@@ -1,13 +1,13 @@
-"""Vectorlagen: lijnen en vormen die bewerkbaar blijven zolang je met de afbeelding bezig bent.
+"""Vector layers: lines and shapes that stay editable as long as you are working on the image.
 
-Een vectorlaag heeft layer.vector = [object, ...]; layer.image is alleen de weergave en wordt na elke
-wijziging opnieuw getekend (zoals bij tekstlagen). Een object is een gewone dict, zodat kopiëren
-(ongedaan maken) en bewaren in .ora eenvoudig zijn:
+A vector layer has layer.vector = [object, ...]; layer.image is only the rendering and is redrawn after every
+change (as with text layers). An object is a plain dict, so copying
+(undo) and storing in .ora are simple:
 
-    {"nodes": [[[x, y], [inx, iny] | None, [uitx, uity] | None], ...],
+    {"nodes": [[[x, y], [inx, iny] | None, [outx, outy] | None], ...],
      "closed": bool,
-     "stroke": [r, g, b, a] | None,   # None = geen rand
-     "fill": [r, g, b, a] | None,     # None = geen vulling (alleen gesloten paden worden gevuld)
+     "stroke": [r, g, b, a] | None,   # None = no stroke
+     "fill": [r, g, b, a] | None,     # None = no fill (only closed paths are filled)
      "width": float, "style": int, "join": int, "miter": float, "aa": bool}
 """
 import copy
@@ -37,7 +37,7 @@ def color_list(c, none=False):
 
 
 def make_object(nodes, closed, stroke, fill, width, style=0, join=0, miter=15.0, aa=True):
-    """nodes: [[QPointF, QPointF|None, QPointF|None], ...] (zoals de Pen ze gebruikt)."""
+    """nodes: [[QPointF, QPointF|None, QPointF|None], ...] (as the Pen uses them)."""
     return {"nodes": [[_lst(n[0]), _lst(n[1]), _lst(n[2])] for n in nodes], "closed": bool(closed),
             "stroke": stroke, "fill": fill, "width": float(width), "style": int(style), "join": int(join),
             "miter": float(miter), "aa": bool(aa)}
@@ -48,8 +48,8 @@ def qt_nodes(obj):
 
 
 def contours(obj):
-    """Alle contouren van een object: [(nodes, closed)]. Een samengesteld object (bijvoorbeeld een letter
-    met een gat) heeft naast de eerste contour nog 'more': [{"nodes": ..., "closed": ...}, ...]."""
+    """All contours of an object: [(nodes, closed)]. A compound object (for example a letter
+    with a hole) has, besides the first contour, 'more': [{"nodes": ..., "closed": ...}, ...]."""
     return [(obj["nodes"], obj["closed"])] + [(c["nodes"], c["closed"]) for c in obj.get("more", [])]
 
 
@@ -70,7 +70,7 @@ def _add_contour(path, nodes, closed):
 
 def qpath(obj):
     path = QPainterPath()
-    path.setFillRule(Qt.FillRule.OddEvenFill)  # gaten in samengestelde objecten blijven open
+    path.setFillRule(Qt.FillRule.OddEvenFill)  # holes in compound objects stay open
     for nodes, closed in contours(obj):
         _add_contour(path, nodes, closed)
     return path
@@ -112,7 +112,7 @@ def render(objs, w, h):
 
 
 def transform(objs, t):
-    """Alle punten en handvatten door een (affiene) transformatie halen."""
+    """Transform all points and handles by an (affine) transformation."""
     for obj in objs:
         for nodes, _ in contours(obj):
             for n in nodes:
@@ -120,13 +120,13 @@ def transform(objs, t):
                     if n[k] is not None:
                         q = t.map(QPointF(n[k][0], n[k][1]))
                         n[k] = [q.x(), q.y()]
-        # lijnbreedte meeschalen (gemiddelde schaal; 1 bij verschuiven, draaien en spiegelen)
+        # scale the line width along (average scale; 1 for moving, rotating and mirroring)
         s = (abs(t.m11() * t.m22() - t.m12() * t.m21())) ** 0.5
         obj["width"] = obj["width"] * s
 
 
 def hit(obj, pt, tol):
-    """Ligt pt op (de rand of de vulling van) dit object?"""
+    """Is pt on (the edge or fill of) this object?"""
     path = qpath(obj)
     st = QPainterPathStroker()
     st.setWidth(max(obj.get("width", 1), 1) + 2 * tol)
@@ -143,8 +143,8 @@ def bounds(objs):
 
 
 def path_to_nodes(path: QPainterPath):
-    """Een QPainterPath (bijvoorbeeld van een rechthoek of ovaal) omzetten in knooppunten per deelpad:
-    [(nodes, closed), ...] met nodes zoals de Pen ze gebruikt."""
+    """Convert a QPainterPath (for example of a rectangle or oval) into nodes per subpath:
+    [(nodes, closed), ...] with nodes as the Pen uses them."""
     out = []
     nodes = None
     i = 0
@@ -170,7 +170,7 @@ def path_to_nodes(path: QPainterPath):
     result = []
     for n in out:
         closed = len(n) > 2 and abs(n[0][0].x() - n[-1][0].x()) < 1e-6 and abs(n[0][0].y() - n[-1][0].y()) < 1e-6
-        if closed:  # laatste punt valt samen met het eerste: samenvoegen
+        if closed:  # last point coincides with the first: merge
             last = n.pop()
             n[0][1] = last[1]
         result.append((n, closed))
@@ -178,7 +178,7 @@ def path_to_nodes(path: QPainterPath):
 
 
 def object_from_path(path: QPainterPath, stroke, fill, width, **style):
-    """Vectorobject uit een QPainterPath (alle deelpaden als contouren van één samengesteld object)."""
+    """Vector object from a QPainterPath (all subpaths as contours of one compound object)."""
     parts = path_to_nodes(path)
     if not parts:
         return None

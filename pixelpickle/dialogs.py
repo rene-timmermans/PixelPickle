@@ -1,4 +1,4 @@
-"""Dialoogvensters: nieuwe afbeelding, formaat, canvasgrootte en aanpassingen met voorbeeld."""
+"""Dialogs: new image, size, canvas size and adjustments with preview."""
 from PySide6.QtCore import QRect, Qt, QTimer, Signal
 from PySide6.QtGui import QColor, QImage
 from PySide6.QtWidgets import (QCheckBox, QComboBox, QDialog, QDialogButtonBox, QFormLayout,
@@ -9,16 +9,16 @@ from . import imageops as ops
 
 
 def exec_live(dlg, main):
-    """Als dlg.exec(), maar zonder het venster bij de vensterbeheerder als modaal aan te melden.
+    """Like dlg.exec(), but without registering the window as modal with the window manager.
 
-    KDE (het effect "Dialoogvenster-ouder") maakt het hoofdvenster achter een modaal venster donkerder en valer.
-    Bij vensters met "Voorbeeld op afbeelding" zie je dan niet de echte kleuren. Daarom blijft het venster
-    niet-modaal en houdt PixelPickle zelf klikken en toetsen in het hoofdvenster tegen zolang het open is.
-    Geeft het resultaat terug zoals exec()."""
+    KDE (the "Dialoogvenster-ouder" (dialog parent) effect) darkens and fades the main window behind a modal window.
+    For windows with "Voorbeeld op afbeelding" (Preview on image) you would then not see the real colors. So the
+    window stays non-modal and PixelPickle itself blocks clicks and keys in the main window while it is open.
+    Returns the result like exec()."""
     import types
     from PySide6.QtCore import QEvent, QEventLoop, QObject
     from PySide6.QtWidgets import QApplication
-    if isinstance(QDialog.exec, types.FunctionType):  # tests vervangen exec(): dan gewoon die gebruiken
+    if isinstance(QDialog.exec, types.FunctionType):  # tests replace exec(), so use that when present
         return dlg.exec()
     blocked = {QEvent.Type.MouseButtonPress, QEvent.Type.MouseButtonRelease, QEvent.Type.MouseButtonDblClick,
                QEvent.Type.Wheel, QEvent.Type.KeyPress, QEvent.Type.KeyRelease, QEvent.Type.ShortcutOverride,
@@ -29,7 +29,7 @@ def exec_live(dlg, main):
             t = ev.type()
             if isinstance(obj, QWidget) and obj.window() is main:
                 if t in blocked:
-                    if t == QEvent.Type.MouseButtonPress:  # klik in het hoofdvenster: het venster naar voren
+                    if t == QEvent.Type.MouseButtonPress:  # click in the main window: bring the window to the front
                         dlg.raise_()
                         dlg.activateWindow()
                     return True
@@ -178,8 +178,8 @@ class CanvasSizeDialog(QDialog):
 
 
 def swatch_style(btn, color, min_width=60):
-    """Kleurknop egaal in precies deze kleur. De stijlregel geldt alleen voor deze knop: zonder afbakening
-    neemt alles wat eraan hangt (een kleurkiezer, een tooltip) de achtergrondkleur over."""
+    """Color button filled evenly with exactly this color. The style rule applies only to this button: without
+    scoping, everything attached to it (a color picker, a tooltip) inherits the background color."""
     btn.setObjectName("ppColorSwatch")
     btn.setStyleSheet(f"QPushButton#ppColorSwatch {{ background: {QColor(color).name()}; border: 1px solid palette(mid);"
                       f" border-radius: 3px; min-width: {min_width}px; min-height: 22px; }}"
@@ -187,13 +187,13 @@ def swatch_style(btn, color, min_width=60):
 
 
 class AdjustDialog(QDialog):
-    """Generiek venster met schuifregelaars en live voorbeeld op de actieve laag."""
+    """Generic window with sliders and a live preview on the active layer."""
 
     def __init__(self, main, doc, title, fn, params):
         super().__init__(main)
         self.setWindowTitle(title)
         self.doc, self.fn, self.title = doc, fn, title
-        self.targets = doc.effect_targets()  # de actieve laag, of elke rasterlaag van een lagengroep
+        self.targets = doc.effect_targets()  # the active layer, or every raster layer of a layer group
         self.origs = [QImage(l.image) for l in self.targets]
         self.sliders = {}
         v = QVBoxLayout(self)
@@ -331,8 +331,8 @@ class BordersDialog(QDialog):
 
 
 class RangeSlider(QWidget):
-    """Mengbereik: kleurbalk met een dekkingsgrafiek en vier sleepbare driehoekjes (a <= b <= c <= d).
-    Onder a en boven d is de laag onzichtbaar, tussen b en c volledig zichtbaar."""
+    """Blend range: color bar with an opacity graph and four draggable triangles (a <= b <= c <= d).
+    Below a and above d the layer is invisible, between b and c fully visible."""
     changed = Signal()
     PAD = 7
 
@@ -371,7 +371,7 @@ class RangeSlider(QWidget):
         g.setColorAt(0, QColor(0, 0, 0))
         g.setColorAt(1, self.color)
         p.fillRect(bar, g)
-        # dekkingsgrafiek over de balk
+        # opacity graph over the bar
         a, b, c, d = (self._x(x) for x in self.v)
         top, bot = bar.top() + 2, bar.bottom() - 1
         poly = QPolygonF([QPointF(bar.left(), bot), QPointF(a, bot), QPointF(b, top), QPointF(c, top),
@@ -382,7 +382,7 @@ class RangeSlider(QWidget):
         p.setPen(QPen(self.palette().mid().color(), 1))
         p.setBrush(Qt.BrushStyle.NoBrush)
         p.drawRect(bar)
-        # driehoekjes: binnenste twee gevuld, buitenste twee open
+        # triangles: inner two filled, outer two open
         hl = self.palette().highlight().color()
         for k, x in enumerate((a, b, c, d)):
             tri = QPolygonF([QPointF(x, bar.bottom() + 2), QPointF(x - 6, bar.bottom() + 12),
@@ -416,7 +416,7 @@ class RangeSlider(QWidget):
 
 
 class BlendRangesPage(QWidget):
-    """Tabblad Mengbereiken van Laageigenschappen."""
+    """Blend ranges tab of Layer properties."""
     changed = Signal()
     COLORS = {"Grijs": QColor(255, 255, 255), "Rood": QColor(255, 0, 0), "Groen": QColor(0, 255, 0),
               "Blauw": QColor(0, 0, 255)}
@@ -503,7 +503,7 @@ class BlendRangesPage(QWidget):
             return
         for i in range(2):
             vals = [sp.value() for sp in self.spins[i]]
-            for k in range(1, 4):  # volgorde bewaken
+            for k in range(1, 4):  # enforce the order
                 vals[k] = max(vals[k], vals[k - 1])
             self._busy = True
             for k in range(4):
@@ -519,14 +519,14 @@ class BlendRangesPage(QWidget):
         self.changed.emit()
 
     def value(self):
-        """Mengbereiken voor de laag, of None als alles op standaard staat."""
+        """Blend ranges for the layer, or None if everything is at default."""
         from .document import ranges_active
         r = {ch: (tuple(a), tuple(b)) for ch, (a, b) in self.ranges.items()}
         return r if ranges_active(r) else None
 
 
 class LayerPropertiesDialog(QDialog):
-    """Laageigenschappen zoals PSP: tabbladen Algemeen / Mengbereiken, met voorbeeld op afbeelding."""
+    """Layer properties: tabs General / Blend ranges, with preview on the image."""
 
     def __init__(self, parent, layer, doc=None, title="Laageigenschappen"):
         super().__init__(parent)
@@ -569,7 +569,7 @@ class LayerPropertiesDialog(QDialog):
         self._paint()
         def lbl(text, buddy):
             l = QLabel(text)
-            l.setBuddy(buddy)  # Alt+letter springt naar het veld, zoals in PSP
+            l.setBuddy(buddy)  # Alt+letter jumps to the field
             return l
         g.addWidget(lbl("&Naam:", self.name), 0, 0)
         g.addWidget(self.name, 0, 1, 1, 3)
@@ -591,7 +591,7 @@ class LayerPropertiesDialog(QDialog):
         self.ranges = BlendRangesPage(layer.blend_ranges)
         self.ranges.changed.connect(self._live)
         tabs.addTab(self.ranges, "Mengbereiken")
-        if layer.kind == "mask":  # een maskerlaag mengt niet
+        if layer.kind == "mask":  # a mask layer does not blend
             tabs.setTabEnabled(1, False)
         v.addWidget(tabs)
         v.addWidget(_buttons(self))
@@ -650,12 +650,12 @@ class LayerPropertiesDialog(QDialog):
 
 
 class TextEntryDialog(QDialog):
-    """Niet-modaal tekstinvoervenster met live voorbeeld (zoals 'Tekst invoeren' in PSP).
-    De optiebalk bepaalt de opmaak van de hele tekst; met het werkbalkje in dit venster geef je geselecteerde
-    woorden een eigen opmaak (vet, cursief, onderstreept, kleur, lettertype, grootte). Alleen wat afwijkt
-    wordt per stuk bewaard (zie runs())."""
+    """Non-modal text input window with a live preview.
+    The options bar determines the formatting of the whole text; with the small toolbar in this window you give
+    selected words their own formatting (bold, italic, underline, color, font, size). Only what deviates
+    is stored per run (see runs())."""
     textChanged = Signal()
-    SIZE = 1  # eigen eigenschap in de tekstopmaak: grootte in de eenheden van de tekst
+    SIZE = 1  # custom property in the text formatting: size in the units of the text
 
     def __init__(self, parent, text="", t=None):
         super().__init__(parent)
@@ -668,7 +668,7 @@ class TextEntryDialog(QDialog):
         tb = QToolBar()
         tb.setIconSize(tb.iconSize() * 0.8)
         self.edit = QTextEdit()
-        self.edit.setAcceptRichText(False)  # plakken: alleen tekst
+        self.edit.setAcceptRichText(False)  # paste: text only
         self.edit.setTabChangesFocus(True)
         self.edit.document().setDefaultFont(self.edit.font())
         self.edit.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
@@ -727,7 +727,7 @@ class TextEntryDialog(QDialog):
         self._sync_buttons()
 
     def _context_menu(self, pos):
-        """Zoals PSP: alleen knippen, kopiëren en plakken."""
+        """Cut, copy and paste only."""
         from PySide6.QtWidgets import QApplication, QMenu
         m = QMenu(self)
         sel = self.edit.textCursor().hasSelection()
@@ -736,9 +736,9 @@ class TextEntryDialog(QDialog):
         m.addAction("Plakken", self.edit.paste).setEnabled(bool(QApplication.clipboard().text()))
         m.exec(self.edit.mapToGlobal(pos))
 
-    # ------------------------------------------------------------ opmaak in de editor
+    # ------------------------------------------------------------ formatting in the editor
     def set_base(self, t):
-        """De opmaak uit de optiebalk (wordt bij elke wijziging bijgewerkt)."""
+        """The formatting from the options bar (updated on every change)."""
         self.base = dict(t)
         self._sync_buttons()
 
@@ -761,10 +761,10 @@ class TextEntryDialog(QDialog):
         if size is not None:
             fmt.setProperty(QTextCharFormat.Property.UserProperty + self.SIZE, float(size))
             base = max(1.0, float(self._base("size", 12)))
-            fmt.setFontPointSize(max(6.0, min(40.0, self.base_pt * size / base)))  # alleen voor de weergave
+            fmt.setFontPointSize(max(6.0, min(40.0, self.base_pt * size / base)))  # display only
         cur = self.edit.textCursor()
         if not cur.hasSelection():
-            self.edit.mergeCurrentCharFormat(fmt)  # geldt voor wat je hierna typt
+            self.edit.mergeCurrentCharFormat(fmt)  # applies to what you type next
         else:
             cur.mergeCharFormat(fmt)
         self.edit.setFocus()
@@ -818,7 +818,7 @@ class TextEntryDialog(QDialog):
         self.size_box.blockSignals(False)
 
     def _fill_editor(self, text, t):
-        """Editor vullen: platte tekst, of de opmaakdelen van een bestaande tekst (afwijkingen van de basis)."""
+        """Fill the editor: plain text, or the formatting runs of an existing text (deviations from the base)."""
         from PySide6.QtGui import QFont, QTextCharFormat, QTextCursor
         runs = (t or {}).get("runs")
         if not runs:
@@ -845,13 +845,13 @@ class TextEntryDialog(QDialog):
                 fmt.setForeground(QColor(*fill))
             cur.insertText(chunk.replace("\r\n", "\n").replace("\r", "\n"), fmt)
 
-    # ------------------------------------------------------------ uitkomst
+    # ------------------------------------------------------------ result
     def text(self):
         return self.edit.toPlainText()
 
     def runs(self, t):
-        """Opmaakdelen voor tekstgegevens t (zie textlayer): [[stijl, rand, vulling, tekst], ...], of None
-        als niets afwijkt van de optiebalk (dan geldt die voor de hele tekst)."""
+        """Formatting runs for text data t (see textlayer): [[style, border, fill, text], ...], or None
+        if nothing deviates from the options bar (which then applies to the whole text)."""
         from PySide6.QtGui import QFont, QTextCharFormat
         P = QTextCharFormat.Property
         keys = ("family", "size", "units", "bold", "italic", "underline", "tracking", "stroke_width")
@@ -861,7 +861,7 @@ class TextEntryDialog(QDialog):
         first = True
         while block.isValid():
             if not first:
-                out.append(None)  # regeleinde
+                out.append(None)  # line break
             first = False
             it = block.begin()
             while not it.atEnd():
@@ -891,7 +891,7 @@ class TextEntryDialog(QDialog):
         if not any_override:
             return None
         runs = []
-        for r in out:  # regeleinden aan het vorige deel toevoegen en gelijke delen samenvoegen
+        for r in out:  # append line breaks to the previous part and merge equal parts
             if r is None:
                 if runs:
                     runs[-1][3] += "\n"
@@ -909,7 +909,7 @@ class TextEntryDialog(QDialog):
 
 
 class GifExportDialog(QDialog):
-    """GIF-optimalisatie: transparantie, gedeeltelijke transparantie, kleuren, met voorbeeld."""
+    """GIF optimization: transparency, partial transparency, colors, with preview."""
 
     def __init__(self, main, doc):
         super().__init__(main)
@@ -1069,13 +1069,13 @@ class MaskFromImageDialog(QDialog):
         return ["luminance", "alpha"][self.src.currentIndex()], self.inv.isChecked()
 
 
-CHECKER_SIZES = [4, 8, 16]  # halve tegel in pixels: klein, middel, groot
+CHECKER_SIZES = [4, 8, 16]  # half tile in pixels: small, medium, large
 CHECKER_SCHEMES = [("Lichtgrijs", "#ffffff", "#cccccc"), ("Middengrijs", "#999999", "#666666"),
                    ("Donkergrijs", "#444444", "#2a2a2a"), ("Zwart-wit", "#ffffff", "#000000")]
 
 
 def view_settings():
-    """Weergave-instellingen uit de voorkeuren (ruitjespatroon achter transparantie en arcering bij bijsnijden)."""
+    """Display settings from the preferences (checkerboard pattern behind transparency and hatching when cropping)."""
     from PySide6.QtCore import QSettings
     st = QSettings("PixelPickle", "PixelPickle")
     return {"checker_size": int(st.value("checker_size", 1)), "checker_c1": st.value("checker_c1", "#ffffff"),
@@ -1130,8 +1130,8 @@ class _ColorButton(QWidget):
 
 
 class PreferencesDialog(QDialog):
-    """Algemene programmavoorkeuren: taal, transparantie en arcering, en lettertypen (met de mogelijkheid de
-    Microsoft-kernlettertypen te downloaden)."""
+    """General program preferences: language, transparency and hatching, and fonts (with the option to
+    download the Microsoft core fonts)."""
 
     def __init__(self, parent, current):
         from PySide6.QtWidgets import QGroupBox, QListWidget, QPushButton, QProgressBar, QStackedWidget
@@ -1148,19 +1148,19 @@ class PreferencesDialog(QDialog):
         body.addWidget(self.stack, 1)
         vs = view_settings()
 
-        # --- taal
+        # --- language
         page = QWidget()
         f = QFormLayout(page)
         self.lang = QComboBox()
         self.codes = [c for c, _ in LANGUAGES]
         self.lang.addItems([name for _, name in LANGUAGES])
-        self.lang.setProperty("pp_notr", True)  # taalnamen altijd in hun eigen taal
+        self.lang.setProperty("pp_notr", True)  # language names always in their own language
         self.lang.setCurrentIndex(self.codes.index(current) if current in self.codes else 0)
         f.addRow("Taal / Language:", self.lang)
         f.addRow(QLabel("De nieuwe taal wordt actief na het herstarten van PixelPickle."))
         self._add_page("Taal", page)
 
-        # --- transparantie en arcering
+        # --- transparency and hatching
         page = QWidget()
         v = QVBoxLayout(page)
         grid = QGroupBox("Ruitjespatroon achter transparante delen")
@@ -1207,7 +1207,7 @@ class PreferencesDialog(QDialog):
         self.c2.changed.connect(self._custom)
         self._add_page("Transparantie en arcering", page)
 
-        # --- lettertypen
+        # --- fonts
         page = QWidget()
         v = QVBoxLayout(page)
         from . import corefonts
@@ -1329,7 +1329,7 @@ class PreferencesDialog(QDialog):
 
 
 class AutosaveDialog(QDialog):
-    """Instellingen voor automatisch opslaan."""
+    """Settings for automatic saving."""
 
     def __init__(self, parent, enabled, minutes):
         super().__init__(parent)
@@ -1352,7 +1352,7 @@ class AutosaveDialog(QDialog):
 
 
 def text_window(parent, title, html, size=(720, 640)):
-    """Venster met opgemaakte tekst, schuifbalk en aanpasbare grootte (handleiding, sneltoetsen)."""
+    """Window with formatted text, scroll bar and adjustable size (manual, shortcuts)."""
     from PySide6.QtWidgets import QTextBrowser, QVBoxLayout
     dlg = QDialog(parent)
     dlg.setWindowTitle(title)
@@ -1370,7 +1370,7 @@ def text_window(parent, title, html, size=(720, 640)):
 
 
 class AboutDialog(QDialog):
-    """Info over PixelPickle: versie, makers, licentie en gebruikte onderdelen."""
+    """About PixelPickle: version, authors, license and components used."""
 
     def __init__(self, parent, icon):
         super().__init__(parent)
@@ -1386,7 +1386,7 @@ class AboutDialog(QDialog):
         v = QVBoxLayout(self)
         top = QHBoxLayout()
         pic = QLabel()
-        # alleen de augurk, zonder de paarse achtergrond van het programma-icoon
+        # only the pickle, without the purple background of the program icon
         import os
         from PySide6.QtGui import QPixmap
         art = QPixmap(os.path.join(os.path.dirname(__file__), "data", "icons", "pickle.png"))
@@ -1421,8 +1421,8 @@ class AboutDialog(QDialog):
 
 
 class AlphaChannelDialog(QDialog):
-    """Alfakanalen: opslaan (naam kiezen; een bestaand kanaal kan overschreven worden), laden (kanaal
-    kiezen met voorbeeld, omkeren en bij selecties de bewerking) of verwijderen."""
+    """Alpha channels: save (choose a name; an existing channel can be overwritten), load (choose a channel
+    with preview, invert and, for selections, the operation) or delete."""
 
     def __init__(self, parent, title, doc, mode, default_name="", selection_ops=False):
         from PySide6.QtWidgets import QLineEdit, QListWidget, QListWidgetItem
@@ -1458,7 +1458,7 @@ class AlphaChannelDialog(QDialog):
             hint = QLabel("Kies een bestaand kanaal om het te overschrijven.")
             hint.setStyleSheet("color: gray;")
             f.addRow(hint)
-            # alleen een bewuste klik neemt de naam over (de lijst kiest bij het tonen soms zelf een rij)
+            # only a deliberate click takes over the name (the list sometimes selects a row itself when shown)
             self.list.itemClicked.connect(lambda it: self.name.setText(it.text()))
             self.list.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         elif mode == "load":
@@ -1521,8 +1521,8 @@ class AlphaChannelDialog(QDialog):
 
 
 class Magnifier(QWidget):
-    """Vergrootglas: zwevend venster met een uitvergroting van de afbeelding onder de muis (zoals PSP).
-    Het muiswiel in het venster kiest de vergroting; een kruisje markeert het punt onder de muis."""
+    """Magnifier: floating window with an enlargement of the image under the mouse.
+    The mouse wheel in the window selects the magnification; a cross marks the point under the mouse."""
     closed = Signal()
 
     def __init__(self, main):
@@ -1595,8 +1595,8 @@ class Magnifier(QWidget):
 
 
 class VectorPropertiesDialog(QDialog):
-    """Eigenschappen van vectorobjecten: naam, lijn en vulling (kleur of geen), breedte, lijnstijl,
-    verbinding en anti-alias. Bij meer objecten tegelijk geldt de wijziging voor alle gekozen objecten."""
+    """Properties of vector objects: name, line and fill (color or none), width, line style,
+    join and anti-alias. With several objects at once, the change applies to all selected objects."""
     STYLES = ["Effen", "Streepjes", "Puntjes", "Streep-punt", "Streep-punt-punt"]
     JOINS = ["Verstek", "Rond", "Schuin"]
 
@@ -1680,9 +1680,9 @@ class VectorPropertiesDialog(QDialog):
 
 
 def ask_form(parent, title, fields, note=None):
-    """Klein invulvenster. fields: [(sleutel, label, soort, ...)] met soort
-    "int" (laag, hoog, standaard[, achtervoegsel]), "choice" (opties, standaard), "bool" (standaard) of
-    "color" (standaard QColor). Geeft {sleutel: waarde} terug, of None bij Annuleren."""
+    """Small input window. fields: [(key, label, kind, ...)] with kind
+    "int" (low, high, default[, suffix]), "choice" (options, default), "bool" (default) or
+    "color" (default QColor). Returns {key: value}, or None on Cancel."""
     from PySide6.QtGui import QIcon, QPixmap
     from PySide6.QtWidgets import QColorDialog, QPushButton
     dlg = QDialog(parent)
@@ -1735,10 +1735,10 @@ def ask_form(parent, title, fields, note=None):
     return {k: g() for k, g in getters.items()}
 
 
-# ================================================================ Bestand: export en batch
+# ================================================================ File: export and batch
 class PngOptimizerDialog(QDialog):
-    """PNG-optimalisatie: kleurtype (32 bits met transparantie, 24 bits, 8 bits palet), aantal kleuren en
-    compressie, met de verwachte bestandsgrootte."""
+    """PNG optimization: color type (32 bits with transparency, 24 bits, 8 bits palette), number of colors and
+    compression, with the expected file size."""
 
     def __init__(self, parent, rgba):
         super().__init__(parent)
@@ -1788,15 +1788,15 @@ class PngOptimizerDialog(QDialog):
 
 
 class ImageMapDialog(QDialog):
-    """Afbeelding met hyperlinks: sleep rechthoeken of cirkels over het voorbeeld, geef elk gebied een
-    adres (URL), een alternatieve tekst en een doel, en bewaar een HTML-pagina met de afbeelding."""
+    """Image with hyperlinks: drag rectangles or circles over the preview, give each area an
+    address (URL), an alternative text and a target, and save an HTML page with the image."""
 
     def __init__(self, parent, image):
         from PySide6.QtWidgets import QLineEdit, QListWidget, QPushButton
         super().__init__(parent)
         self.setWindowTitle("Afbeelding met hyperlinks")
         self.image = image
-        self.areas = []  # [{"shape": "rect"|"circle", "r": QRect (afbeeldingscoördinaten), "url", "alt", "target"}]
+        self.areas = []  # [{"shape": "rect"|"circle", "r": QRect (image coordinates), "url", "alt", "target"}]
         v = QHBoxLayout(self)
         self.view = _MapView(self)
         v.addWidget(self.view, 1)
@@ -1887,7 +1887,7 @@ class ImageMapDialog(QDialog):
 
 
 class _MapView(QWidget):
-    """Voorbeeld voor Afbeelding met hyperlinks: sleep om een gebied te maken."""
+    """Preview for Image with hyperlinks: drag to create an area."""
 
     def __init__(self, dlg):
         super().__init__()
@@ -1943,8 +1943,8 @@ class _MapView(QWidget):
 
 
 class BatchDialog(QDialog):
-    """Batchverwerking: een lijst bestanden in één keer omzetten naar een andere indeling, eventueel verkleind,
-    naar een map naar keuze."""
+    """Batch processing: convert a list of files to another format in one go, optionally scaled down,
+    to a folder of your choice."""
     FORMATS = [("PNG", ".png"), ("JPEG", ".jpg"), ("WebP", ".webp"), ("TIFF", ".tif"), ("BMP", ".bmp"),
                ("GIF", ".gif"), ("OpenRaster (.ora)", ".ora")]
 
@@ -2012,7 +2012,7 @@ class BatchDialog(QDialog):
 
 
 class BatchRenameDialog(QDialog):
-    """Namen in batch wijzigen: nieuwe namen uit vaste tekst, een volgnummer en de oude naam, met voorbeeld."""
+    """Rename files in batch: new names from fixed text, a sequence number and the old name, with preview."""
 
     def __init__(self, parent):
         from PySide6.QtWidgets import QLineEdit, QListWidget, QPushButton
@@ -2082,7 +2082,7 @@ class BatchRenameDialog(QDialog):
 
 
 class FileLocationsDialog(QDialog):
-    """Bestandslocaties: de mappen voor eigen penselen, vormen, fotolijsten en patronen."""
+    """File locations: the folders for custom brushes, shapes, picture frames and patterns."""
 
     def __init__(self, parent):
         from PySide6.QtWidgets import QLineEdit, QPushButton

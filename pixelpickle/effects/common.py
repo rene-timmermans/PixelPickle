@@ -1,4 +1,4 @@
-"""Hulpfuncties voor effecten (alleen NumPy en Pillow; geen SciPy)."""
+"""Helpers for effects (NumPy and Pillow only; no SciPy)."""
 import numpy as np
 
 from ..imageops import box_blur, hsl_to_rgb, rgb_to_hsl  # noqa: F401
@@ -13,26 +13,26 @@ def to_u8(a):
 
 
 def gray(a):
-    """Luminantie (H, W) float32 0..255."""
+    """Luminance (H, W) float32 0..255."""
     a = a.astype(np.float32)
     return a[..., 0] * 0.299 + a[..., 1] * 0.587 + a[..., 2] * 0.114
 
 
 def with_rgb(a, rgb):
-    """Nieuwe RGBA met de alfa van a en de gegeven rgb (float of uint8)."""
+    """New RGBA with the alpha of a and the given rgb (float or uint8)."""
     out = a.copy()
     out[..., :3] = to_u8(rgb)
     return out
 
 
 def blur(x, radius):
-    """Benadering van gaussiaans vervagen. x: 2D of 3D float. radius in pixels (float mag)."""
+    """Approximation of gaussian blur. x: 2D or 3D float. radius in pixels (float allowed)."""
     r = int(round(radius))
     return box_blur(x.astype(np.float32), r) if r >= 1 else x.astype(np.float32)
 
 
 def blur_rgba(a, radius):
-    """Vervagen met correcte behandeling van transparantie. Geeft uint8 RGBA."""
+    """Blur with correct handling of transparency. Returns uint8 RGBA."""
     al = a[..., 3:4].astype(np.float32) / 255
     pm = blur(a[..., :3].astype(np.float32) * al, radius)
     al2 = blur(al[..., 0], radius)[..., None]
@@ -41,7 +41,7 @@ def blur_rgba(a, radius):
 
 
 def convolve(x, kernel):
-    """Kleine 2D convolutie (kernel als lijst/array), randen herhaald. x: 2D of 3D float."""
+    """Small 2D convolution (kernel as list/array), edges repeated. x: 2D or 3D float."""
     k = np.asarray(kernel, np.float32)
     kh, kw = k.shape
     py, px = kh // 2, kw // 2
@@ -57,18 +57,18 @@ def convolve(x, kernel):
 
 
 def sobel(g):
-    """Gradiënten (gx, gy) van een 2D float beeld."""
+    """Gradients (gx, gy) of a 2D float image."""
     gx = convolve(g, [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
     gy = convolve(g, [[-1, -2, -1], [0, 0, 0], [1, 2, 1]])
     return gx, gy
 
 
 def remap(a, mx, my, edge="clamp", fill=(0, 0, 0, 0)):
-    """Bilineair bemonsteren: out[y, x] = a[my[y, x], mx[y, x]].
-    edge: "clamp" (rand herhalen), "wrap" (tegelen), "mirror" (spiegelen), "fill" (kleur/transparant)."""
+    """Bilinear sampling: out[y, x] = a[my[y, x], mx[y, x]].
+    edge: "clamp" (repeat edge), "wrap" (tile), "mirror" (reflect), "fill" (color/transparent)."""
     h, w = a.shape[:2]
     al = a[..., 3:4].astype(np.float32) / 255
-    src = np.dstack([a[..., :3].astype(np.float32) * al, al * 255])  # voorvermenigvuldigd
+    src = np.dstack([a[..., :3].astype(np.float32) * al, al * 255])  # premultiplied
     x0 = np.floor(mx).astype(np.int64)
     y0 = np.floor(my).astype(np.int64)
     fx = (mx - x0).astype(np.float32)[..., None]
@@ -98,7 +98,7 @@ def remap(a, mx, my, edge="clamp", fill=(0, 0, 0, 0)):
 
 
 def grid(h, w):
-    """Coördinaatroosters (yy, xx) float32."""
+    """Coordinate grids (yy, xx) float32."""
     yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
     return yy, xx
 
@@ -109,7 +109,7 @@ def noise(h, w, seed=1, channels=None):
 
 
 def smooth_noise(h, w, scale, seed=1):
-    """Vloeiende waarderuis 0..1 (voor texturen), scale = korrelgrootte in pixels."""
+    """Smooth value noise 0..1 (for textures), scale = grain size in pixels."""
     s = max(1, int(scale))
     small = noise(h // s + 2, w // s + 2, seed)
     yy, xx = grid(h, w)

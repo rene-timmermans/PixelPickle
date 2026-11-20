@@ -1,4 +1,4 @@
-"""Vectorlagen: QT_QPA_PLATFORM=offscreen .venv/bin/python tests/test_vector.py"""
+"""Vector layers: QT_QPA_PLATFORM=offscreen .venv/bin/python tests/test_vector.py"""
 import os
 import sys
 import tempfile
@@ -36,72 +36,72 @@ def comp(x, y):
     return doc.composite().pixelColor(x, y)
 
 
-# 1. pen met 'Op vector maken': nieuwe vectorlaag, achtergrond blijft schoon
+# 1. pen with 'Make on vector': new vector layer, background stays clean
 pen = w.tools[0xd110]; w.select_tool(pen)
 w.opts.update(pen_mode=1, pen_vector=True, line_width=4, antialias=False, pen_style=0)
 drag(pen, [P(20, 30), P(200, 30)]); pen.apply()
 assert len(doc.layers) == 2 and doc.layer().vector is not None and len(doc.layer().vector) == 1
 assert doc.layers[0].image.pixelColor(100, 30) == QColor(255, 255, 255) and comp(100, 30) == QColor(0, 0, 0)
 vlayer = doc.layer()
-print("1 pen maakt een vectorlaag OK")
+print("1 pen makes a vector layer OK")
 
-# 2. rechthoek op dezelfde vectorlaag: tweede object, gevuld met achtergrondkleur
+# 2. rectangle on the same vector layer: second object, filled with background color
 rect = w.tools[0xd102]; w.select_tool(rect); w.opts.update(line_width=2, shape_vector=True)
 drag(rect, [P(60, 80), P(160, 160)])
 assert len(doc.layers) == 2 and len(vlayer.vector) == 2, len(vlayer.vector)
 assert comp(110, 120) == QColor(255, 0, 0) and comp(60, 120) == QColor(0, 0, 0)
-print("2 rechthoek als vectorobject OK")
+print("2 rectangle as vector object OK")
 
-# 3. later bewerken: rechthoek oppakken, hoek verslepen, kleur en breedte wijzigen, toepassen
+# 3. edit later: pick up rectangle, drag corner, change color and width, apply
 w.select_tool(pen); w.opts["pen_mode"] = 0
-drag(pen, [P(110, 120)])  # klik in de gevulde rechthoek: oppakken
+drag(pen, [P(110, 120)])  # click in the filled rectangle: pick up
 assert pen.picked is not None and len(pen.paths) == 1 and len(vlayer.vector) == 1
-assert w.opts["line_width"] == 2 and w.bg == QColor(255, 0, 0), "instellingen van het object overgenomen"
+assert w.opts["line_width"] == 2 and w.bg == QColor(255, 0, 0), "settings of the object taken over"
 nodes = pen.paths[0]["nodes"]
 corner = min(range(len(nodes)), key=lambda i: (nodes[i][0].x() - 160) ** 2 + (nodes[i][0].y() - 160) ** 2)
 drag(pen, [nodes[corner][0], P(220, 190)])
 w.set_color(QColor(0, 0, 255), False)
 pen.apply()
 assert len(vlayer.vector) == 2 and comp(200, 180) == QColor(0, 0, 255), comp(200, 180).name()
-print("3 object opnieuw bewerkt (vorm en kleur) OK")
+print("3 object edited again (shape and color) OK")
 
-# 4. Esc na oppakken zet ongewijzigd terug; Delete verwijdert het object
+# 4. Esc after picking up puts back unchanged; Delete removes the object
 drag(pen, [P(120, 130)]); assert pen.picked is not None
 pen.key(cv, QKeyEvent(QEvent.Type.KeyPress, Qt.Key.Key_Escape, Qt.KeyboardModifier.NoModifier))
 assert len(vlayer.vector) == 2 and comp(200, 180) == QColor(0, 0, 255)
 drag(pen, [P(120, 130)])
 pen.key(cv, QKeyEvent(QEvent.Type.KeyPress, Qt.Key.Key_Delete, Qt.KeyboardModifier.NoModifier))
 assert len(vlayer.vector) == 1 and comp(120, 130) == QColor(255, 255, 255)
-doc.undo(); vlayer = doc.layer(); assert len(vlayer.vector) == 2, "ongedaan maken herstelt het object"
-print("4 Esc, Delete en ongedaan maken OK")
+doc.undo(); vlayer = doc.layer(); assert len(vlayer.vector) == 2, "undo restores the object"
+print("4 Esc, Delete and undo OK")
 
-# 5. verplaatsen, spiegelen en formaat wijzigen houden het bewerkbaar
-w.select_tool(w.tools[0xd012])  # verplaatsen
+# 5. moving, mirroring and resizing keep it editable
+w.select_tool(w.tools[0xd012])  # move
 drag(w.tools[0xd012], [P(100, 100), P(110, 100)])
 assert doc.layer().vector is not None and abs(doc.layer().vector[0]["nodes"][0][0][0] - 30) < 1e-6
 doc.resize_image(600, 400)
 v = doc.layer().vector
 assert v is not None and abs(v[0]["nodes"][0][0][0] - 60) < 1e-6 and abs(v[0]["width"] - 8) < 1e-6
-print("5 verplaatsen en formaat wijzigen: nog steeds vector OK")
+print("5 moving and resizing: still vector OK")
 
-# 6. schilderen op een vectorlaag vraagt om omzetten; daarna rasterlaag
+# 6. painting on a vector layer asks for conversion; afterwards raster layer
 brush = w.tools[0xd091]; w.select_tool(brush)
 cv.mousePressEvent(QMouseEvent(QEvent.Type.MouseButtonPress, cv.to_widget(P(10, 10)), cv.to_widget(P(10, 10)), LB, LB, Qt.KeyboardModifier.NoModifier))
 cv.mouseReleaseEvent(QMouseEvent(QEvent.Type.MouseButtonRelease, cv.to_widget(P(10, 10)), cv.to_widget(P(10, 10)), LB, Qt.MouseButton.NoButton, Qt.KeyboardModifier.NoModifier))
-assert doc.layer().vector is None, "omgezet in rasterlaag"
+assert doc.layer().vector is None, "converted to raster layer"
 doc.undo(); doc.undo()
-print("6 schilderen zet om in rasterlaag OK")
+print("6 painting converts to raster layer OK")
 
-# 7. .ora bewaart de vectoren bewerkbaar
+# 7. .ora stores the vectors editable
 path = os.path.join(tempfile.mkdtemp(), "v.ora")
 fileio.save(doc, path)
 d2 = fileio.load(path)
 vl = [l for l in d2.layers if l.vector is not None]
 assert vl and len(vl[0].vector) == len(doc.layers[-1].vector or vl[0].vector), vl
-print("7 .ora bewaart vectoren OK")
+print("7 .ora keeps vectors OK")
 
-# 8. menu Lagen > Nieuwe vectorlaag
+# 8. menu Layers > New vector layer
 n = len(doc.layers); w.actions_by_id[0x8141].trigger(); app.processEvents()
 assert len(doc.layers) == n + 1 and doc.layer().vector == []
 doc.set_modified(False)
-print("ALLES OK")
+print("ALL OK")

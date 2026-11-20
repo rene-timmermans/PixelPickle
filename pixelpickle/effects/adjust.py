@@ -1,11 +1,11 @@
-"""Aanpassingen uit het menu Aanpassen (fotocorrectie, kleur, helderheid, ruis, vervagen, lenscorrectie)."""
+"""Adjustments from the Adjust menu (photo correction, color, brightness, noise, blur, lens correction)."""
 import numpy as np
 
 from ..imageops import box_blur, hsl_to_rgb, rgb_to_hsl
 from . import Bool, Choice, Curve, Int, effect
 from .common import blur, blur_rgba, gray, grid, remap, sobel, to_u8, with_rgb
 
-# ------------------------------------------------------------------ hulpfuncties
+# ------------------------------------------------------------------ helpers
 
 
 def _rgb(a):
@@ -17,7 +17,7 @@ def _lum(rgb):
 
 
 def _px(v, ctx, lo=1):
-    """Pixelmaat geschaald naar de voorbeeldschaal (geheel getal >= lo)."""
+    """Pixel size scaled to the preview scale (integer >= lo)."""
     return max(lo, int(round(v * ctx.scale)))
 
 
@@ -27,7 +27,7 @@ def _valid(a):
 
 
 def _pct(ch, mask, p):
-    """Percentiel p (0..100) van een uint8 kanaal binnen het masker (via histogram)."""
+    """Percentile p (0..100) of a uint8 channel within the mask (via histogram)."""
     hist = np.bincount(ch[mask].ravel(), minlength=256).astype(np.float64)
     cdf = np.cumsum(hist)
     return int(np.searchsorted(cdf, cdf[-1] * p / 100.0))
@@ -47,7 +47,7 @@ def _sat(rgb, f):
 
 
 def _apply_lut(a, luts):
-    """luts: (256,) of (3, 256) float; geeft uint8 RGBA met alfa van a."""
+    """luts: (256,) or (3, 256) float; returns uint8 RGBA with the alpha of a."""
     luts = np.asarray(luts, np.float32)
     if luts.ndim == 1:
         luts = np.stack([luts] * 3)
@@ -59,7 +59,7 @@ def _apply_lut(a, luts):
 
 
 def _monotone_lut(points):
-    """Monotone kubische interpolatie (Fritsch-Carlson) van [x, y] punten tot een LUT van 256 waarden."""
+    """Monotone cubic interpolation (Fritsch-Carlson) of [x, y] points into a LUT of 256 values."""
     pts = {}
     for p in points or []:
         try:
@@ -100,7 +100,7 @@ def _monotone_lut(points):
 
 
 def _guided(p, r, eps):
-    """Zelfgeleid filter (He et al.): randbehoudend vervagen. p float 0..255 (2D/3D), eps in 255²-eenheden."""
+    """Guided filter (He et al.): edge-preserving blur. p float 0..255 (2D/3D), eps in 255² units."""
     r = int(r)
     if r < 1:
         return p.astype(np.float32)
@@ -116,7 +116,7 @@ def _guided(p, r, eps):
 
 
 def _median(x, r, axis=None):
-    """Mediaan van uint8 (H, W, C) over een (2r+1)² venster, of 1D langs axis=1 (horizontaal)."""
+    """Median of uint8 (H, W, C) over a (2r+1)² window, or 1D along axis=1 (horizontal)."""
     r = int(r)
     if r < 1:
         return x.copy()
@@ -138,7 +138,7 @@ def _median(x, r, axis=None):
 
 
 def _vmean(x, r):
-    """Gemiddelde langs de verticale as (box, straal r)."""
+    """Mean along the vertical axis (box, radius r)."""
     if r < 1:
         return x
     n = x.shape[0]
@@ -150,14 +150,14 @@ def _vmean(x, r):
 
 
 def _tone(rgb, shadows, highlights, base_r):
-    """Schaduwen (+ = lichter) en hoge lichten (+ = lichter, - = donkerder) via een lokaal luminantiemasker."""
+    """Shadows (+ = lighter) and highlights (+ = lighter, - = darker) via a local luminance mask."""
     y = _lum(rgb)
     base = blur(y, base_r) / 255
     base = np.clip(base * 0.6 + (y / 255) * 0.4, 0, 1)
     ws = np.clip(1 - base / 0.6, 0, 1) ** 2
     wh = np.clip((base - 0.4) / 0.6, 0, 1) ** 2
     delta = shadows / 100 * 110 * ws + highlights / 100 * 110 * wh
-    # licht maken met zachte schouder: compenseer zodat witten niet hard afknippen
+    # lighten with a soft shoulder: compensate so whites do not clip hard
     return rgb + delta[..., None]
 
 
@@ -181,7 +181,7 @@ def _unpremul(p):
 def _auto_fix(a, strength=1.0):
     rgb = _rgb(a)
     lo, hi = _stretch_bounds(a, 0.5)
-    # mix van per-kanaal rekken (kleurzweem weg) en gezamenlijk rekken (kleur behouden)
+    # mix of per-channel stretching (removes color cast) and joint stretching (keeps color)
     lo2 = lo * 0.6 + lo.min() * 0.4
     hi2 = hi * 0.6 + hi.max() * 0.4
     st = (rgb - lo2) / np.maximum(hi2 - lo2, 1) * 255
@@ -195,7 +195,7 @@ def _auto_fix(a, strength=1.0):
     return rgb + (st - rgb) * strength
 
 
-# ------------------------------------------------------------------ fotocorrectie
+# ------------------------------------------------------------------ photo correction
 
 
 @effect(0x8240, "Eénstaps-fotocorrectie")
@@ -221,7 +221,7 @@ def smart_fix(a, ctx, brightness, shadows, highlights, saturation, focus, auto):
     return with_rgb(a, rgb)
 
 
-# ------------------------------------------------------------------ ruis
+# ------------------------------------------------------------------ noise
 
 
 def _denoise(rgb, ctx, strength, detail):
@@ -252,7 +252,7 @@ def dcnr(a, ctx, strength, detail, sharpen):
     return with_rgb(a, rgb)
 
 
-# ------------------------------------------------------------------ kleur
+# ------------------------------------------------------------------ color
 
 
 @effect(0x82dc, "Kleurbalans", [
@@ -376,7 +376,7 @@ def hue_map(a, ctx, source, range, target, saturation):
     return with_rgb(a, hsl_to_rgb(h2.astype(np.float32), s2.astype(np.float32), l))
 
 
-# ------------------------------------------------------------------ vervagen / verscherpen
+# ------------------------------------------------------------------ blur / sharpen
 
 
 @effect(0x82fb, "Velddiepte", [
@@ -435,11 +435,11 @@ def radial_blur(a, ctx, kind, strength, cx, cy, twirl):
     n = 16
     acc = np.zeros((h * w, 4), np.float32)
     for t in np.linspace(-0.5, 0.5, n):
-        if kind == 0:  # draaien
+        if kind == 0:  # rotate
             a2, r2 = ang + t * s * np.deg2rad(30), r
-        elif kind == 1:  # zoomen
+        elif kind == 1:  # zoom
             a2, r2 = ang, r * (1 + t * s * 0.4)
-        else:  # kronkelen: draaien langs een spiraal
+        else:  # twirl: rotate along a spiral
             a2 = ang + t * s * np.deg2rad(20) + np.deg2rad(twirl) * t * s * (1 - r / rmax)
             r2 = r * (1 + t * s * 0.15)
         sx = np.clip(np.rint(cxp + r2 * np.cos(a2)), 0, w - 1).astype(np.int64)
@@ -450,11 +450,11 @@ def radial_blur(a, ctx, kind, strength, cx, cy, twirl):
 
 def _blend(base, top, mode):
     b, t = base / 255, top / 255
-    if mode == 0:  # bedekken
+    if mode == 0:  # cover
         r = np.where(b < 0.5, 2 * b * t, 1 - 2 * (1 - b) * (1 - t))
-    elif mode == 1:  # zacht licht
+    elif mode == 1:  # soft light
         r = (1 - 2 * t) * b * b + 2 * t * b
-    else:  # hard licht
+    else:  # hard light
         r = np.where(t < 0.5, 2 * b * t, 1 - 2 * (1 - b) * (1 - t))
     return r * 255
 
@@ -481,7 +481,7 @@ def soft_focus(a, ctx, softness, halo, halo_size):
         y = _lum(hb)
         thr = 230 - halo * 1.3
         m = np.clip((y - thr) / max(255 - thr, 1), 0, 1)[..., None] * (halo / 100)
-        out = 255 - (255 - out) * (1 - hb / 255 * m)  # bleken (screen)
+        out = 255 - (255 - out) * (1 - hb / 255 * m)  # dodge (screen)
     return with_rgb(a, out)
 
 
@@ -513,22 +513,22 @@ def fill_flash(a, ctx, strength):
 @effect(0x806e, "Rode ogen verwijderen", [Int("strength", "Sterkte", 0, 100, 75),
                                            Int("eye_size", "Max. oogdiameter (%)", 1, 15, 4)])
 def red_eye(a, ctx, strength, eye_size=4):
-    """Alleen rode ogen: kleine, losstaande rode vlekken. Een vlek telt mee als er in een ruime omgeving
-    (een paar keer de grootste oogdiameter) weinig ander rood is; grote rode vlakken zoals kleding, een
-    bal of een muur vallen zo af. Met een selectie werkt het alleen daarbinnen."""
+    """Red eyes only: small, isolated red spots. A spot counts if a wide surroundings (a few times the
+    largest eye diameter) contains little other red; large red areas such as clothing, a ball or a
+    wall are rejected this way. With a selection it only works inside it."""
     rgb = _rgb(a)
     R, G, B = rgb[..., 0], rgb[..., 1], rgb[..., 2]
     gb = (G + B) / 2
     ratio = R / np.maximum(gb, 8)
     red = np.clip((ratio - 1.8) / 0.8, 0, 1) * np.clip((R - 70) / 40, 0, 1)
     h, w = red.shape
-    d_max = max(2.0, max(h, w) * eye_size / 100)          # grootste oogdiameter in pixels
+    d_max = max(2.0, max(h, w) * eye_size / 100)          # largest eye diameter in pixels
     core = (red > 0.35).astype(np.float32)
-    # aandeel rood in een ruime omgeving: bij een pupil laag (er omheen zit oogwit, iris en huid)
+    # share of red in a wide surroundings: low for a pupil (surrounded by eye white, iris and skin)
     around = blur(core, max(1.0, d_max * 1.2))
     near = blur(core, max(0.6, d_max * 0.25))
     isolated = np.clip((0.22 - around) / 0.12, 0, 1) * np.clip((near - 0.05) / 0.1, 0, 1)
-    # het masker iets laten uitlopen zodat de rand van de pupil ook meegaat
+    # let the mask spread a little so the edge of the pupil is included too
     keep = np.clip(blur(isolated, max(0.6, d_max * 0.15)) * 3, 0, 1)
     m = red * keep
     m = np.clip(blur(m, _px(1, ctx, 0)) * 1.3, 0, 1) * (strength / 100)
@@ -565,7 +565,7 @@ def chromatic_aberration(a, ctx, radius, strength):
     ch = rgb - y[..., None]
     r = _px(radius, ctx)
     near = _edge_near(y, r)
-    # kleur die lokaal afwijkt van de omgeving (randkleur) wordt naar de omgevingskleur gebracht
+    # color that deviates locally from its surroundings (fringe color) is moved toward the surrounding color
     chb = blur(ch, r * 3)
     dev = np.sqrt(((ch - chb) ** 2).sum(-1))
     m = near * np.clip(dev / 30, 0, 1) * (strength / 100)
@@ -585,7 +585,7 @@ def scratch_removal(a, ctx, light, dark, strength):
     rgb = _rgb(a)
     med = _median(a[..., :3], [2, 3, 4][strength], axis=1).astype(np.float32)
     d = _lum(rgb) - _lum(med)
-    dv = _vmean(d, _px(6, ctx))  # krassen zijn lange (verticale) lijnen
+    dv = _vmean(d, _px(6, ctx))  # scratches are long (vertical) lines
     thr = [22, 14, 9][strength]
     m = np.zeros_like(d)
     if light:
@@ -678,13 +678,13 @@ def texture_preserving_smooth(a, ctx, amount):
     m = blur(y, r)
     sd = np.sqrt(np.maximum(blur(y * y, r) - m * m, 0))
     s = amount / 100
-    # vlakke gebieden (lage lokale variatie) worden gladgemaakt, textuur blijft
+    # flat areas (low local variation) are smoothed, texture is kept
     w = np.clip(1.3 - sd / (10 + 40 * s), 0, 1) * min(1.0, 0.5 + s)
     sm = blur(rgb, _px(1 + 2 * s, ctx))
     return with_rgb(a, rgb + (sm - rgb) * w[..., None])
 
 
-# ------------------------------------------------------------------ lenscorrectie
+# ------------------------------------------------------------------ lens correction
 
 
 def _radial(a, fn):

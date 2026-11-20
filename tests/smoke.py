@@ -1,13 +1,13 @@
-"""Rooktest zonder scherm: QT_QPA_PLATFORM=offscreen .venv/bin/python tests/smoke.py"""
+"""Smoke test without a screen: QT_QPA_PLATFORM=offscreen .venv/bin/python tests/smoke.py"""
 import os, sys, tempfile, time
-os.environ["XDG_CONFIG_HOME"] = tempfile.mkdtemp()  # echte instellingen niet aanraken
+os.environ["XDG_CONFIG_HOME"] = tempfile.mkdtemp()  # do not touch the real settings
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from PySide6.QtCore import QPointF, Qt, QEvent, QTimer, QRect
 from PySide6.QtGui import QMouseEvent, QColor, QImage
 from PySide6.QtWidgets import QApplication, QDialog, QMessageBox, QInputDialog
 app = QApplication(sys.argv)
 
-# dialoogvensters automatisch bevestigen
+# automatically confirm dialogs
 QDialog.exec = lambda self: (self.accept() if hasattr(self, "accept") else None) or 1
 QMessageBox.information = staticmethod(lambda *a, **k: None)
 QMessageBox.about = staticmethod(lambda *a, **k: None)
@@ -24,7 +24,7 @@ QInputDialog.getDouble = staticmethod(lambda *a, **k: (15.0, True))
 QInputDialog.getItem = staticmethod(lambda *a, **k: (a[3][0] if len(a) > 3 and a[3] else "", True))
 from PySide6.QtWidgets import QColorDialog
 QColorDialog.getColor = staticmethod(lambda *a, **k: QColor(10, 20, 30))
-os.environ["XDG_DATA_HOME"] = tempfile.mkdtemp()  # eigen penselen, vormen en lijsten in een tijdelijke map
+os.environ["XDG_DATA_HOME"] = tempfile.mkdtemp()  # own brushes, shapes and frames in a temporary folder
 
 from pixelpickle.mainwindow import MainWindow
 from pixelpickle.document import Document
@@ -52,7 +52,7 @@ def drag(tool, pts, **kw):
 
 T = w.tools
 t0 = time.time()
-# --- kernscenario met controles
+# --- core scenario with checks
 w.set_color(QColor(255, 0, 0))
 drag(T[0xd091], [P(20, 20), P(200, 150), P(380, 20)])
 assert doc.layers[0].image.pixelColor(110, 85) == QColor(255, 0, 0), doc.layers[0].image.pixelColor(110, 85).name()
@@ -62,12 +62,12 @@ w.set_color(QColor(0, 0, 255))
 drag(T[0xd0d1], [P(60, 60)])
 assert doc.layers[0].image.pixelColor(60, 60) == QColor(0, 0, 255)
 assert doc.layers[0].image.pixelColor(10, 200) == QColor(255, 255, 255)
-drag(T[0xd021], [P(60, 60), P(80, 70)])          # binnen selectie slepen = pixels verplaatsen
+drag(T[0xd021], [P(60, 60), P(80, 70)])          # drag inside selection = move pixels
 assert doc.selection_bbox().x() == 70, doc.selection_bbox()
-assert doc.layers[0].image.pixelColor(60, 55) == QColor(255, 255, 255)  # gat = achtergrondkleur
+assert doc.layers[0].image.pixelColor(60, 55) == QColor(255, 255, 255)  # hole = background color
 w.select_none()
 
-# --- nieuwe functies
+# --- new features
 lasso = T[0xd022]
 for typ in (1, 2, 3):
     w.opts["lasso_type"] = typ
@@ -82,10 +82,10 @@ w.opts["lasso_type"] = 0
 for mm in range(8):
     w.opts["match_mode"] = mm
     drag(T[0xd023], [P(300, 250)])
-    assert doc.sel is not None, f"toverstaf modus {mm}"
+    assert doc.sel is not None, f"magic wand mode {mm}"
     w.select_none()
 w.opts["match_mode"] = 1
-# alle mengmodi op een laag en op het penseel
+# all blend modes on a layer and on the brush
 from pixelpickle.document import BLEND_MODES, TOOL_BLEND_MODES
 doc.add_layer(); drag(T[0xd091], [P(20, 20), P(300, 200)])
 for i in range(len(BLEND_MODES)):
@@ -101,39 +101,39 @@ w.export_gif()
 from PIL import Image
 g = Image.open(os.path.join(_TMP, "export.gif")); assert g.format == "GIF"
 doc.layers[0].lock_alpha = True; drag(T[0xd0b0], [P(10, 10), P(50, 50)]); doc.layers[0].lock_alpha = False
-assert doc.layers[0].image.pixelColor(30, 30).alpha() == 255, "vergrendelde transparantie"
-drag(T[0xd011], [P(200, 150), P(220, 160)])   # selecteren: verplaatsen
+assert doc.layers[0].image.pixelColor(30, 30).alpha() == 255, "locked transparency"
+drag(T[0xd011], [P(200, 150), P(220, 160)])   # select: move
 w.layers.refresh(); w.select_tool(T[0xd091])
-# aanpassingslaag: helderheid/contrast, met masker
+# adjustment layer: brightness/contrast, with mask
 base_px = cv.cache.pixelColor(390, 290)
 w.new_adjustment_layer(0x8052)
 lay = doc.layer(); assert lay.adjust is not None
 lay.adjust = (0x8052, {"brightness": 120, "contrast": 0}); doc.changed.emit(QRect()); app.processEvents()
-assert cv.cache.pixelColor(390, 290).lightness() > base_px.lightness(), "aanpassingslaag werkt niet"
+assert cv.cache.pixelColor(390, 290).lightness() > base_px.lightness(), "adjustment layer does not work"
 from pixelpickle.document import new_image as _ni
 lay.image = _ni(doc.w, doc.h, QColor(0, 0, 0)); doc.changed.emit(QRect()); app.processEvents()
-assert cv.cache.pixelColor(390, 290) == base_px, "zwart masker moet effect verbergen"
+assert cv.cache.pixelColor(390, 290) == base_px, "black mask must hide the effect"
 fileio.save(doc, os.path.join(_TMP, "adj.ora")); assert [l.adjust[0] for l in fileio.load(os.path.join(_TMP, "adj.ora")).layers if l.adjust] == [0x8052]
 w.layer_properties(); doc.delete_layer()
-# koppelingsset
+# link set
 doc.add_layer(); a1 = doc.layer(); a1.link_set = 1; doc.add_layer(); a2 = doc.layer(); a2.link_set = 1
 from pixelpickle.document import new_image as ni
 a1.image = ni(doc.w, doc.h); a1.image.setPixelColor(5, 5, QColor(255, 0, 0))
 drag(T[0xd012], [P(100, 100), P(110, 100)])
-assert a1.image.pixelColor(15, 5) == QColor(255, 0, 0), "gekoppelde laag beweegt niet mee"
+assert a1.image.pixelColor(15, 5) == QColor(255, 0, 0), "linked layer does not move along"
 w.new_raster_layer()
 
-# --- voorinstellingen
+# --- presets
 from pixelpickle.effectdialog import EffectDialog
 ed = EffectDialog(w, doc, w.effects[0x8091])
 psp_items = [ed.presets.itemText(i) for i in range(ed.presets.count()) if "(geïmporteerd)" in ed.presets.itemText(i)]
-print("PSP voorinstellingen Spiraal:", psp_items[:3])
+print("PSP presets Spiral:", psp_items[:3])
 if psp_items:
     ed._load_preset([ed.presets.itemText(i) for i in range(ed.presets.count())].index(psp_items[0]))
 ed.reject()
 w.select_tool(T[0xd091]); w._apply_tool_preset(T[0xd091], {"size": 77}); assert w.opts["size"] == 77
 
-# --- elk gereedschap met links en rechts slepen
+# --- every tool with left and right drag
 errors = []
 line = [P(100, 100), P(140, 120), P(180, 160), P(220, 150)]
 T[0xd081].source = None
@@ -147,11 +147,11 @@ for cid, tool in [(c, t) for c, t in T.items() if t.available]:
         except Exception as e:
             import traceback; traceback.print_exc()
             errors.append((tool.name, repr(e)))
-print("gereedschappen getest:", len(T), "fouten:", errors)
+print("tools tested:", len(T), "errors:", errors)
 
-# --- elke menuopdracht met een functie
-# overslaan: sluiten/openen/opslaan, en opdrachten met gevolgen buiten de test (afdrukken naar de echte printer,
-# een schermopname met het programma van het bureaublad, een bestand naar de prullenbak, voorkeuren wissen)
+# --- every menu command with a function
+# skip: close/open/save, and commands with consequences outside the test (printing to the real printer,
+# a screen capture with the desktop program, a file to the trash, clearing preferences)
 skip = {0xe141, 0xe102, 0x80d3, 0x801d, 0xe101, 0xe104, 0xe10b, 0xe103,
         0x82ec, 0x812e, 0x80e1, 0x80d6, 0x8204}
 doc.add_layer(); w.select_all()
@@ -166,9 +166,9 @@ for cid, fn in H.items():
     except Exception as e:
         import traceback; traceback.print_exc()
         failed.append((hex(cid), repr(e)))
-print("menuopdrachten getest:", len(H) - len(skip), "fouten:", failed)
+print("menu commands tested:", len(H) - len(skip), "errors:", failed)
 n_menu = len(w.actions_by_id)
-print(f"menu-items getoond: {n_menu}, nog verborgen (niet gebouwd): {w.hidden_menu_items}")
+print(f"menu items shown: {n_menu}, still hidden (not built): {w.hidden_menu_items}")
 assert not any(not a.isEnabled() and a.property("unavailable") for a in w.actions_by_id.values())
 
 cv = w.canvas(); doc = cv.doc
@@ -178,7 +178,7 @@ assert len(d2.layers) == len(doc.layers)
 for ext in ("png", "jpg", "tif", "bmp", "webp"):
     fileio.save(doc, f"{d}/t.{ext}"); assert fileio.load(f"{d}/t.{ext}").w == doc.w
 w.grab().save(d + "/window.png")
-print("OK" if not errors and not failed else "FOUTEN", "in", round(time.time() - t0, 2), "s;", d)
+print("OK" if not errors and not failed else "ERRORS", "in", round(time.time() - t0, 2), "s;", d)
 for s in list(w.mdi.subWindowList()): s.canvas.doc.set_modified(False)
 w.close()
 sys.exit(1 if errors or failed else 0)

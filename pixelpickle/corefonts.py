@@ -1,9 +1,9 @@
-"""Microsoft-kernlettertypen (Arial, Times New Roman, Courier New, Verdana, Georgia, Trebuchet MS, Comic Sans MS,
-Impact, Webdings, Andale Mono) downloaden en installeren in de eigen lettertypemap van de gebruiker.
+"""Microsoft core fonts (Arial, Times New Roman, Courier New, Verdana, Georgia, Trebuchet MS, Comic Sans MS,
+Impact, Webdings, Andale Mono): download and install into the user's own font folder.
 
-Ze mogen niet met PixelPickle worden meegeleverd, maar de gebruiker mag de originele installatiebestanden zelf
-bij de bron ophalen (zoals ttf-mscorefonts-installer op Debian doet). Uitpakken gaat met cabextract of 7z;
-daarna worden ze meteen in PixelPickle bruikbaar gemaakt (zonder herstart)."""
+They may not be shipped with PixelPickle, but users may fetch the original installation files from the source
+themselves (as ttf-mscorefonts-installer does on Debian). Extraction uses cabextract or 7z;
+afterwards the fonts are made available in PixelPickle immediately (no restart)."""
 import glob
 import os
 import shutil
@@ -25,14 +25,14 @@ def target_dir():
 
 
 def installed():
-    """Zijn de kernlettertypen al beschikbaar (ergens op het systeem)?"""
+    """Are the core fonts already available (anywhere on the system)?"""
     from PySide6.QtGui import QFontDatabase
     fams = set(QFontDatabase.families())
     return all(f in fams for f in ("Arial", "Times New Roman", "Courier New", "Verdana"))
 
 
 def extractor():
-    """Programma om de installatiebestanden uit te pakken, of None."""
+    """Program to extract the installation files, or None."""
     for name in ("cabextract", "7z", "7za", "bsdtar"):
         if shutil.which(name):
             return name
@@ -50,7 +50,7 @@ def _extract(tool, exe, dest):
 
 
 class Installer:
-    """Download en installatie op de achtergrond. Volg de voortgang met done, step, total, error en result."""
+    """Download and install in the background. Follow progress with done, step, total, error and result."""
 
     def __init__(self):
         self.step, self.total = 0, len(FILES) + 1
@@ -80,7 +80,7 @@ class Installer:
                     shutil.copyfileobj(r, f)
                 _extract(tool, exe, dest)
                 self.step += 1
-            for f in glob.glob(os.path.join(dest, "*.TTF")):  # kleine letters, zoals gebruikelijk
+            for f in glob.glob(os.path.join(dest, "*.TTF")):  # lowercase, as is usual
                 os.replace(f, f[:-4] + ".ttf")
             if shutil.which("fc-cache"):
                 subprocess.run(["fc-cache", "-f", dest], check=False, capture_output=True, timeout=120)
@@ -88,7 +88,7 @@ class Installer:
             if not self.result:
                 self.error = "empty"
             self.step = self.total
-        except OSError as e:  # geen internet, schrijffout...
+        except OSError as e:  # no internet, write error...
             self.error = str(e)
         finally:
             shutil.rmtree(work, ignore_errors=True)
@@ -96,7 +96,7 @@ class Installer:
 
 
 def register(paths):
-    """Nieuwe lettertypen meteen in PixelPickle bruikbaar maken (zonder herstart)."""
+    """Make new fonts available in PixelPickle immediately (no restart)."""
     from PySide6.QtGui import QFontDatabase
     n = 0
     for p in paths:

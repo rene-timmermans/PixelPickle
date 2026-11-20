@@ -1,4 +1,4 @@
-"""Rand-, belichtings-, foto- en textuureffecten en het eigen filter (benaderingen van PSP XI)."""
+"""Edge, lighting, photo and texture effects and the user filter (compatible with the effects in Paint Shop Pro XI)."""
 import math
 
 import numpy as np
@@ -7,7 +7,7 @@ from . import Bool, Choice, Color, Int, effect
 from .common import blur, convolve, gray, grid, hsl_to_rgb, noise, rgb_to_hsl, sobel, to_u8, with_rgb, remap
 
 
-# ---------------------------------------------------------------- hulpfuncties
+# ---------------------------------------------------------------- helpers
 
 def _rgb(a):
     return a[..., :3].astype(np.float32)
@@ -24,7 +24,7 @@ def _px(v, ctx, lo=0.0):
 
 
 def _shift_stack(x):
-    """De 9 verschoven versies (3x3 omgeving) van x met herhaalde randen."""
+    """The 9 shifted versions (3x3 neighborhood) of x with repeated edges."""
     h, w = x.shape[:2]
     pad = ((1, 1), (1, 1)) + (((0, 0),) if x.ndim == 3 else ())
     p = np.pad(x, pad, mode="edge")
@@ -59,7 +59,7 @@ def _table(seed):
 
 
 def vnoise(x, y, seed=1):
-    """Waarderuis 0..1 op willekeurige (float) coördinaten; periode 256 roostercellen."""
+    """Value noise 0..1 at arbitrary (float) coordinates; period of 256 grid cells."""
     t = _table(seed)
     x0 = np.floor(x)
     y0 = np.floor(y)
@@ -77,7 +77,7 @@ def vnoise(x, y, seed=1):
 
 
 def fbm(x, y, seed=1, octaves=4, gain=0.5):
-    """Fractale ruis 0..1."""
+    """Fractal noise 0..1."""
     tot, amp, norm = 0.0, 1.0, 0.0
     for o in range(octaves):
         f = 2.0 ** o
@@ -88,7 +88,7 @@ def fbm(x, y, seed=1, octaves=4, gain=0.5):
 
 
 def _coords(h, w, scale, angle=0.0, stretch=1.0):
-    """Gedraaide/uitgerekte coördinaten gedeeld door scale (korrelgrootte in pixels)."""
+    """Rotated/stretched coordinates divided by scale (grain size in pixels)."""
     yy, xx = grid(h, w)
     s = max(scale, 0.3)
     if angle:
@@ -98,13 +98,13 @@ def _coords(h, w, scale, angle=0.0, stretch=1.0):
 
 
 def _light_vec(angle, elevation):
-    """angle: richting van de lichtbron (0 = boven, met de klok mee), elevation in graden."""
+    """angle: direction of the light source (0 = top, clockwise), elevation in degrees."""
     az, el = math.radians(angle), math.radians(max(1.0, min(90.0, elevation)))
     return np.array([math.sin(az) * math.cos(el), -math.cos(az) * math.cos(el), math.sin(el)], np.float32)
 
 
 def lighting(height, angle, elevation=45, depth=1.0, shininess=0.0):
-    """Belichting van een hoogteveld. Geeft (diffuus genormaliseerd zodat vlak = 1, glans 0..1)."""
+    """Lighting of a height field. Returns (diffuse normalized so that flat = 1, gloss 0..1)."""
     gx, gy = sobel(height)
     k = depth / 8.0
     nx, ny = -gx * k, -gy * k
@@ -125,7 +125,7 @@ def lighting(height, angle, elevation=45, depth=1.0, shininess=0.0):
 
 
 def _compose(rgb, diff, spec, color, ambience=0, intensity=50):
-    """rgb * (ambient + licht) + glans."""
+    """rgb * (ambient + light) + gloss."""
     amb = 0.6 + ambience / 100.0 * 0.6
     lit = amb + intensity / 100.0 * 0.8 * diff
     out = rgb * (lit[..., None] * (color / 255.0))
@@ -135,7 +135,7 @@ def _compose(rgb, diff, spec, color, ambience=0, intensity=50):
 
 
 def _tone(g, stops):
-    """g 0..1 -> kleur via kleurstops [(pos, (r,g,b)), ...]."""
+    """g 0..1 -> color via color stops [(pos, (r,g,b)), ...]."""
     pos = [s[0] for s in stops]
     return np.stack([np.interp(g, pos, [s[1][c] for s in stops]) for c in range(3)], axis=-1).astype(np.float32)
 
@@ -158,7 +158,7 @@ def _lum_keep(rgb, ref_gray):
 
 
 def _lic(seed_field, theta, length, steps=12, mode="max"):
-    """Strepen trekken langs richtingsveld theta (lijnintegraalconvolutie, gevectoriseerd)."""
+    """Draw streaks along direction field theta (line integral convolution, vectorized)."""
     h, w = seed_field.shape
     yy, xx = np.mgrid[0:h, 0:w]
     dx, dy = np.cos(theta), np.sin(theta)
@@ -176,7 +176,7 @@ def _lic(seed_field, theta, length, steps=12, mode="max"):
     return acc if mode == "max" else acc / (n + 1)
 
 
-# ================================================================ Randeffecten
+# ================================================================ Edge effects
 
 @effect(0x808b, "Rembrandtiek licht")
 def dilate(a, ctx):
@@ -243,7 +243,7 @@ def trace_contour(a, ctx):
     return with_rgb(a, np.where(edge, 0, 255))
 
 
-# ================================================================ Belichtingseffecten
+# ================================================================ Lighting effects
 
 def _spot_params(i, on, x, y, d, col):
     return [Bool(f"on{i}", f"Lamp {i} aan", on), Color(f"color{i}", f"Lamp {i} kleur", col),
@@ -272,7 +272,7 @@ def lights(a, ctx, darkness, on1, color1, x1, y1, dir1, cone1, int1, on2, color2
         c0 = math.cos(math.radians(cone))
         c1 = math.cos(math.radians(cone * 0.55))
         f = _smoothstep(c0, c1, cosang)
-        near = np.exp(-(dist / (0.03 * diag + 1)) ** 2)  # gloed bij de bron
+        near = np.exp(-(dist / (0.03 * diag + 1)) ** 2)  # glow near the source
         fall = np.exp(-(dist / (0.85 * diag)) ** 2)
         k = (inten / 100) * 1.6 * np.maximum(f * fall, near * 0.6)
         total += k[..., None] * (_col(col, ctx) / 255)
@@ -300,7 +300,7 @@ def sunburst(a, ctx, color, x, y, bright, rays, raybright, circles):
     fr = ang - np.floor(ang)
     rayv = tab[i0] * (1 - fr) + tab[i0 + 1] * fr
     light = light + (raybright / 100) * 0.9 * rayv * np.exp(-r / 0.25) * (1 - np.exp(-(r / 0.02) ** 2))
-    # halo's langs de lijn van de bron door het midden
+    # halos along the line from the source through the center
     cx, cy = (w - 1) / 2, (h - 1) / 2
     for t, rad, s in ((0.4, 0.03, 0.5), (0.7, 0.012, 0.8), (1.25, 0.05, 0.35), (1.6, 0.025, 0.6), (1.9, 0.08, 0.25)):
         hx, hy = px + (cx - px) * t, py + (cy - py) * t
@@ -310,11 +310,11 @@ def sunburst(a, ctx, color, x, y, bright, rays, raybright, circles):
     col = _col(color, ctx) / 255
     rgb = _rgb(a) / 255
     add = np.clip(light, 0, 2)[..., None] * col
-    out = 1 - (1 - rgb) * np.clip(1 - add, 0, 1)  # schermen
+    out = 1 - (1 - rgb) * np.clip(1 - add, 0, 1)  # screen
     return with_rgb(a, out * 255)
 
 
-# ================================================================ Foto-effecten
+# ================================================================ Photo effects
 
 _ERAS = ["Daguerreotypie", "Albuminedruk", "Cyanotypie", "Platinadruk", "Vroege kleurenfoto", "Box camera",
          "Cross processing"]
@@ -475,7 +475,7 @@ def sepia(a, ctx, amount):
     return with_rgb(a, out)
 
 
-# ================================================================ Textuureffecten
+# ================================================================ Texture effects
 
 @effect(0x80a5, "Lamellen", [Int("width", "Breedte", 2, 100, 10), Int("opacity", "Dekking", 0, 100, 50),
                              Color("color", "Kleur", (0, 0, 0)), Bool("horizontal", "Horizontaal", False),
@@ -694,19 +694,19 @@ def _pattern(h, w, kind, sc, seed):
 
 
 def _material_patterns():
-    """De eigen naadloze patronen uit Materialen (vaste lijst, vertaald)."""
+    """The own seamless patterns from Materialen (fixed list, translated)."""
     from .. import material
     return list(material.PATTERNS)
 
 
 def _installed_patterns():
-    """Patronen uit een eigen installatie of de map Patronen van de gebruiker (alleen ingelezen bij gebruik)."""
+    """Patterns from a user's own installation or the user's Patronen folder (only read at runtime)."""
     from .. import material
     return [n for n, _ in material.psp_patterns()]
 
 
 def _tiled_pattern(name, h, w, size, ctx):
-    """Patroon uit Materialen of een eigen installatie, getegeld over h x w, als RGB (float)."""
+    """Pattern from Materialen or a user's own installation, tiled over h x w, as RGB (float)."""
     from PySide6.QtCore import QRect
     from .. import material, imageops as ops
     img = material.pattern_image(name)
@@ -718,7 +718,7 @@ def _tiled_pattern(name, h, w, size, ctx):
 
 
 def _pattern_by_index(i, h, w, size, ctx):
-    """Kleurpatroon nummer i: eerst de eigen sculptuurpatronen, dan Materialen, dan een eigen installatie."""
+    """Color pattern number i: first the own sculpture patterns, then Materialen, then a user's own installation."""
     if i < len(_PATTERNS):
         return _pattern(h, w, i, _px(40 * size / 100, ctx, 1), ctx.seed)
     names = _material_patterns() + _installed_patterns()
@@ -809,7 +809,7 @@ def texture(a, ctx, texture, size, smooth, depth, ambience, shine, color, angle,
     h, w = a.shape[:2]
     if texture < len(_TEXTURES):
         tex = _texture(h, w, texture, _px(24 * size / 100, ctx, 1), ctx.seed) * 255
-    else:  # patroon uit Materialen of een eigen installatie: de helderheid wordt het reliëf
+    else:  # pattern from Materialen or a user's own installation: the brightness becomes the relief
         names = _material_patterns() + _installed_patterns()
         k = texture - len(_TEXTURES)
         rgb = _tiled_pattern(names[min(k, len(names) - 1)], h, w, size, ctx)
@@ -820,13 +820,13 @@ def texture(a, ctx, texture, size, smooth, depth, ambience, shine, color, angle,
 
 
 def _tile_dist(h, w, shape, s):
-    """Afstand (pixels) tot de rand van de tegel en tegel-id."""
+    """Distance (pixels) to the edge of the tile and tile id."""
     yy, xx = grid(h, w)
-    if shape == 1:  # vierkant
+    if shape == 1:  # square
         u, v = xx / s, yy / s
         fu, fv = u - np.floor(u), v - np.floor(v)
         return np.minimum(np.minimum(fu, 1 - fu), np.minimum(fv, 1 - fv)) * s
-    if shape == 0:  # driehoek: drie lijnfamilies onder 60 graden
+    if shape == 0:  # triangle: three line families at 60 degrees
         hh = s * math.sqrt(3) / 2
         d = None
         for ang in (90, 30, 150):
@@ -836,7 +836,7 @@ def _tile_dist(h, w, shape, s):
             dd = np.minimum(f, 1 - f) * hh
             d = dd if d is None else np.minimum(d, dd)
         return d
-    # zeshoek (puntige bovenkant) via kubuscoördinaten
+    # hexagon (pointy top) via cube coordinates
     size = s / math.sqrt(3)
     q = (math.sqrt(3) / 3 * xx - yy / 3) / size
     r = (2 / 3 * yy) / size
@@ -887,12 +887,12 @@ def weave(a, ctx, gap, width, opacity, weave, gapcol, fill):
     per = wd + gp
     yy, xx = grid(h, w)
     ux, uy = np.mod(xx, per), np.mod(yy, per)
-    inv = ux < wd  # verticale draad
-    inh = uy < wd  # horizontale draad
+    inv = ux < wd  # vertical thread
+    inh = uy < wd  # horizontal thread
     cell = (np.floor(xx / per) + np.floor(yy / per)).astype(np.int64) % 2 == 0
     prof_v = np.sin(np.clip(ux / wd, 0, 1) * np.pi)
     prof_h = np.sin(np.clip(uy / wd, 0, 1) * np.pi)
-    # langs de draad: donkerder waar hij onder de andere duikt
+    # along the thread: darker where it dips under the other
     along_v = np.sin(np.clip(uy / per, 0, 1) * np.pi)
     along_h = np.sin(np.clip(ux / per, 0, 1) * np.pi)
     vert_on_top = np.where(inv & inh, cell, inv)
@@ -907,7 +907,7 @@ def weave(a, ctx, gap, width, opacity, weave, gapcol, fill):
     return with_rgb(a, out)
 
 
-# ================================================================ Eigen filter
+# ================================================================ User filter
 
 _KP = [Int(f"k{r}{c}", f"Rij {r + 1} kol {c + 1}", -100, 100, 1 if (r, c) == (2, 2) else 0)
        for r in range(5) for c in range(5)]

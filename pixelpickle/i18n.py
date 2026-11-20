@@ -1,11 +1,11 @@
-"""Talen. Nederlands is de brontaal; voor Engels staat er een catalogus in data/lang_en.json
-({Nederlandse tekst: Engelse tekst}). Teksten met wisselende delen staan erin als patroon met {}:
-"Opgeslagen: {}" -> "Saved: {}". De wisselende delen worden zelf ook vertaald (recursief).
+"""Languages. Dutch is the source language; for English there is a catalog in data/lang_en.json
+({Dutch text: English text}). Texts with variable parts are stored as a pattern with {}:
+"Opgeslagen: {}" -> "Saved: {}". The variable parts are translated too (recursively).
 
-Vertalen gebeurt op twee manieren:
-- tr(tekst) in de code;
-- automatisch voor alles wat op het scherm verschijnt (vensters, menu's, knoppen, keuzelijsten,
-  tooltips, statusbalk), via een gebeurtenisfilter op de applicatie."""
+Translation happens in two ways:
+- tr(text) in the code;
+- automatically for everything that appears on screen (windows, menus, buttons, drop-down lists,
+  tooltips, status bar), via an event filter on the application."""
 import json
 import os
 import re
@@ -14,13 +14,13 @@ from PySide6.QtCore import QEvent, QObject, QSettings
 from PySide6.QtWidgets import (QAbstractButton, QComboBox, QDockWidget, QGroupBox, QLabel, QLineEdit, QMenu,
                                QMenuBar, QTabBar, QTabWidget, QToolBar, QWidget)
 
-# taalnamen in hun eigen taal; Engels is de standaard bij de eerste start
+# language names in their own language; English is the default at first start
 LANGUAGES = [("en", "English"), ("nl", "Nederlands"), ("de", "Deutsch"), ("fr", "Français"), ("es", "Español"),
              ("it", "Italiano"), ("ru", "Русский"), ("zh", "中文（简体）"), ("ar", "العربية")]
-RTL = {"ar"}  # talen die van rechts naar links lopen
+RTL = {"ar"}  # languages that run right to left
 _lang = "nl"
 _exact = {}
-_patterns = []  # [(regex, engels sjabloon, aantal delen)]
+_patterns = []  # [(regex, English template, number of parts)]
 
 
 def setting():
@@ -28,7 +28,7 @@ def setting():
 
 
 def load(lang=None):
-    """Kies de taal: de opgeslagen voorkeur, anders Engels (standaard bij de eerste start)."""
+    """Choose the language: the saved preference, otherwise English (default at first start)."""
     global _lang, _exact, _patterns
     if lang is None:
         lang = setting() or "en"
@@ -38,7 +38,7 @@ def load(lang=None):
         return _lang
     folder = os.path.join(os.path.dirname(__file__), "data")
     cat = {}
-    # Engels als vangnet: een tekst die in een andere vertaling (nog) ontbreekt, verschijnt in het Engels
+    # English as a fallback: a text that is (still) missing in another translation appears in English
     for code in (["en"] if _lang != "en" else []) + [_lang]:
         try:
             with open(os.path.join(folder, f"lang_{code}.json"), encoding="utf-8") as f:
@@ -55,7 +55,7 @@ def load(lang=None):
             _patterns.append((re.compile(rx, re.S), other, nl.count("{}")))
         else:
             _exact[nl] = other
-    # langere (specifiekere) patronen eerst
+    # longer (more specific) patterns first
     _patterns.sort(key=lambda t: -len(t[0].pattern))
     return _lang
 
@@ -74,7 +74,7 @@ def tr(text, _depth=0):
     hit = _exact.get(text)
     if hit is not None:
         return hit
-    # menu-items met '&' of afsluitende '...' / ':' ook zonder die tekens proberen
+    # also try menu items without '&' or a trailing '...' / ':'
     plain = text.replace("&", "")
     if plain != text and plain in _exact:
         return _exact[plain]
@@ -87,7 +87,7 @@ def tr(text, _depth=0):
                     return other.format(*parts)
                 except (IndexError, ValueError):
                     return text
-        if "\n" in text:  # meerregelige teksten per regel
+        if "\n" in text:  # multi-line texts per line
             lines = text.split("\n")
             out = [tr(l, _depth + 1) for l in lines]
             if out != lines:
@@ -106,7 +106,7 @@ def _set(obj, getter, setter):
 
 
 def translate_widget(w):
-    """Vertaal één widget (niet de kinderen)."""
+    """Translate a single widget (not its children)."""
     if w.property("pp_notr"):
         return
     _set(w, "windowTitle", "setWindowTitle")
@@ -149,14 +149,14 @@ def translate_tree(w):
     for c in [w] + w.findChildren(QWidget):
         try:
             translate_widget(c)
-        except RuntimeError:  # onderdeel is intussen door Qt opgeruimd
+        except RuntimeError:  # widget has meanwhile been cleaned up by Qt
             continue
 
 
 class _Filter(QObject):
-    """Vertaalt wat verschijnt. Vertalen kan zelf weer iets laten verschijnen (bijvoorbeeld een
-    menu); daarom niet opnieuw beginnen terwijl er al vertaald wordt. Een fout bij het vertalen
-    mag het programma nooit laten stoppen."""
+    """Translates what appears. Translating can itself make something appear (for example a
+    menu); so do not start again while a translation is already running. An error while translating
+    must never stop the program."""
     busy = False
 
     def eventFilter(self, obj, ev):
@@ -172,7 +172,7 @@ class _Filter(QObject):
                     translate_tree(obj)
                 else:
                     translate_widget(obj)
-        except Exception:  # o.a. een onderdeel dat Qt al heeft opgeruimd
+        except Exception:  # e.g. a widget that Qt has already cleaned up
             pass
         finally:
             _Filter.busy = False
@@ -183,7 +183,7 @@ _filter = None
 
 
 def install(app):
-    """Automatisch vertalen van alles wat verschijnt (alleen nodig als de taal niet Nederlands is)."""
+    """Automatically translate everything that appears (only needed when the language is not Dutch)."""
     global _filter
     if _lang == "nl" or _filter is not None:
         return

@@ -1,13 +1,13 @@
-"""Bewerkingen op de paden van de Pen (en op opgepakte vectorobjecten): het snelmenu Bewerken,
-Knooppunttype en Geselecteerde knooppunten transformeren.
+"""Operations on the Pen's paths (and on picked-up vector objects): the Edit context menu,
+Node type and Transform selected nodes.
 
-Een pad is {"nodes": [[punt, in, uit], ...], "closed": bool, "types": {index: type}}; punten zijn QPointF,
-'in' en 'uit' de handvatten (of None). Een selectie is een verzameling (pad, knooppunt).
-Knooppunttypen (zoals PSP):
-  "sym"    symmetrisch: handvatten op één lijn en even lang
-  "asym"   asymmetrisch: handvatten op één lijn, eigen lengte
-  "cusp"   punt: handvatten onafhankelijk (een scherpe knik)
-  "smooth" glad/raaklijn: vloeiende overgang, ook tussen een rechte lijn en een kromme"""
+A path is {"nodes": [[point, in, out], ...], "closed": bool, "types": {index: type}}; points are QPointF,
+'in' and 'out' are the handles (or None). A selection is a set of (path, node).
+Node types:
+  "sym"    symmetric: handles on one line and of equal length
+  "asym"   asymmetric: handles on one line, own length
+  "cusp"   corner: handles independent (a sharp kink)
+  "smooth" smooth/tangent: flowing transition, also between a straight line and a curve"""
 import math
 
 from PySide6.QtCore import QPointF, QRectF
@@ -30,7 +30,7 @@ def clone_paths(paths):
 
 
 def infer_type(node):
-    """Type van een knooppunt uit de stand van de handvatten (voor paden zonder opgeslagen type)."""
+    """Type of a node from the position of the handles (for paths without a stored type)."""
     pt, a, b = node[0], node[1], node[2]
     if a is None or b is None:
         return "cusp" if (a is not None or b is not None) else "smooth"
@@ -56,7 +56,7 @@ def neighbours(path, ni):
 
 
 def set_type(path, ni, t):
-    """Knooppunttype instellen en de handvatten daarop aanpassen."""
+    """Set the node type and adjust the handles accordingly."""
     node = path["nodes"][ni]
     path.setdefault("types", {})[ni] = t
     pt = node[0]
@@ -64,7 +64,7 @@ def set_type(path, ni, t):
         return
     prev, nxt = neighbours(path, ni)
     if node[1] is None and node[2] is None or t == "smooth":
-        # handvatten maken (of bijwerken) in de richting van de buren
+        # create (or update) handles in the direction of the neighbors
         a = prev[0] if prev is not None else pt
         b = nxt[0] if nxt is not None else pt
         d = b - a
@@ -82,8 +82,8 @@ def set_type(path, ni, t):
     b = node[2] if node[2] is not None else pt
     va, vb = a - pt, b - pt
     la, lb = _len(va), _len(vb)
-    la, lb = (la or lb), (lb or la)  # één handvat: het andere krijgt dezelfde lengte
-    # gemeenschappelijke richting: van het in-handvat naar het uit-handvat
+    la, lb = (la or lb), (lb or la)  # one handle: the other gets the same length
+    # common direction: from the in handle to the out handle
     d = vb - va
     ln = _len(d) or 1.0
     u = QPointF(d.x() / ln, d.y() / ln)
@@ -94,7 +94,7 @@ def set_type(path, ni, t):
 
 
 def drag_handle(path, ni, k, new_pos):
-    """Handvat k (1 in, 2 uit) verplaatsen; het andere handvat volgt volgens het knooppunttype."""
+    """Move handle k (1 in, 2 out); the other handle follows according to the node type."""
     node = path["nodes"][ni]
     node[k] = QPointF(new_pos)
     other = 2 if k == 1 else 1
@@ -109,7 +109,7 @@ def drag_handle(path, ni, k, new_pos):
     node[other] = node[0] - QPointF(v.x() / ln, v.y() / ln) * length
 
 
-# ---------------------------------------------------------------- segmenten
+# ---------------------------------------------------------------- segments
 def line_before(path, ni):
     prev, _ = neighbours(path, ni)
     if prev is None:
@@ -155,7 +155,7 @@ def to_line(path, ni):
     line_after(path, ni)
 
 
-# ---------------------------------------------------------------- paden
+# ---------------------------------------------------------------- paths
 def reverse_contour(path):
     path["nodes"] = [[n[0], n[2], n[1]] for n in reversed(path["nodes"])]
     k = len(path["nodes"]) - 1
@@ -167,8 +167,8 @@ def is_end(path, ni):
 
 
 def join(paths, a, b):
-    """Twee eindpunten verbinden met een recht stuk. Zelfde pad: sluiten; twee paden: één pad maken.
-    Geeft de nieuwe lijst paden terug, of None als het niet kan."""
+    """Join two endpoints with a straight piece. Same path: close it; two paths: make one path.
+    Returns the new list of paths, or None if it is not possible."""
     (pa, na), (pb, nb) = a, b
     if not (is_end(paths[pa], na) and is_end(paths[pb], nb)):
         return None
@@ -178,9 +178,9 @@ def join(paths, a, b):
         paths[pa]["closed"] = True
         return paths
     first, second = paths[pa], paths[pb]
-    if na == 0:  # het eerste pad moet eindigen bij het verbindingspunt
+    if na == 0:  # the first path must end at the join point
         reverse_contour(first)
-    if nb != 0:  # het tweede pad moet beginnen bij het verbindingspunt
+    if nb != 0:  # the second path must start at the join point
         reverse_contour(second)
     off = len(first["nodes"])
     joined = {"nodes": first["nodes"] + second["nodes"], "closed": False,
@@ -190,8 +190,8 @@ def join(paths, a, b):
 
 
 def merge(paths, a, b):
-    """Twee eindpunten samenvoegen tot één knooppunt halverwege. Zelfde pad: het pad sluit zich;
-    twee paden: ze worden één pad. Geeft de nieuwe lijst paden terug, of None als het niet kan."""
+    """Merge two endpoints into one node halfway. Same path: the path closes; two paths: they become
+    one path. Returns the new list of paths, or None if it is not possible."""
     (pa, na), (pb, nb) = a, b
     if not (is_end(paths[pa], na) and is_end(paths[pb], nb)) or (pa == pb and na == nb):
         return None
@@ -211,7 +211,7 @@ def merge(paths, a, b):
     if out is None:
         return None
     joined = out[min(pa, pb)]
-    k = first_len - 1  # laatste punt van het eerste deel; het volgende is het begin van het tweede
+    k = first_len - 1  # last point of the first part; the next one is the start of the second
     n1, n2 = joined["nodes"][k], joined["nodes"][k + 1]
     n1[0] = mid
     n1[2] = n2[2]
@@ -221,7 +221,7 @@ def merge(paths, a, b):
 
 
 def break_at(paths, pi, ni):
-    """Pad onderbreken bij een knooppunt: een gesloten pad wordt open, een open pad wordt twee paden."""
+    """Break a path at a node: a closed path becomes open, an open path becomes two paths."""
     p = paths[pi]
     n = p["nodes"]
     if p["closed"]:
@@ -232,7 +232,7 @@ def break_at(paths, pi, ni):
         p["nodes"], p["closed"], p["types"] = n2, False, {}
         return paths
     if ni in (0, len(n) - 1):
-        return paths  # al een eindpunt
+        return paths  # already an endpoint
     a = {"nodes": n[:ni + 1], "closed": False, "types": {}}
     copy_node = n[ni]
     b = {"nodes": [[QPointF(copy_node[0]), None, copy_node[2]]] + n[ni + 1:], "closed": False, "types": {}}
@@ -241,7 +241,7 @@ def break_at(paths, pi, ni):
 
 
 def duplicate(paths, pis, offset=QPointF(0, 0)):
-    """Kopieën van de paden pis achteraan toevoegen (met een verschuiving)."""
+    """Append copies of paths pis at the end (with an offset)."""
     new = clone_paths([paths[i] for i in sorted(set(pis))])
     for p in new:
         for node in p["nodes"]:
@@ -251,7 +251,7 @@ def duplicate(paths, pis, offset=QPointF(0, 0)):
     return paths + new, list(range(len(paths), len(paths) + len(new)))
 
 
-# ---------------------------------------------------------------- transformeren
+# ---------------------------------------------------------------- transformations
 def selection_rect(paths, sel):
     pts = [paths[pi]["nodes"][ni][0] for pi, ni in sel]
     if not pts:
@@ -261,7 +261,7 @@ def selection_rect(paths, sel):
 
 
 def transform_nodes(paths, sel, t: QTransform):
-    """Geselecteerde knooppunten (met hun handvatten) door t halen, rond het midden van de selectie."""
+    """Transform selected nodes (with their handles) by t, around the center of the selection."""
     if not sel:
         return
     c = selection_rect(paths, sel).center()
@@ -274,7 +274,7 @@ def transform_nodes(paths, sel, t: QTransform):
 
 
 def transforms():
-    """De transformaties van het menu: naam -> QTransform (rond het midden)."""
+    """The menu's transformations: name -> QTransform (around the center)."""
     return {
         "flip": QTransform.fromScale(1, -1),
         "mirror": QTransform.fromScale(-1, 1),

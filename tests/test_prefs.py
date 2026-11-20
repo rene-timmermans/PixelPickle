@@ -1,4 +1,4 @@
-"""Algemene programmavoorkeuren (taal, transparantie en arcering, lettertypen) en de schuifbalken rond de afbeelding:
+"""General program preferences (language, transparency and hatching, fonts) and the scrollbars around the image:
 QT_QPA_PLATFORM=offscreen .venv/bin/python tests/test_prefs.py"""
 import os
 import sys
@@ -19,7 +19,7 @@ from pixelpickle.mainwindow import MainWindow  # noqa: E402
 w = MainWindow(); w.resize(900, 700); w.show()
 d = Document(2000, 1500, QColor(255, 255, 255)); sw = w.add_document(d); cv = sw.canvas; app.processEvents()
 view = sw.widget()
-# schuifbalken: passend in het venster geen balken; op 100% wel, en ze verschuiven het beeld
+# scrollbars: fitting in the window no bars; at 100% yes, and they move the image
 cv.fit(); cv.repaint(); app.processEvents()
 assert not view.hbar.isVisible() and not view.vbar.isVisible()
 cv.actual_size(); cv.repaint(); app.processEvents()
@@ -29,8 +29,8 @@ view.hbar.setValue(300); app.processEvents()
 assert round(-cv.ox) == 300 and not cv._auto
 cv.ox = -500; cv.repaint(); app.processEvents()
 assert view.hbar.value() == 500
-print("1 schuifbalken: verborgen als het past, zichtbaar op 100%, en ze lopen mee in beide richtingen")
-# voorkeurenvenster: pagina's, ruitjespatroon en arcering bewaren
+print("1 scrollbars: hidden when it fits, visible at 100%, and they follow in both directions")
+# preferences window: pages, checkerboard pattern and hatching save
 dlg = dialogs.PreferencesDialog(w, "nl")
 titles = [dlg.pages.item(i).text() for i in range(dlg.pages.count())]
 assert titles == ["Taal", "Transparantie en arcering", "Lettertypen"], titles
@@ -42,12 +42,12 @@ assert cv.view["checker_size"] == 2 and cv.view["checker_c1"] == "#444444" and c
 assert cv.checker.texture().width() == 32 and not cv.view["crop_bar"]
 dlg.c1.set_color(QColor(255, 0, 0)); dlg._custom()
 assert dlg.scheme.currentIndex() == len(dialogs.CHECKER_SCHEMES)
-print("2 voorkeuren: drie onderwerpen; ruitjespatroon, arcering en zwevende bijsnijbalk worden bewaard en toegepast")
-# lettertypen: installatie nagebootst (geen echte download)
+print("2 preferences: three topics; checkerboard pattern, hatching and floating crop bar are saved and applied")
+# fonts: installation simulated (no real download)
 import shutil  # noqa: E402
 fake_src = tempfile.mkdtemp()
 import glob  # noqa: E402
-# een echt lettertype om te "installeren" (elke distributie zet DejaVu ergens anders)
+# a real font to "install" (every distribution puts DejaVu somewhere else)
 font = next(iter(sorted(glob.glob("/usr/share/fonts/**/DejaVuSans.ttf", recursive=True))), None)
 calls = []
 
@@ -64,11 +64,11 @@ class FakeResp:
 corefonts.urllib.request.urlopen = lambda req, timeout=60: (calls.append(req.full_url), FakeResp(b"x"))[1]
 
 
-def fake_extract(tool, exe, dest):  # in plaats van cabextract: een lettertype "uitpakken"
+def fake_extract(tool, exe, dest):  # instead of cabextract: "extract" a font
     out = os.path.join(dest, os.path.basename(exe).replace(".exe", ".TTF"))
     if font:
         shutil.copy(font, out)
-    else:  # geen lettertype op dit systeem: een leeg bestand (registreren wordt dan niet getest)
+    else:  # no font on this system: an empty file (registering is then not tested)
         open(out, "wb").close()
 
 
@@ -85,11 +85,11 @@ assert inst.result and all(p.endswith(".ttf") for p in inst.result)
 assert inst.result[0].startswith(corefonts.target_dir())
 if font:
     assert corefonts.register(inst.result[:1]) == 1
-print("3 lettertypen: download van de bron en uitpakken naar de eigen lettertypemap (nagebootst)")
+print("3 fonts: download from the source and extract to the own font folder (simulated)")
 corefonts.extractor = lambda: None
 dlg2 = dialogs.PreferencesDialog(w, "nl")
 if not corefonts.installed():
     assert not dlg2.font_btn.isEnabled() and "cabextract" in dlg2.font_state.text()
-print("4 zonder uitpakprogramma: duidelijke melding, knop uit")
+print("4 without extraction program: clear notice, button off")
 d.set_modified(False)
-print("ALLES OK")
+print("ALL OK")

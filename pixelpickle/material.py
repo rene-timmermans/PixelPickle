@@ -1,13 +1,13 @@
-"""Materialen naast een effen kleur: verlopen en patronen (zoals in PSP).
+"""Materials besides a solid color: gradients and patterns.
 
-Een materiaal is None (effen kleur) of een dict:
-- {"kind": "gradient", "preset": naam, "style": 0..3, "angle": graden, "repeats": n, "invert": bool,
-   "cx": %, "cy": %}  stijl 0 lineair, 1 rechthoekig, 2 zonnestraal (cirkels), 3 radiaal (rond draaiend)
-- {"kind": "pattern", "name": naam, "image": QImage, "angle": graden, "scale": %}
+A material is None (solid color) or a dict:
+- {"kind": "gradient", "preset": name, "style": 0..3, "angle": degrees, "repeats": n, "invert": bool,
+      "cx": %, "cy": %}  style 0 linear, 1 rectangular, 2 sunburst (circles), 3 radial (rotating around)
+- {"kind": "pattern", "name": name, "image": QImage, "angle": degrees, "scale": %}
 
-render() maakt er een afbeelding van voor een rechthoek in documentcoördinaten. Een verloop loopt over
-'span' (bijvoorbeeld de selectie of de vorm); een patroon ligt vast ten opzichte van de linkerbovenhoek
-van het document, zodat aansluitende streken naadloos op elkaar passen."""
+render() turns it into an image for a rectangle in document coordinates. A gradient runs over
+'span' (for example the selection or the shape); a pattern is fixed relative to the top left corner
+of the document, so that adjoining strokes fit together seamlessly."""
 import math
 import os
 import re
@@ -21,7 +21,7 @@ from .document import new_image
 
 STYLES = ["Lineair", "Rechthoekig", "Zonnestraal", "Radiaal"]
 
-# vaste verlopen; FG/BG worden bij gebruik vervangen door voorgrond- en achtergrondkleur
+# fixed gradients; FG/BG are replaced by the foreground and background color on use
 FG, BG, FG0, BG0 = "fg", "bg", "fg0", "bg0"
 GRADIENTS = {
     "Voorgrond-achtergrond": [FG, BG],
@@ -38,7 +38,7 @@ GRADIENTS = {
     "Zee": ["#003b46", "#07575b", "#66a5ad", "#c4dfe6"],
     "Bos": ["#0b3d0b", "#2e7d32", "#9ccc65", "#f1f8e9"],
     "Pastel": ["#ffd1dc", "#fff5ba", "#c1f0c1", "#bde0fe", "#e2c2ff"],
-    # een punt kan ook (positie 0..1, kleur) zijn, voor ongelijke afstanden
+    # a point may also be (position 0..1, color), for unequal spacing
     "Wit-transparant": ["#ffffff", "#ffffff00"],
     "Zwart-transparant": ["#000000", "#00000000"],
     "Regenboog vervagend": [(0, "#ff0000"), (0.2, "#ffff00"), (0.4, "#00ff00"), (0.6, "#00ffff"),
@@ -84,7 +84,7 @@ def default_pattern():
     return {"kind": "pattern", "name": "Bakstenen", "image": pattern_image("Bakstenen"), "angle": 0, "scale": 100}
 
 
-# eigen verlopen (verloopbewerker), bewaard in de instellingen: {naam: [[positie, spec], ...]}
+# own gradients (gradient editor), kept in the settings: {name: [[position, spec], ...]}
 USER_PREFIX = "user:"
 USER_GRADIENTS = {}
 
@@ -99,7 +99,7 @@ def set_user_gradients(d):
 
 
 def _rgba(spec, fg, bg):
-    if ":" in spec and spec.split(":")[0] in (FG, BG):  # voor- of achtergrondkleur met eigen dekking
+    if ":" in spec and spec.split(":")[0] in (FG, BG):  # foreground or background color with its own opacity
         src, alpha = spec.split(":", 1)
         c = QColor(fg if src == FG else bg)
         return (c.red(), c.green(), c.blue(), max(0, min(255, int(float(alpha)))))
@@ -113,7 +113,7 @@ def _rgba(spec, fg, bg):
 
 
 def _interp(x, pos, vals, mids=None):
-    """Waarden tussen de punten; mids (0..100) verschuift het midden tussen twee punten (zoals PSP)."""
+    """Values between the points; mids (0..100) shifts the midpoint between two points."""
     pos = np.asarray(pos, np.float32)
     vals = np.asarray(vals, np.float32)
     if len(pos) == 1:
@@ -138,7 +138,7 @@ def _interp(x, pos, vals, mids=None):
 
 
 def gradient_lut(name, fg, bg):
-    """256 x 4 tabel (RGBA, niet voorvermenigvuldigd)."""
+    """256 x 4 table (RGBA, not premultiplied)."""
     x = np.linspace(0, 1, 256)
     psp = psp_gradients().get(name)
     if psp is not None:
@@ -159,7 +159,7 @@ def gradient_lut(name, fg, bg):
 
 
 def stops_lut(entries, fg, bg):
-    """256 x 4 tabel uit kleurpunten: specs op gelijke afstand of [(positie, spec)]."""
+    """256 x 4 table from color points: specs at equal distance or [(position, spec)]."""
     x = np.linspace(0, 1, 256)
     if all(isinstance(e, (tuple, list)) for e in entries):
         entries = sorted(entries, key=lambda e: float(e[0]))
@@ -172,7 +172,7 @@ def stops_lut(entries, fg, bg):
 
 
 def gradient_names():
-    """Sleutels van alle verlopen: ingebouwd, zelf gemaakt, dan die uit een eigen installatie."""
+    """Keys of all gradients: built in, self made, then those from a user's own installation."""
     return list(GRADIENTS) + [USER_PREFIX + n for n in USER_GRADIENTS] + list(psp_gradients())
 
 
@@ -184,11 +184,11 @@ def gradient_label(key):
 
 
 def gradient_stops(name):
-    """Kleurpunten van een verloop om te bewerken: [(positie, spec)], specs als in GRADIENTS."""
+    """Color points of a gradient to edit: [(position, spec)], specs as in GRADIENTS."""
     if name.startswith(USER_PREFIX):
         return list(USER_GRADIENTS.get(name[len(USER_PREFIX):], []))
     psp = psp_gradients().get(name)
-    if psp is not None:  # PSP-verloop: kleuren en (vereenvoudigd) dekking per kleurpunt
+    if psp is not None:  # gradient file: colors and (simplified) opacity per color point
         cstops, astops = psp
         out = []
         for pos, _, rgb, typ in cstops:
@@ -203,9 +203,11 @@ def gradient_stops(name):
     return [(i / max(n - 1, 1), c) for i, c in enumerate(entries)]
 
 
-# ---------------------------------------------------------------- verlopen en patronen uit PSP
+# ---------------------------------------------------------------- gradients and patterns from a user's own installation
+# Compatible with the gradient and pattern files of Paint Shop Pro: they are only read at runtime
+# from the user's own installation and never bundled with PixelPickle.
 def psp_dirs():
-    """Mappen van een PSP installatie (Wine/Bottles) en de PSP map in Documenten van de gebruiker."""
+    """Folders of a user's own installation (Wine/Bottles) and the corresponding folder in the user's Documents."""
     import glob
     home = os.path.expanduser("~")
     prefixes = (glob.glob(f"{home}/.var/app/com.usebottles.bottles/data/bottles/bottles/*/drive_c")
@@ -220,9 +222,9 @@ def psp_dirs():
 
 
 def read_grd(path):
-    """PSP/Photoshop verloopbestand (.PspGradient, .grd versie 3).
-    Geeft [(naam, kleurpunten, dekkingspunten)]; kleurpunt = (positie 0..1, midden %, (r, g, b), soort)
-    met soort 0 eigen kleur, 1 voorgrond, 2 achtergrond; dekkingspunt = (positie, midden %, 0..255)."""
+    """Gradient file (.PspGradient, .grd version 3).
+    Returns [(name, color points, opacity points)]; color point = (position 0..1, midpoint %, (r, g, b), kind)
+    with kind 0 own color, 1 foreground, 2 background; opacity point = (position, midpoint %, 0..255)."""
     import struct
     b = open(path, "rb").read()
     if b[:4] != b"8BGR":
@@ -249,7 +251,7 @@ def read_grd(path):
             elif model == 2:  # CMYK
                 q = QColor.fromCmykF(c1 / 65535, c2 / 65535, c3 / 65535, c4 / 65535)
                 rgb = (q.red(), q.green(), q.blue())
-            else:  # grijs en overige: helderheid uit de eerste waarde
+            else:  # grey and others: brightness from the first value
                 rgb = (c1 >> 8,) * 3
             cs.append((loc / 4096, mid, rgb, typ))
         na, = struct.unpack(">H", b[o:o + 2])
@@ -270,7 +272,7 @@ _psp_pat = None
 
 
 def psp_gradients():
-    """{'psp:naam': (kleurpunten, dekkingspunten)} uit de PSP installatie (eenmalig ingelezen)."""
+    """{'psp:name': (color points, opacity points)} from the user's own installation (read once)."""
     global _psp_grad
     if _psp_grad is None:
         import glob
@@ -283,12 +285,12 @@ def psp_gradients():
                     for name, cs, al in read_grd(f):
                         if name.lower() != "current gradient":
                             _psp_grad.setdefault("psp:" + _gradient_name(name), (cs, al))
-                except Exception:  # beschadigd of onbekend bestand overslaan
+                except Exception:  # skip damaged or unknown file
                     continue
     return _psp_grad
 
 
-# leesbare namen voor de meegeleverde patronen (op bestandsnummer)
+# readable names for the bundled patterns (by file number)
 PATTERN_NAMES = {1: "Bellen", 2: "Canvas", 3: "Sinaasappelhuid", 4: "Luipaard", 5: "Tijger", 6: "Zebra",
                  52: "Craquelé", 53: "Veren", 54: "Paarse zijde", 55: "Oranje marmer", 56: "Verfrommeld papier",
                  57: "Blauwe wolken", 58: "Rijstpapier", 59: "Parket", 60: "Mahonie", 61: "Groen brokaat",
@@ -298,7 +300,7 @@ PATTERN_NAMES = {1: "Bellen", 2: "Canvas", 3: "Sinaasappelhuid", 4: "Luipaard", 
 def _pattern_name(stem):
     m = re.match(r"^Corel_08_(\d+)$", stem)
     if not m:
-        return stem  # eigen patroon van de gebruiker: bestandsnaam
+        return stem  # the user's own pattern: file name
     n = int(m.group(1))
     if n in PATTERN_NAMES:
         return PATTERN_NAMES[n]
@@ -308,14 +310,14 @@ def _pattern_name(stem):
 
 
 def _gradient_name(name):
-    """Voorvoegsels van makers weghalen en met een hoofdletter beginnen."""
+    """Remove creator prefixes and start with a capital letter."""
     name = re.sub(r"^(smg_|sb_|soe)", "", name).replace("_", " ").strip()
     return name[:1].upper() + name[1:] if name else name
 
 
 def psp_patterns():
-    """[(naam, pad)] van de patronen uit een eigen installatie, de map Patronen/Patterns van de gebruiker en
-    de eigen map met patronen (Bestand > Voorkeuren > Bestandslocaties)."""
+    """[(name, path)] of the patterns from a user's own installation, the user's Patronen/Patterns folder and
+    the own pattern folder (Bestand > Voorkeuren > Bestandslocaties, i.e. File > Preferences > File Locations)."""
     global _psp_pat
     if _psp_pat is None:
         import glob
@@ -328,12 +330,12 @@ def psp_patterns():
             for f in sorted(cands):
                 stem, ext = os.path.splitext(os.path.basename(f))
                 name = _pattern_name(stem)
-                if name in PATTERNS:  # zelfde naam als een eigen patroon: apart houden
+                if name in PATTERNS:  # same name as an own pattern: keep separate
                     name += " 2"
                 if ext.lower() in exts and name not in seen:
                     seen.add(name)
                     _psp_pat.append((name, f))
-        try:  # eigen map met patronen
+        try:  # own pattern folder
             from . import userdata
             own = userdata.folder("patterns", create=False)
             if os.path.isdir(own):
@@ -342,13 +344,13 @@ def psp_patterns():
                     if ext.lower() in exts and stem not in seen and stem not in PATTERNS:
                         seen.add(stem)
                         _psp_pat.append((stem, f))
-        except Exception:  # noqa: BLE001 - een onleesbare map mag de patronen niet breken
+        except Exception:  # noqa: BLE001 - an unreadable folder must not break the patterns
             pass
     return _psp_pat
 
 
 def gradient_t(m, w, h, span):
-    """Positie 0..1 in het verloop voor elk punt van een w x h vlak; span = (x, y, b, h) relatief."""
+    """Position 0..1 in the gradient for each point of a w x h area; span = (x, y, w, h) relative."""
     sx, sy, sw, sh = span
     sw, sh = max(sw, 1), max(sh, 1)
     cx = sx + sw * m.get("cx", 50) / 100
@@ -357,20 +359,20 @@ def gradient_t(m, w, h, span):
     dx, dy = xx + 0.5 - cx, yy + 0.5 - cy
     a = math.radians(m.get("angle", 0))
     style = m.get("style", 0)
-    if style == 0:  # lineair: hoek 0 = van boven naar beneden
+    if style == 0:  # linear: angle 0 = top to bottom
         ux, uy = math.sin(a), math.cos(a)
         half = abs(sw / 2 * ux) + abs(sh / 2 * uy)
         t = (dx * ux + dy * uy) / (2 * max(half, 1e-6)) + 0.5
-    elif style == 1:  # rechthoekig
+    elif style == 1:  # rectangular
         ca, sa = math.cos(a), math.sin(a)
         rx, ry = dx * ca + dy * sa, -dx * sa + dy * ca
         hw = max(cx - sx, sx + sw - cx, 1)
         hh = max(cy - sy, sy + sh - cy, 1)
         t = np.maximum(np.abs(rx) / hw, np.abs(ry) / hh)
-    elif style == 2:  # zonnestraal: cirkels vanuit het middelpunt
+    elif style == 2:  # sunburst: circles from the center
         far = max(math.hypot(px - cx, py - cy) for px in (sx, sx + sw) for py in (sy, sy + sh))
         t = np.hypot(dx, dy) / max(far, 1)
-    else:  # radiaal: rond het middelpunt draaiend
+    else:  # radial: rotating around the center
         t = np.mod((np.arctan2(dx, -dy) - a) / (2 * math.pi), 1.0)
     t = np.clip(t, 0, 1)
     n = int(m.get("repeats", 0))
@@ -391,7 +393,7 @@ def render_gradient(m, rect, span, fg, bg):
 
 
 def pattern_brush(m, origin=(0, 0)):
-    """QBrush met het patroon (geschaald en gedraaid); origin = documentpunt dat op (0, 0) valt."""
+    """QBrush with the pattern (scaled and rotated); origin = document point that falls on (0, 0)."""
     br = QBrush(m["image"])
     t = QTransform()
     t.translate(-origin[0], -origin[1])
@@ -403,7 +405,7 @@ def pattern_brush(m, origin=(0, 0)):
 
 
 def render(m, rect, span=None, fg=QColor(0, 0, 0), bg=QColor(255, 255, 255)):
-    """Afbeelding (grootte rect) van materiaal m; rect en span in documentcoördinaten."""
+    """Image (size rect) of material m; rect and span in document coordinates."""
     rect = QRect(rect)
     if m is None or rect.isEmpty():
         return None
@@ -417,7 +419,7 @@ def render(m, rect, span=None, fg=QColor(0, 0, 0), bg=QColor(255, 255, 255)):
 
 
 def brush(m, span, fg, bg):
-    """QBrush voor tekenen met QPainter (vormen, lijnen) over 'span' in documentcoördinaten."""
+    """QBrush for drawing with QPainter (shapes, lines) over 'span' in document coordinates."""
     span = QRect(span)
     if m is None or span.isEmpty():
         return None
@@ -429,13 +431,13 @@ def brush(m, span, fg, bg):
 
 
 def preview(m, w, h, fg, bg):
-    """Voorbeeldje voor knoppen en lijsten."""
+    """Small preview for buttons and lists."""
     if m is None:
         img = new_image(w, h, fg)
         return img
     img = new_image(w, h, QColor(255, 255, 255))
     p = QPainter(img)
-    for y in range(0, h, 6):  # ruitjes onder transparante delen
+    for y in range(0, h, 6):  # checkerboard under transparent parts
         for x in range(0, w, 6):
             if (x // 6 + y // 6) % 2:
                 p.fillRect(x, y, 6, 6, QColor(204, 204, 204))
@@ -449,13 +451,13 @@ def preview(m, w, h, fg, bg):
     return img
 
 
-# ---------------------------------------------------------------- ingebouwde patronen
+# ---------------------------------------------------------------- built-in patterns
 def _np_img(a):
     return ops.rgba_to_qimage(np.clip(a, 0, 255).astype(np.uint8))
 
 
 def _rgb(a, c1, c2):
-    """a in 0..1 -> mengsel van kleur c1 (0) en c2 (1)."""
+    """a in 0..1 -> mix of color c1 (0) and c2 (1)."""
     c1, c2 = np.array(c1, np.float32), np.array(c2, np.float32)
     out = np.empty(a.shape + (4,), np.float32)
     out[..., :3] = c1 + (c2 - c1) * a[..., None]
@@ -464,7 +466,7 @@ def _rgb(a, c1, c2):
 
 
 def _smooth_noise(n, cells, seed):
-    """Naadloos herhalende ruis van n x n pixels."""
+    """Seamlessly repeating noise of n x n pixels."""
     rng = np.random.default_rng(seed)
     g = rng.random((cells, cells)).astype(np.float32)
     x = np.arange(n) * cells / n
@@ -613,9 +615,9 @@ def _numpy_pattern(kind, n=128):
     return None
 
 
-# ---------------------------------------------------------------- meer eigen patronen (naadloos)
+# ---------------------------------------------------------------- more own patterns (seamless)
 def _ramp(a, colors):
-    """a in 0..1 -> kleur langs een reeks kleuren (hex)."""
+    """a in 0..1 -> color along a series of colors (hex)."""
     cols = np.array([[int(c[k:k + 2], 16) for k in (1, 3, 5)] for c in colors], np.float32)
     pos = np.linspace(0, 1, len(cols))
     out = np.empty(a.shape + (4,), np.float32)
@@ -626,7 +628,7 @@ def _ramp(a, colors):
 
 
 def _voronoi(n, count, seed):
-    """Naadloze Voronoi-cellen: (afstand tot dichtstbijzijnde punt, tot op één na, celnummer)."""
+    """Seamless Voronoi cells: (distance to nearest point, to second nearest, cell number)."""
     rng = np.random.default_rng(seed)
     pts = rng.random((count, 2)) * n
     yy, xx = np.mgrid[0:n, 0:n].astype(np.float32)
@@ -664,10 +666,10 @@ def _pat_leopard(n=128):
 
 def _pat_zebra(n=128):
     xx, yy = _coords(n)
-    # rustige, golvende strepen: alleen grove vervorming
+    # calm, wavy stripes: only coarse distortion
     warp = _smooth_noise(n, 3, 31) * 1.4 + _smooth_noise(n, 6, 32) * 0.35
     v = np.sin((xx / n * 5 + warp) * 2 * math.pi)
-    a = np.clip((v + 0.15) * 4, 0, 1)  # zachte maar duidelijke rand
+    a = np.clip((v + 0.15) * 4, 0, 1)  # soft but clear edge
     return _np_img(_ramp(a, ["#f4f1ea", "#151515"]))
 
 
@@ -729,20 +731,20 @@ def _pat_denim(n=128):
 
 
 def _pat_tartan(p, n):
-    """Schotse ruit: rode grond met doorschijnende groene en blauwe banen en een dunne gele lijn."""
+    """Tartan: red ground with translucent green and blue bands and a thin yellow line."""
     p.fillRect(0, 0, n, n, QColor(176, 30, 38))
     bands = ((0, n * 0.30, QColor(25, 80, 50, 150)), (n * 0.38, n * 0.12, QColor(25, 40, 95, 150)),
              (n * 0.62, n * 0.04, QColor(240, 200, 60, 200)), (n * 0.75, n * 0.10, QColor(25, 80, 50, 120)))
     for start, w, col in bands:
         p.fillRect(QRectF(start, 0, w, n), col)
         p.fillRect(QRectF(0, start, n, w), col)
-    p.setPen(QPen(QColor(0, 0, 0, 40), 1))  # fijne weefstructuur
+    p.setPen(QPen(QColor(0, 0, 0, 40), 1))  # fine weave structure
     for k in range(-n, n, 3):
         p.drawLine(QPointF(k, 0), QPointF(k + n, n))
 
 
 def _pat_argyle(p, n):
-    """Ruitpatroon (argyle): ruiten in twee tinten met een fijne stippellijn eroverheen."""
+    """Argyle pattern: diamonds in two shades with a fine dotted line over them."""
     p.fillRect(0, 0, n, n, QColor(40, 60, 110))
     p.setPen(Qt.PenStyle.NoPen)
     h = n / 2
@@ -758,7 +760,7 @@ def _pat_argyle(p, n):
     pen = QPen(QColor(240, 240, 230), 1.2)
     pen.setDashPattern([3, 3])
     p.setPen(pen)
-    for k in range(-2, 3):  # lijnen door de hoeken van de ruiten, naadloos herhalend
+    for k in range(-2, 3):  # lines through the corners of the diamonds, repeating seamlessly
         p.drawLine(QPointF(k * h, 0), QPointF(k * h + h, n))
         p.drawLine(QPointF(k * h + h, 0), QPointF(k * h, n))
 
@@ -1009,7 +1011,7 @@ _cache = {}
 
 
 def pattern_image(name):
-    """Ingebouwd patroon of een patroon uit PSP (op naam)."""
+    """Built-in pattern or a pattern from a user's own installation (by name)."""
     if name not in _cache:
         if name in PATTERNS:
             _cache[name] = PATTERNS[name]()

@@ -1,6 +1,6 @@
-"""Alfakanalen: QT_QPA_PLATFORM=offscreen .venv/bin/python tests/test_channels.py
-Selectie en masker opslaan in en laden uit een alfakanaal, verwijderen, ongedaan maken, meedraaien met de
-afbeelding en bewaren in .ora."""
+"""Alpha channels: QT_QPA_PLATFORM=offscreen .venv/bin/python tests/test_channels.py
+Save selection and mask to and load from an alpha channel, delete, undo, rotate along with the
+image and store in .ora."""
 import os
 import sys
 import tempfile
@@ -21,7 +21,7 @@ d = Document(40, 20, QColor(255, 255, 255)); w.add_document(d); app.processEvent
 m = np.zeros((20, 40), np.uint8); m[:, :10] = 255
 d.set_selection(ops.mask_to_qimage(m))
 
-# vensters automatisch bevestigen met wat de test wil
+# automatically confirm windows with what the test wants
 answers = []
 orig_exec = dialogs.AlphaChannelDialog.exec
 
@@ -49,13 +49,13 @@ run = lambda cid: w.actions_by_id[cid].trigger()  # noqa: E731
 
 answers.append("Links"); run(0x810f)
 assert d.channel_names() == ["Links"] and d.channel_mask(0)[5, 2] == 255 and d.channel_mask(0)[5, 30] == 0
-print("1 selectie opgeslagen in alfakanaal 'Links'")
+print("1 selection saved in alpha channel 'Links'")
 d.set_selection(None)
 answers.append((0, "replace", True)); run(0x810e)
 sel = ops.qimage_to_mask(d.sel)
 assert sel[5, 2] == 0 and sel[5, 30] == 255
-print("2 selectie geladen (omgekeerd): rechterdeel geselecteerd")
-# masker uit kanaal, en weer opslaan als tweede kanaal
+print("2 selection loaded (inverted): right part selected")
+# mask from channel, and save again as a second channel
 d.set_selection(None)
 answers.append((0, "replace", False)); run(0x8110)
 assert d.layer().kind == "mask"
@@ -63,42 +63,42 @@ assert d.mask_values()[5, 2] == 255 and d.mask_values()[5, 30] == 0
 c = d.composite()
 answers.append("Masker 1"); run(0x8111)
 assert d.channel_names() == ["Links", "Masker 1"]
-print("3 masker geladen uit kanaal en opgeslagen als 'Masker 1'")
-# overschrijven met dezelfde naam
+print("3 mask loaded from channel and saved as 'Masker 1'")
+# overwrite with the same name
 d.set_selection(ops.mask_to_qimage(255 - m))
 answers.append("Links"); run(0x810f)
 assert d.channel_names() == ["Links", "Masker 1"] and d.channel_mask(0)[5, 2] == 0
-print("4 bestaand kanaal overschreven")
+print("4 existing channel overwritten")
 d.undo()
 assert d.channel_mask(0)[5, 2] == 255
-print("5 ongedaan maken zet het kanaal terug")
-# meedraaien met de afbeelding
+print("5 undo restores the channel")
+# rotate along with the image
 d.rotate(90)
 assert d.channels[0][1].width() == 20 and d.channels[0][1].height() == 40
 d.undo()
 d.crop(QRect(5, 0, 20, 20))
 assert d.channels[0][1].size() == d.rect().size() and d.channel_mask(0)[5, 2] == 255 and d.channel_mask(0)[5, 8] == 0
-print("6 kanalen draaien en snijden mee met de afbeelding")
+print("6 channels rotate and crop along with the image")
 # .ora
 path = os.path.join(tempfile.mkdtemp(), "k.ora")
 fileio.save_ora(d, path)
 d2 = fileio.load_ora(path)
 assert d2.channel_names() == ["Links", "Masker 1"] and np.array_equal(d2.channel_mask(0), d.channel_mask(0))
-print("7 bewaard en teruggelezen in .ora")
-# verwijderen
+print("7 saved and read back in .ora")
+# delete
 answers.append(1); run(0x81e4)
 assert d.channel_names() == ["Links"]
 answers.append("all"); run(0x81e4)
 assert d.channels == []
 d.undo(); assert d.channel_names() == ["Links"]
-print("8 verwijderen (een kanaal, alle kanalen) en ongedaan maken")
-# venster zelf opbouwen (voorbeeld, knoppen)
+print("8 delete (one channel, all channels) and undo")
+# build the window itself (preview, buttons)
 dialogs.AlphaChannelDialog.exec = orig_exec
 dlg = dialogs.AlphaChannelDialog(w, "x", d, "load", selection_ops=True)
 assert dlg.preview.pixmap() is not None and not dlg.preview.pixmap().isNull() and dlg.ok.isEnabled()
 dlg2 = dialogs.AlphaChannelDialog(w, "x", d, "save", "Selectie 2"); dlg2.show(); app.processEvents()
-assert dlg2.ok.isEnabled() and dlg2.name.text() == "Selectie 2", "standaardnaam mag niet vanzelf een bestaand kanaal worden"
+assert dlg2.ok.isEnabled() and dlg2.name.text() == "Selectie 2", "default name must not automatically become an existing channel"
 dlg2.name.setText(""); assert not dlg2.ok.isEnabled()
-print("9 vensters: voorbeeld en OK-knop")
+print("9 dialogs: preview and OK button")
 d.set_modified(False)
-print("ALLES OK")
+print("ALL OK")

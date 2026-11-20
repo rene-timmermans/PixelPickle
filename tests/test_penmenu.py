@@ -1,4 +1,4 @@
-"""Snelmenu van de Pen (zoals PSP): QT_QPA_PLATFORM=offscreen .venv/bin/python tests/test_penmenu.py"""
+"""Pen context menu: QT_QPA_PLATFORM=offscreen .venv/bin/python tests/test_penmenu.py"""
 import os
 import sys
 import tempfile
@@ -55,28 +55,28 @@ def drag(a, b, mods=Qt.KeyboardModifier.NoModifier):
     pen.release(cv, b, ev(QEvent.Type.MouseButtonRelease, b, LB, mods))
 
 
-# twee open lijnen tekenen (lijnen en polylijnen)
+# draw two open lines (lines and polylines)
 w.opts.update(pen_mode=1, pen_connect=True)
 click(QPointF(20, 50)); click(QPointF(100, 50))
 pen.cur = None
 click(QPointF(140, 50)); click(QPointF(220, 50))
 assert len(pen.paths) == 2, pen.paths
-# rechtsklik: het menu van de Pen
+# right click: the Pen menu
 cv.mousePressEvent(ev(QEvent.Type.MouseButtonPress, QPointF(150, 150), RB))
 cv.mouseReleaseEvent(ev(QEvent.Type.MouseButtonRelease, QPointF(150, 150), RB))
 top = [x for x in shown[-1] if not x.startswith(" ")]
 assert top[:3] == ["Be&werken", "&Tekenpunttype", "&Geselecteerde tekenpunten transformeren"], top
 assert "  &Verbinden (uit)" in shown[-1], shown[-1]
-print("1 rechtsklik met de Pen: eigen menu", top)
+print("1 right click with the Pen: own menu", top)
 
-# Bewerken-modus: kader slepen selecteert de twee binnenste eindpunten
+# Edit mode: dragging a frame selects the two innermost endpoints
 w.opts["pen_mode"] = 0
 drag(QPointF(90, 40), QPointF(150, 60))
 assert pen.nsel == {(0, 1), (1, 0)}, pen.nsel
 pen.pen_command("join")
 assert len(pen.paths) == 1 and len(pen.paths[0]["nodes"]) == 4
-print("2 kader selecteert twee eindpunten; Verbinden maakt één pad van vier punten")
-# Shift+klik op knooppunten, samenvoegen tot één punt
+print("2 frame selects two end points; Verbinden makes one path of four points")
+# Shift+click on nodes, merge into one point
 pen.paths = []
 w.opts["pen_mode"] = 1
 click(QPointF(20, 100)); click(QPointF(100, 100)); pen.cur = None
@@ -87,15 +87,15 @@ assert pen.nsel == {(0, 1), (1, 0)}
 pen.pen_command("merge")
 xs = [round(n[0].x()) for n in pen.paths[0]["nodes"]]
 assert len(pen.paths) == 1 and xs == [20, 105, 200], xs
-print("3 Shift+klik en Samenvoegen: één punt halverwege", xs)
-# onderbreken, sluiten
+print("3 Shift+click and Samenvoegen: one point halfway", xs)
+# break, close
 pen.nsel = {(0, 1)}
 pen.pen_command("break")
 assert len(pen.paths) == 2
 pen.pen_command("select_all"); assert len(pen.nsel) == 4
 pen.pen_command("invert"); assert pen.nsel == set()
-print("4 Onderbreken, Alles selecteren, Selectie omkeren")
-# knooppunttype en transformeren
+print("4 Break, Select all, Invert selection")
+# node type and transform
 pen.paths = [{"nodes": [[QPointF(0, 0), None, None], [QPointF(50, 0), None, None], [QPointF(100, 50), None, None]],
               "closed": False, "types": {}}]
 pen.nsel = {(0, 1)}
@@ -109,31 +109,31 @@ pen.pen_command("mirror")
 assert round(pen.paths[0]["nodes"][0][0].x()) == 100 and round(pen.paths[0]["nodes"][2][0].x()) == 0
 QInputDialog.getDouble = staticmethod(lambda *a, **k: (90.0, True))
 pen.pen_command("rotate")
-print("5 Symmetrisch, Omzetten in lijn, Spiegelen, Roteren")
-# kopiëren en plakken, dupliceren
+print("5 Symmetric, Convert to line, Mirror, Rotate")
+# copy and paste, duplicate
 pen.pen_command("select_all"); pen.pen_command("copy"); pen.pen_command("paste")
 assert len(pen.paths) == 2
 pen.pen_command("duplicate_offset"); assert len(pen.paths) == 3
 pen.pen_command("delete"); assert len(pen.paths) == 2
 pen.pen_command("cut"); assert len(pen.paths) == 0 and pen.clipboard
-print("6 Kopiëren, Plakken, Dupliceren en verschuiven, Verwijderen, Knippen")
-# handvat slepen volgt het type: asymmetrisch houdt de eigen lengte
+print("6 Copy, Paste, Duplicate and shift, Delete, Cut")
+# dragging a handle follows the type: asymmetric keeps its own length
 pen.paths = [{"nodes": [[QPointF(0, 0), None, None], [QPointF(50, 0), QPointF(40, 0), QPointF(70, 0)],
                          [QPointF(100, 0), None, None]], "closed": False, "types": {1: "asym"}}]
 pen.nsel = set()
 drag(QPointF(70, 0), QPointF(70, 20))
 n = pen.paths[0]["nodes"][1]
 assert abs((n[1] - n[0]).manhattanLength() - 10) < 0.5 or abs(((n[1] - n[0]).x() ** 2 + (n[1] - n[0]).y() ** 2) ** 0.5 - 10) < 0.5
-print("7 asymmetrisch handvat: het andere houdt zijn eigen lengte")
+print("7 asymmetric handle: the other keeps its own length")
 pen.apply(); app.processEvents()
 doc.set_modified(False)
-# dezelfde opdrachten via het hoofdmenu Objecten
+# the same commands via the Objects main menu
 pen.paths = [{"nodes": [[QPointF(0, 0), None, None], [QPointF(50, 0), None, None]], "closed": False, "types": {}}]
 w.update_node_actions()
 assert w.actions_by_id[0x1774].isEnabled() and not w.actions_by_id[0x1777].isEnabled()
 w.actions_by_id[0x1774].trigger(); assert len(pen.nsel) == 2
 w.update_node_actions(); w.actions_by_id[0x1789].trigger(); assert round(pen.paths[0]["nodes"][0][0].x()) == 50
-print("8 Objecten > Bewerken / transformeren werkt op de lijnen van de Pen")
+print("8 Objecten > Bewerken / transformeren works on the lines of the Pen")
 pen.apply()
 assert "Objecten" in w.top_menus
-print("ALLES OK")
+print("ALL OK")

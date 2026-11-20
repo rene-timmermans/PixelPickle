@@ -1,7 +1,7 @@
-"""Uitgebreide handleiding: QT_QPA_PLATFORM=offscreen .venv/bin/python tests/test_manual.py
-- de opgeslagen structuur klopt nog met het programma (anders: tools/make_manual_structure.py draaien)
-- de Engelse uitleg dekt elk gereedschap, elke optie, elk effect, elke instelling en elke menu-opdracht
-- per taal bouwt de handleiding op en bevat hij alle gereedschappen"""
+"""Extensive manual: QT_QPA_PLATFORM=offscreen .venv/bin/python tests/test_manual.py
+- the stored structure still matches the program (otherwise: run tools/make_manual_structure.py)
+- the English text covers every tool, every option, every effect, every setting and every menu command
+- per language the manual builds and contains all tools"""
 import json
 import os
 import subprocess
@@ -13,7 +13,7 @@ DATA = os.path.join(ROOT, "pixelpickle", "data", "manual")
 sys.path.insert(0, ROOT)
 os.environ["XDG_CONFIG_HOME"] = tempfile.mkdtemp()
 
-# 1. structuur nog actueel?
+# 1. structure still current?
 saved = json.load(open(os.path.join(DATA, "structure.json"), encoding="utf-8"))
 tmp = tempfile.mkdtemp()
 env = dict(os.environ, QT_QPA_PLATFORM="offscreen")
@@ -23,10 +23,10 @@ script = script.replace('path = os.path.join(ROOT, "pixelpickle", "data", "manua
 r = subprocess.run([sys.executable, "-c", script.replace('os.path.dirname(os.path.abspath(__file__))', repr(os.path.join(ROOT, "tools")))],
                    capture_output=True, text=True, env=env)
 fresh = json.load(open(os.path.join(tmp, "s.json"), encoding="utf-8"))
-assert fresh == saved, "structure.json is verouderd: draai tools/make_manual_structure.py en vul de uitleg aan"
-print("1 structuur klopt met het programma")
+assert fresh == saved, "structure.json is outdated: run tools/make_manual_structure.py and complete the explanation"
+print("1 structure matches the program")
 
-# 2. Engelse uitleg compleet
+# 2. English text complete
 en = json.load(open(os.path.join(DATA, "prose_en.json"), encoding="utf-8"))
 miss = []
 for t in saved["tools"]:
@@ -39,10 +39,10 @@ for e in saved["effects"]:
     miss += [f"{e['id']}:{q['label']}" for q in e["params"] if not i.get("params", {}).get(q["label"])]
 miss += [m["id"] for mm in saved["menus"] for m in mm["items"] if not en["menus"].get(m["id"])]
 assert not miss, miss[:20]
-print("2 uitleg compleet:", len(saved["tools"]), "gereedschappen,", len(saved["effects"]), "effecten,",
-      sum(len(m["items"]) for m in saved["menus"]), "menu-opdrachten")
+print("2 explanation complete:", len(saved["tools"]), "tools,", len(saved["effects"]), "effects,",
+      sum(len(m["items"]) for m in saved["menus"]), "menu commands")
 
-# 3. per taal opbouwen
+# 3. build per language
 from PySide6.QtCore import Qt  # noqa: E402
 from PySide6.QtWidgets import QApplication  # noqa: E402
 app = QApplication(sys.argv)
@@ -55,8 +55,8 @@ for code, _ in i18n.LANGUAGES:
     absent = [n for n in names if _h.escape(n.replace("&", "")) not in page and n.replace("&", "") not in page]
     has_prose = os.path.exists(os.path.join(DATA, f"prose_{code}.json")) or code == "en"
     assert not absent and len(page) > 100000, (code, absent[:5], len(page))
-    print(f"3 {code}: {len(page)} tekens, eigen uitleg: {'ja' if has_prose else 'nee (Engels)'}")
-# 4. venster: elk onderwerp vindbaar, Vorige/Volgende/Inhoud en zoeken werken, in elke taal
+    print(f"3 {code}: {len(page)} chars, own explanation: {'yes' if has_prose else 'no (English)'}")
+# 4. window: every topic findable, Previous/Next/Contents and search work, in every language
 for code, _ in i18n.LANGUAGES:
     i18n.load(code)
     page, topics = manual.build(with_topics=True)
@@ -72,19 +72,19 @@ for code, _ in i18n.LANGUAGES:
     win.search.setText(word); win.find()
     assert win.browser.textCursor().hasSelection() and len(win.browser.extraSelections()) >= 2, code
     win.close()
-print("4 venster met inhoud, vorige, volgende en zoeken werkt in elke taal")
-# 5. losstaand venster: niet aan het hoofdvenster vast (anders blijft het er altijd boven)
+print("4 window with contents, previous, next and search works in every language")
+# 5. standalone window: not attached to the main window (otherwise it always stays on top)
 from pixelpickle.mainwindow import MainWindow  # noqa: E402
 i18n.load("nl")
 mw = MainWindow(); mw.show(); mw.show_manual(); app.processEvents()
 mwin = mw._manual_win
 assert mwin.parent() is None and mwin.windowFlags() & Qt.WindowType.Window and mwin.isVisible()
-mw.show_manual(); assert mw._manual_win is mwin  # tweede keer: hetzelfde venster naar voren
+mw.show_manual(); assert mw._manual_win is mwin  # second time: the same window comes to the front
 mw.close(); app.processEvents()
 try:
     still_open = mwin.isVisible()
-except RuntimeError:  # gesloten en opgeruimd
+except RuntimeError:  # closed and cleaned up
     still_open = False
-assert not still_open, "handleiding moet mee sluiten met het hoofdvenster"
-print("5 handleiding is een zelfstandig venster en sluit mee met het hoofdvenster")
-print("ALLES OK")
+assert not still_open, "manual must close along with the main window"
+print("5 manual is an independent window and closes along with the main window")
+print("ALL OK")

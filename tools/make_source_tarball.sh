@@ -1,5 +1,5 @@
 #!/bin/sh
-# Maakt dist/pixelpickle-<versie>.tar.gz met alles wat de pakketten nodig hebben.
+# Creates dist/pixelpickle-<version>.tar.gz with everything the packages need.
 set -e
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 VER=$(sed -n 's/^__version__ = "\(.*\)"/\1/p' "$ROOT/pixelpickle/__init__.py")

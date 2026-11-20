@@ -1,6 +1,7 @@
-"""Indeling van de gereedschapsbalk, overgenomen uit de PSP XI installatie van de gebruiker
-(register: UI Customization\\BCGToolBar-7013). Elke lijst is één knop; meerdere items vormen
-een uitklapgroep. Getallen zijn de originele opdracht ID's, zodat sneltoetsen één op één kloppen."""
+"""Toolbar layout, compatible with that of Paint Shop Pro XI,
+so that anyone who knows that program finds the tools right away. Each list is one button; multiple items
+form a flyout group. The numbers are compatible command numbers, so that menus, shortcuts and
+presets line up."""
 import json
 import os
 

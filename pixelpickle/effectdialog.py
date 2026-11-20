@@ -1,4 +1,4 @@
-"""Effectvenster in PSP stijl: Vóór/Na voorbeeld, Instellingen (voorinstellingen), Voorbeeld op afbeelding."""
+"""Effect window: Before/After preview, Settings (presets), Preview on image."""
 import json
 
 import numpy as np
@@ -35,7 +35,7 @@ def checker_pixmap(img: QImage, size=PREVIEW):
 
 
 class PreviewPane(QLabel):
-    """Voorbeeldvlak: slepen verschuift, muiswiel zoomt (beide vlakken bewegen samen)."""
+    """Preview pane: dragging pans, mouse wheel zooms (both panes move together)."""
 
     def __init__(self, dlg):
         super().__init__()
@@ -144,8 +144,8 @@ class CurveWidget(QWidget):
 
 
 class _Job:
-    """Eén berekening op de achtergrond (een gewone thread; werkt op elke Python-versie). Afvragen met
-    done() en result(); cancel() laat een lopende berekening uitrekenen maar negeert de uitkomst."""
+    """One computation in the background (a plain thread; works on any Python version). Poll with
+    done() and result(); cancel() lets a running computation finish but ignores the outcome."""
 
     def __init__(self, fn):
         import threading
@@ -158,7 +158,7 @@ class _Job:
         try:
             if not self.cancelled:
                 self._res = self._fn()
-        except Exception as e:  # doorgeven aan result()
+        except Exception as e:  # pass on to result()
             self._err = e
         finally:
             self._done.set()
@@ -186,7 +186,7 @@ class ColorButton(QPushButton):
         self._paint()
 
     def _paint(self):
-        # alleen dit vakje kleuren (anders werd ook de kleurkiezer die eraan hangt in deze kleur getekend)
+        # color only this swatch (otherwise the color picker attached to it would also be drawn in this color)
         from .dialogs import swatch_style
         swatch_style(self, QColor(*self.rgb), 0)
 
@@ -199,7 +199,7 @@ class ColorButton(QPushButton):
 
 
 class EffectDialog(QDialog):
-    """mode 'apply': past toe op de actieve laag. mode 'params': geeft alleen parameters terug (aanpassingslaag)."""
+    """mode 'apply': applies to the active layer. mode 'params': only returns parameters (adjustment layer)."""
 
     def __init__(self, main, doc, eff, params=None, mode="apply"):
         super().__init__(main)
@@ -208,7 +208,7 @@ class EffectDialog(QDialog):
         self.ctx = Ctx(fg=main.fg.getRgb()[:3], bg=main.bg.getRgb()[:3])
         layer = doc.layer()
         self.layer = layer
-        # de actieve laag, of bij een lagengroep elke rasterlaag erin (het voorbeeld toont dan de hele groep)
+        # the active layer, or for a layer group every raster layer in it (the preview then shows the whole group)
         self.targets = doc.effect_targets() if mode == "apply" else [layer]
         self.origs = [QImage(l.image) for l in self.targets]
         if mode == "apply" and layer.kind == "group":
@@ -216,20 +216,20 @@ class EffectDialog(QDialog):
         else:
             self.orig = self.origs[0] if self.targets == [layer] else QImage(layer.image)
         self.rect = doc.selection_bbox() if doc.sel is not None else doc.rect()
-        if mode == "params":  # aanpassingslaag: voorbeeld op de samengestelde lagen eronder
+        if mode == "params":  # adjustment layer: preview on the composited layers below
             below = doc.layers[:doc.active] if layer.adjust else doc.layers[:doc.active + 1]
             src = doc.composite(None, below)
             self.rect = doc.rect()
         else:
             src = self.orig
-        # bron op ware grootte; het voorbeeld toont een zoombaar, verschuifbaar uitsnede (zoals PSP)
+        # source at true size; the preview shows a zoomable, pannable crop
         self.region = src.copy(self.rect)
         self._scaled = {}
         alpha = ops.qimage_to_rgba(self.region)[..., 3] > 0
         bb = ops.mask_bbox(alpha)
         if bb.isEmpty():
             bb = QRect(0, 0, self.region.width(), self.region.height())
-        self.cx, self.cy = bb.center().x() + 0.5, bb.center().y() + 0.5  # begin bij de inhoud
+        self.cx, self.cy = bb.center().x() + 0.5, bb.center().y() + 0.5  # start at the content
         self.zoom = 1.0
 
         v = QVBoxLayout(self)
@@ -245,8 +245,8 @@ class EffectDialog(QDialog):
         head.addWidget(self.on_image)
         v.addLayout(head)
         if doc.sel is not None and mode == "apply":
-            # met een actieve selectie werkt het effect alleen daarbinnen; zonder deze melding is
-            # dat verwarrend als de selectie (bijna) buiten de inhoud van de laag valt
+            # with an active selection the effect only works inside it; without this notice that
+            # is confusing when the selection lies (almost) outside the layer content
             filled = float(alpha.mean()) if alpha.size else 0.0
             if filled < 0.02:
                 msg = tr("Let op: de selectie valt (bijna) buiten de inhoud van deze laag, dus het effect "
@@ -332,10 +332,10 @@ class EffectDialog(QDialog):
         self.timer.timeout.connect(self.update_preview)
         self.img_timer = QTimer(self, singleShot=True, interval=450)
         self.img_timer.timeout.connect(self.update_on_image)
-        # exact voorbeeld: het effect op de volle resolutie, op de achtergrond berekend zodra je even stopt met
-        # schuiven. Het snelle voorbeeld op een verkleinde kopie wijkt bij randen en fijne details af.
-        self._full = None        # (instellingen, resultaat als QImage op volle resolutie van het gebied)
-        self._job = None         # (instellingen, future)
+        # exact preview: the effect at full resolution, computed in the background as soon as you pause
+        # dragging. The fast preview on a reduced copy differs at edges and fine details.
+        self._full = None        # (settings, result as QImage at full resolution of the area)
+        self._job = None         # (settings, future)
         self._src_rgba = None
         self.exact_timer = QTimer(self, singleShot=True, interval=350)
         self.exact_timer.timeout.connect(self._start_exact)
@@ -419,7 +419,7 @@ class EffectDialog(QDialog):
         if getattr(self, "_loading", False):
             return
         self.timer.start()
-        # bij één laag levert het exacte voorbeeld het resultaat; dat zet het daarna op de afbeelding
+        # for a single layer the exact preview delivers the result; it then puts it on the image
         if self.on_image.isChecked() and not self._exact_feeds_image():
             self.img_timer.start()
 
@@ -427,7 +427,7 @@ class EffectDialog(QDialog):
         return (self.mode == "apply" and len(self.targets) == 1 and self.origs[0] is self.orig
                 and self.region.width() * self.region.height() <= self.EXACT_MAX)
 
-    # ---------------------------------------------------------------- voorinstellingen
+    # ---------------------------------------------------------------- presets
     def _key(self):
         return f"effect_presets/{self.eff.cid:04x}"
 
@@ -479,10 +479,10 @@ class EffectDialog(QDialog):
             self.main.settings.setValue(self._key(), json.dumps(allp))
             self._fill_presets()
 
-    # ---------------------------------------------------------------- voorbeeld
-    # ---------------------------------------------------------------- zoomen en schuiven
+    # ---------------------------------------------------------------- preview
+    # ---------------------------------------------------------------- zooming and panning
     def _view(self):
-        """Middelpunt (bronpixels) zo begrensd dat het voorbeeld binnen de afbeelding blijft."""
+        """Center (source pixels) clamped so that the preview stays within the image."""
         rw, rh = self.region.width(), self.region.height()
         vw, vh = PREVIEW.width() / self.zoom, PREVIEW.height() / self.zoom
         cx = min(max(self.cx, vw / 2), rw - vw / 2) if rw > vw else rw / 2
@@ -511,7 +511,7 @@ class EffectDialog(QDialog):
         self.timer.start()
 
     def _draw(self, img, ox, oy, scale):
-        """Teken img zo dat bronpunt (cx, cy) in het midden van het voorbeeld staat."""
+        """Draw img so that source point (cx, cy) is in the center of the preview."""
         out = QImage(PREVIEW, QImage.Format.Format_ARGB32_Premultiplied)
         out.fill(Qt.GlobalColor.transparent)
         p = QPainter(out)
@@ -528,8 +528,8 @@ class EffectDialog(QDialog):
         self.before.setPixmap(checker_pixmap(self._draw(self.region, cx, cy, self.zoom)))
 
     def _work(self):
-        """Bronbeeld op voorbeeldschaal. Klein genoeg: hele afbeelding (effecten blijven kloppen);
-        anders alleen het zichtbare deel met marge (sneller). Geeft (beeld, linksboven in bronpixels)."""
+        """Source image at preview scale. Small enough: whole image (effects stay correct);
+        otherwise only the visible part with margin (faster). Returns (image, top left in source pixels)."""
         z = self.zoom
         rw, rh = self.region.width(), self.region.height()
         if rw * rh * z * z <= 1.5e6:
@@ -555,16 +555,16 @@ class EffectDialog(QDialog):
         ctx = Ctx(self.ctx.fg, self.ctx.bg, self.zoom, self.ctx.seed)
         try:
             res = ops.rgba_to_qimage(run_effect(self.eff, ops.qimage_to_rgba(work), ctx, self.params()))
-        except Exception as e:  # nooit het venster laten crashen
-            print("effect fout:", e)
+        except Exception as e:  # never let the window crash
+            print("effect error:", e)
             res = work
-        # res staat op schaal 'zoom' met linksboven op bronpunt (x0, y0)
+        # res is at scale 'zoom' with its top left at source point (x0, y0)
         img = self._draw(res, (cx - x0) * self.zoom, (cy - y0) * self.zoom, 1.0)
         self.after.setPixmap(checker_pixmap(img))
         self.exact_timer.start()
 
-    # ---------------------------------------------------------------- exact voorbeeld (volle resolutie)
-    EXACT_MAX = 16_000_000  # pixels; grotere gebieden alleen met het snelle voorbeeld
+    # ---------------------------------------------------------------- exact preview (full resolution)
+    EXACT_MAX = 16_000_000  # pixels; larger areas only with the fast preview
 
     def _pkey(self):
         return json.dumps(self.params(), sort_keys=True, default=list)
@@ -577,9 +577,9 @@ class EffectDialog(QDialog):
             self._show_exact()
             return
         if self._job is not None and self._job[0] == key:
-            return  # wordt al berekend
+            return  # already being computed
         if self._job is not None and not self._job[1].done():
-            return  # er loopt nog een berekening; als die klaar is, start de volgende met de laatste instellingen
+            return  # a computation is still running; when it finishes, the next one starts with the latest settings
         if self._src_rgba is None:
             self._src_rgba = ops.qimage_to_rgba(self.region)
         eff, ctx, params, src = self.eff, Ctx(self.ctx.fg, self.ctx.bg, 1.0, self.ctx.seed), self.params(), self._src_rgba
@@ -597,19 +597,19 @@ class EffectDialog(QDialog):
         self._job = None
         try:
             res = fut.result()
-        except Exception as e:  # nooit het venster laten crashen
-            print("effect fout:", e)
+        except Exception as e:  # never let the window crash
+            print("effect error:", e)
             return
         self._full = (key, ops.rgba_to_qimage(res))
         if key == self._pkey():
             self._show_exact()
             if self.on_image.isChecked() and self.mode == "apply":
                 self.update_on_image()
-        else:  # instellingen intussen veranderd: opnieuw
+        else:  # settings changed in the meantime: again
             self.exact_timer.start()
 
     def _show_exact(self):
-        """Het exacte resultaat in het Na-voorbeeld, op dezelfde zoom en plek als het snelle voorbeeld."""
+        """The exact result in the After preview, at the same zoom and position as the fast preview."""
         cx, cy, vw, vh = self._view()
         full = self._full[1]
         m = 2
@@ -633,7 +633,7 @@ class EffectDialog(QDialog):
     def result_image(self, orig=None):
         orig = self.orig if orig is None else orig
         if orig is self.orig and self._full is not None and self._full[0] == self._pkey():
-            res = self._full[1]  # al berekend voor het exacte voorbeeld
+            res = self._full[1]  # already computed for the exact preview
         else:
             region = orig.copy(self.rect)
             res = ops.rgba_to_qimage(run_effect(self.eff, ops.qimage_to_rgba(region), self.ctx, self.params()))
@@ -656,7 +656,7 @@ class EffectDialog(QDialog):
         finally:
             QApplication.restoreOverrideCursor()
         self.doc.changed.emit(QRect())
-        # tijdens het rekenen verder geschoven? Dan nog een keer, zodat de afbeelding nooit een tussenstand toont
+        # panned further while computing? Then once more, so the image never shows an intermediate state
         if self.on_image.isChecked() and self._pkey() != key:
             self.img_timer.start()
 
@@ -695,7 +695,7 @@ class EffectDialog(QDialog):
 
 
 class EffectBrowser(QDialog):
-    """Effecten zoeken: miniaturen van alle effecten op de huidige afbeelding."""
+    """Find effects: thumbnails of all effects on the current image."""
 
     def __init__(self, main, doc, menu_tree):
         super().__init__(main)

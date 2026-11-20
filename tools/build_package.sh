@@ -1,6 +1,6 @@
 #!/bin/sh
-# Bouwt lokaal het Arch pakket: dist/pixelpickle-<versie>-1-any.pkg.tar.zst
-# (Debian en Fedora pakketten bouwt GitHub Actions bij elke release; zie .github/workflows/release.yml)
+# Builds the Arch package locally: dist/pixelpickle-<version>-1-any.pkg.tar.zst
+# (Debian and Fedora packages are built by GitHub Actions on every release; see .github/workflows/release.yml)
 set -e
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 TARBALL=$("$ROOT/tools/make_source_tarball.sh")

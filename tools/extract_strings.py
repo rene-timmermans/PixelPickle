@@ -1,5 +1,5 @@
-"""Verzamelt alle (vermoedelijke) schermteksten van PixelPickle voor de vertaalcatalogus.
-Gebruik: .venv/bin/python -I tools/extract_strings.py > strings.json"""
+"""Collects all (presumed) on-screen texts of PixelPickle for the translation catalog.
+Usage: .venv/bin/python -I tools/extract_strings.py > strings.json"""
 import ast
 import glob
 import json
@@ -56,7 +56,7 @@ for path in glob.glob(os.path.join(ROOT, "pixelpickle", "**", "*.py"), recursive
         if isinstance(n, ast.Constant) and isinstance(n.value, str) and id(n) not in docstrings and id(n) not in joined_parts:
             add(n.value, os.path.basename(path))
 
-# menu's
+# menus
 data = json.load(open(os.path.join(ROOT, "pixelpickle", "data", "pp_menus.json"), encoding="utf-8"))
 
 
@@ -68,7 +68,7 @@ def walk(items):
 
 
 walk(data["menus"])
-# effecten en gereedschappen
+# effects and tools
 from pixelpickle import effects  # noqa: E402
 from pixelpickle.psplayout import TOOL_NAMES  # noqa: E402
 

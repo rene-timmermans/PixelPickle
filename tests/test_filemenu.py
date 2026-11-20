@@ -1,5 +1,5 @@
-"""Menu Bestand: naar vorige versie, verwijderen, afdrukken (naar PDF), eigen penseel/vorm/lijst, PNG-optimalisatie,
-afbeelding met hyperlinks, batchverwerking, namen in batch wijzigen, voorkeuren en bestandslocaties:
+"""File menu: to previous version, delete, print (to PDF), own brush/shape/frame, PNG optimization,
+image with hyperlinks, batch processing, rename in batch, preferences and file locations:
 QT_QPA_PLATFORM=offscreen .venv/bin/python tests/test_filemenu.py"""
 import os
 import sys
@@ -24,7 +24,7 @@ tmp = tempfile.mkdtemp()
 w = MainWindow(); w.show()
 run = lambda cid: w.actions_by_id[cid].trigger()  # noqa: E731
 
-# naar vorige versie
+# to previous version
 d = Document(80, 60, QColor(255, 255, 255)); path = os.path.join(tmp, "a.png"); fileio.save(d, path); d.path = path
 cv = w.add_document(d).canvas; app.processEvents()
 q = QPainter(d.layers[0].image); q.fillRect(0, 0, 80, 60, QColor(255, 0, 0)); q.end(); d.set_modified(True)
@@ -32,13 +32,13 @@ run(0x8019)
 assert d.layers[0].image.pixelColor(5, 5) == QColor(255, 255, 255) and not d.modified
 d.undo(); assert d.layers[0].image.pixelColor(5, 5) == QColor(255, 0, 0)
 d.set_modified(False)
-print("1 Naar vorige versie (en weer ongedaan te maken)")
-# afdrukweergave en afdrukken naar PDF
+print("1 To previous version (and undoable again)")
+# print preview and printing to PDF
 from PySide6.QtPrintSupport import QPrinter  # noqa: E402
 pr = QPrinter(); pr.setOutputFormat(QPrinter.OutputFormat.PdfFormat); pr.setOutputFileName(os.path.join(tmp, "p.pdf"))
 w._paint_page(pr); assert os.path.getsize(os.path.join(tmp, "p.pdf")) > 500
-print("2 Afdrukken (naar PDF getest)")
-# eigen penseel exporteren en gebruiken
+print("2 Printing (tested to PDF)")
+# export and use own brush
 q = QPainter(d.layers[0].image); q.fillRect(0, 0, 80, 60, QColor(255, 255, 255)); q.fillRect(20, 20, 30, 10, QColor(0, 0, 0)); q.end()
 QInputDialog.getText = staticmethod(lambda *a, **k: ("Streep", True))
 run(0x8201)
@@ -47,13 +47,13 @@ br = w.tools[0xd091]; w.select_tool(br)
 w.opts.update(brush_shape=2 + userdata.brush_names().index("Streep"), size=40, hardness=100)
 br.make_stamp(QColor(255, 0, 0))
 wts = br.weights
-assert wts.max() > 0.9 and (wts > 0.5).sum() < 0.6 * wts.size, "een liggende streep, geen volle cirkel"
-print("3 Aangepast penseel exporteren en gebruiken als penseelvorm")
+assert wts.max() > 0.9 and (wts > 0.5).sum() < 0.6 * wts.size, "a horizontal stroke, not a full circle"
+print("3 Export custom brush and use as brush shape")
 imgp = os.path.join(tmp, "punt.png"); QImage(os.path.join(userdata.folder("brushes"), "Streep.png")).save(imgp)
 QFileDialog.getOpenFileNames = staticmethod(lambda *a, **k: ([imgp], ""))
 run(0x8203); assert "punt" in userdata.brush_names()
-print("4 Aangepast penseel importeren")
-# vorm exporteren en gebruiken bij Basisvormen
+print("4 Import custom brush")
+# export and use shape with Preset Shapes
 vl = d.new_vector_layer("v", undo=False)
 vl.vector.append(V.make_object([[QPointF(10, 10), None, None], [QPointF(50, 10), None, None], [QPointF(30, 50), None, None]],
                                True, [0, 0, 0, 255], [255, 0, 0, 255], 1))
@@ -63,8 +63,8 @@ ps = w.tools[0xd101]
 w.opts["preset"] = len(ps.SHAPES) + userdata.shape_names().index("Driehoekje")
 path_ = ps.path(QPointF(0, 0), QPointF(100, 100))
 assert path_.contains(QPointF(50, 30)) and not path_.contains(QPointF(5, 90))
-print("5 Vorm exporteren en kiezen bij Basisvormen")
-# fotolijst exporteren
+print("5 Export shape and choose under Basisvormen")
+# export photo frame
 fd = Document(100, 80, None)
 q = QPainter(fd.layers[0].image); q.fillRect(0, 0, 100, 80, QColor(120, 80, 30)); q.setCompositionMode(QPainter.CompositionMode.CompositionMode_Clear)
 q.fillRect(15, 15, 70, 50, QColor(0, 0, 0, 0)); q.end()
@@ -77,16 +77,16 @@ dialogs.ask_form = lambda *a, **k: answers.pop(0)
 w.mdi.setActiveSubWindow(w.mdi.subWindowList()[0]); d.active = 0
 run(0x012f); assert d.layer().name in ("Fotolijst", "Picture Frame")
 d.set_modified(False); fd.set_modified(False)
-print("6 Fotolijst exporteren en gebruiken bij Afbeelding > Fotolijst")
-# PNG-optimalisatie
+print("6 Export picture frame and use under Afbeelding > Fotolijst")
+# PNG optimization
 out = os.path.join(tmp, "klein.png")
 QFileDialog.getSaveFileName = staticmethod(lambda *a, **k: (out, ""))
 orig_exec = dialogs.PngOptimizerDialog.exec
 dialogs.PngOptimizerDialog.exec = lambda self: (self.kind.setCurrentIndex(2), self.colors.setValue(16), self._estimate(),
                                                QDialog.DialogCode.Accepted)[-1]
 run(0x815b); assert os.path.exists(out) and QImage(out).format() == QImage.Format.Format_Indexed8
-print("7 PNG-optimalisatie (8 bits palet, 16 kleuren)")
-# afbeelding met hyperlinks
+print("7 PNG optimization (8 bit palette, 16 colors)")
+# image with hyperlinks
 html = os.path.join(tmp, "kaart.html")
 QFileDialog.getSaveFileName = staticmethod(lambda *a, **k: (html, ""))
 
@@ -102,8 +102,8 @@ run(0x8174)
 t = open(html, encoding="utf-8").read()
 assert 'shape="rect" coords="5,5,25,25" href="https://example.org"' in t and 'shape="circle"' in t
 assert os.path.exists(os.path.join(tmp, "kaart.png"))
-print("8 Afbeelding met hyperlinks: HTML met twee gebieden en de afbeelding")
-# batchverwerking en namen in batch wijzigen
+print("8 Image with hyperlinks: HTML with two areas and the image")
+# batch processing and rename in batch
 srcs = []
 for k in range(3):
     dd = Document(40 + k, 30, QColor(0, 100 + k * 50, 0)); pth = os.path.join(tmp, f"b{k}.png"); fileio.save(dd, pth); srcs.append(pth)
@@ -113,7 +113,7 @@ dialogs.BatchDialog.values = lambda self: dict(files=srcs, ext=".jpg", quality=8
 run(0x801b)
 made = sorted(os.listdir(outdir)); assert made == ["b0.jpg", "b1.jpg", "b2.jpg"], made
 assert max(QImage(os.path.join(outdir, "b2.jpg")).width(), QImage(os.path.join(outdir, "b2.jpg")).height()) == 20
-print("9 Batchverwerking: drie bestanden naar JPEG, verkleind tot 20 pixels")
+print("9 Batch processing: three files to JPEG, reduced to 20 pixels")
 
 
 def fake_rename(self):
@@ -124,23 +124,23 @@ def fake_rename(self):
 dialogs.BatchRenameDialog.exec = fake_rename
 run(0x81ad)
 assert sorted(os.listdir(outdir)) == ["vakantie_001.jpg", "vakantie_002.jpg", "vakantie_003.jpg"], os.listdir(outdir)
-print("10 Namen in batch wijzigen")
-# voorkeuren
+print("10 Rename in batch")
+# preferences
 answers.append({"q": 75, "png": 9, "layered": 1}); run(0x8014)
 assert w.settings.value("layered_ext") == ".pspimage" and int(w.settings.value("png_compress")) == 9
 newloc = os.path.join(tmp, "eigen_vormen")
 dialogs.FileLocationsDialog.exec = lambda self: (self.edits["shapes"].setText(newloc), QDialog.DialogCode.Accepted)[-1]
 run(0x8152); assert userdata.folder("shapes") == newloc and userdata.shape_names() == []
-print("11 Voorkeuren bestandsindelingen en bestandslocaties")
-# verwijderen (naar de prullenbak)
+print("11 Preferences file formats and file locations")
+# delete (to the trash)
 victim = Document(20, 20, QColor(255, 255, 255)); vp = os.path.join(tmp, "weg.png"); fileio.save(victim, vp); victim.path = vp
 w.add_document(victim); app.processEvents()
 n = len(w.mdi.subWindowList())
 run(0x80d6)
-print("12 Verwijderen:", "naar de prullenbak" if not os.path.exists(vp) else "prullenbak niet beschikbaar in de testomgeving")
+print("12 Delete:", "to the trash" if not os.path.exists(vp) else "trash not available in the test environment")
 run(0x8204); assert w.settings.value("layered_ext") is None
 w._prefs_reset = True
-print("13 Voorkeuren herstellen")
+print("13 Restore preferences")
 for s in w.mdi.subWindowList():
     s.canvas.doc.set_modified(False)
-print("ALLES OK")
+print("ALL OK")

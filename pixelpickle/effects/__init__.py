@@ -1,13 +1,13 @@
-"""Register van effecten en aanpassingen.
+"""Registry of effects and adjustments.
 
-Elk effect is een functie  fn(a, ctx, **params) -> np.ndarray
-  a      : np.ndarray uint8 (H, W, 4), RGBA, NIET voorvermenigvuldigd. Niet in-place wijzigen.
-  ctx    : Ctx met fg/bg (RGB tuples), scale (voorbeeldschaal: vermenigvuldig pixelmaten hiermee), seed
-  params : waarden van de parameters (zie Int/Choice/Bool/Color/Curve hieronder)
-  return : np.ndarray uint8 (H, W, 4) met dezelfde vorm.
+Each effect is a function  fn(a, ctx, **params) -> np.ndarray
+    a      : np.ndarray uint8 (H, W, 4), RGBA, NOT premultiplied. Do not modify in place.
+    ctx    : Ctx with fg/bg (RGB tuples), scale (preview scale: multiply pixel sizes by this), seed
+    params : values of the parameters (see Int/Choice/Bool/Color/Curve below)
+    return : np.ndarray uint8 (H, W, 4) with the same shape.
 
-Registreren met de decorator @effect(cid, "Naam", [parameters]); cid is het originele PSP opdracht ID
-uit pixelpickle/data/pp_menus.json, zodat het menu-item automatisch werkt.
+Register with the decorator @effect(cid, "Naam", [parameters]); cid is the original PSP command ID
+from pixelpickle/data/pp_menus.json, so the menu item works automatically.
 """
 from dataclasses import dataclass, field
 
@@ -34,8 +34,8 @@ def Int(key, label, lo, hi, default):
 
 
 def Choice(key, label, options, default=0, extra=None):
-    """extra: functie die bij het openen van het venster nog keuzes achter de vaste toevoegt (bijvoorbeeld
-    patronen uit een eigen installatie); die staan niet in de vaste lijst, de handleiding of de vertalingen."""
+    """extra: function that, when the window opens, adds more choices after the fixed ones (for example
+    patterns from a user's own installation); these are not in the fixed list, the manual or the translations."""
     d = dict(type="choice", key=key, label=label, options=list(options), default=default)
     if extra is not None:
         d["extra"] = extra
@@ -43,10 +43,10 @@ def Choice(key, label, options, default=0, extra=None):
 
 
 def all_options(p):
-    """Vaste keuzes plus de keuzes die er bij het openen bij komen."""
+    """Fixed choices plus the choices that are added when opening."""
     try:
         return p["options"] + (list(p["extra"]()) if p.get("extra") else [])
-    except Exception:  # noqa: BLE001 - een onleesbare extra map mag het venster niet breken
+    except Exception:  # noqa: BLE001 - an unreadable extra folder must not break the window
         return list(p["options"])
 
 
@@ -55,7 +55,7 @@ def Bool(key, label, default=False):
 
 
 def Color(key, label, default=(255, 255, 255)):
-    """default mag ook "fg" of "bg" zijn (voor- of achtergrondkleur)."""
+    """default may also be "fg" or "bg" (foreground or background color)."""
     return dict(type="color", key=key, label=label, default=default)
 
 
@@ -88,6 +88,6 @@ def load_all():
         if not m.name.startswith("_") and m.name != "common":
             try:
                 importlib.import_module(f"{__name__}.{m.name}")
-            except Exception as e:  # een kapot effectbestand mag het programma niet blokkeren
-                print(f"Effecten in {m.name} niet geladen: {e!r}")
+            except Exception as e:  # a broken effect file must not block the program
+                print(f"Effects in {m.name} not loaded: {e!r}")
     return REGISTRY

@@ -1,4 +1,4 @@
-"""Openen en opslaan: gewone formaten via Pillow, lagen via OpenRaster (.ora)."""
+"""Open and save: common formats via Pillow, layers via OpenRaster (.ora)."""
 import io
 import os
 import zipfile
@@ -16,7 +16,7 @@ OPEN_FILTER = ("Alle afbeeldingen (*.ora *.png *.jpg *.jpeg *.jpe *.bmp *.gif *.
                "*.tga *.pcx *.ico *.psd *.ppm *.pgm *.pbm *.xpm *.jp2 *.dds *.pspimage *.psp *.pspframe "
                "*.psptube *.pspmask *.tub *.msk);;"
                "OpenRaster met lagen (*.ora);;Alle bestanden (*)")
-# OpenRaster (open standaard) is het eigen formaat met lagen; .pspimage blijft als extra keuze
+# OpenRaster (open standard) is the native layered format; .pspimage remains as an extra choice
 SAVE_FILTER = ("OpenRaster met lagen (*.ora);;PNG (*.png);;JPEG (*.jpg *.jpeg);;TIFF (*.tif *.tiff);;BMP (*.bmp);;"
                "WebP (*.webp);;GIF (*.gif);;Targa (*.tga);;PspImage (*.pspimage)")
 LAYERED = {".ora", ".pspimage", ".psp"}
@@ -91,7 +91,7 @@ def save(doc: Document, path: str, quality=90):
         kwargs["quality"] = quality
     if ext in (".tif", ".tiff"):
         kwargs["compression"] = "tiff_lzw"
-    if ext == ".png":  # compressie uit Voorkeuren bestandsindelingen
+    if ext == ".png":  # compression from the file formats preferences
         from PySide6.QtCore import QSettings
         kwargs["compress_level"] = int(QSettings("PixelPickle", "PixelPickle").value("png_compress", 6))
     tmp = path + ".tmp"
@@ -127,7 +127,7 @@ def save_ora(doc: Document, path: str):
                 el.set("pixelpickle-blend-ranges", json.dumps({k: [list(a), list(b)] for k, (a, b) in l.blend_ranges.items()}))
 
         def emit(parent, group):
-            for l in reversed(doc.children(group)):  # OpenRaster: bovenste eerst
+            for l in reversed(doc.children(group)):  # OpenRaster: topmost first
                 if l.kind == "group":
                     st = ET.SubElement(parent, "stack")
                     common(st, l)
@@ -145,7 +145,7 @@ def save_ora(doc: Document, path: str):
                     el.set("pixelpickle-adjust", json.dumps([l.adjust[0], l.adjust[1]]))
                 z.writestr(src, _png_bytes(l.image), compress_type=zipfile.ZIP_STORED)
         emit(ET.SubElement(root, "stack"), None)
-        # alfakanalen: als grijswaarden-PNG naast de lagen (andere programma's slaan ze over)
+        # alpha channels: as a grayscale PNG next to the layers (other programs skip them)
         chans = []
         for i, (name, _) in enumerate(doc.channels):
             src = f"pixelpickle/channel{i}.png"
@@ -166,7 +166,7 @@ def save_ora(doc: Document, path: str):
 
 
 def _attr(el, name, default=None):
-    """Eigen OpenRaster attribuut (pixelpickle-...)."""
+    """Custom OpenRaster attribute (pixelpickle-...)."""
     v = el.get("pixelpickle-" + name)
     return default if v is None else v
 
@@ -178,7 +178,7 @@ def load_ora(path: str) -> Document:
         root = ET.fromstring(z.read("stack.xml"))
         w, h = int(root.get("w")), int(root.get("h"))
         doc = Document(w, h, None)
-        layers = []  # van boven naar onder, zoals in het bestand
+        layers = []  # top to bottom, as in the file
 
         def props(el, lay):
             lay.opacity = float(el.get("opacity", 1))
@@ -239,7 +239,7 @@ def load_ora(path: str) -> Document:
                         g = g.resize((w, h))
                     doc.channels.append((str(c["name"]), Document._channel_image(np.asarray(g, np.uint8))))
             except (KeyError, OSError, TypeError):
-                continue  # beschadigd kanaal overslaan, de afbeelding zelf laadt gewoon
+                continue  # skip a damaged channel, the image itself loads fine
     if not any(l.kind != "group" for l in layers):
         raise FileError("Leeg OpenRaster bestand.")
     doc.layers = list(reversed(layers))
@@ -251,12 +251,12 @@ def load_ora(path: str) -> Document:
     return doc
 
 
-# ---------------------------------------------------------------- GIF met transparantie
+# ---------------------------------------------------------------- GIF with transparency
 def gif_image(rgba: np.ndarray, sel: np.ndarray | None = None, transparency=1, match_color=(255, 255, 255),
               match_tol=0, partial=0, threshold=128, blend_color=(255, 255, 255), colors=256, dither=True):
-    """Maak een P-modus Pillow afbeelding voor GIF.
-    transparency: 0 geen, 1 bestaande transparantie, 2 binnen selectie, 3 buiten selectie, 4 kleur.
-    partial: 0 drempel, 1 overvloeien met kleur (voor half doorzichtige pixels)."""
+    """Build a P-mode Pillow image for GIF.
+    transparency: 0 none, 1 existing transparency, 2 inside selection, 3 outside selection, 4 color.
+    partial: 0 threshold, 1 blend with color (for half transparent pixels)."""
     a = rgba.astype(np.float32)
     alpha = a[..., 3]
     if partial == 1:
@@ -269,7 +269,7 @@ def gif_image(rgba: np.ndarray, sel: np.ndarray | None = None, transparency=1, m
     else:
         rgb = a[..., :3]
         transparent = alpha < threshold if transparency == 1 else np.zeros(alpha.shape, bool)
-        if transparency != 1:  # geen transparantie gekozen: vlak maken op de overvloeikleur
+        if transparency != 1:  # no transparency chosen: flatten onto the blend color
             k = alpha[..., None] / 255
             rgb = rgb * k + np.array(blend_color, np.float32) * (1 - k)
     if transparency == 2 and sel is not None:

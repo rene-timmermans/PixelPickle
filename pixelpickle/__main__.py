@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QApplication
 
 
 def selftest(app):
-    """Opstartcontrole zonder scherm (voor de pakkettesten): pixelpickle --selftest"""
+    """Startup check without a screen (for the package tests): pixelpickle --selftest"""
     from .mainwindow import MainWindow
     from .document import Document
     w = MainWindow()
@@ -12,11 +12,11 @@ def selftest(app):
     w.add_document(Document(64, 48))
     app.processEvents()
     n_menu, n_tools, n_fx = len(w.actions_by_id), len(w.tools), len(w.effects)
-    print(f"PixelPickle selftest: {n_menu} menu-items, {n_tools} gereedschappen, {n_fx} effecten")
+    print(f"PixelPickle selftest: {n_menu} menu items, {n_tools} tools, {n_fx} effects")
     for s in w.mdi.subWindowList():
         s.canvas.doc.set_modified(False)
     ok = n_menu > 200 and n_tools >= 50 and n_fx >= 140
-    # alle menu's openen en een effectvenster tonen (met het vertalen actief)
+    # open all menus and show an effect window (with translation active)
     for a in w.menuBar().actions():
         m = a.menu()
         if m is not None:
@@ -29,14 +29,14 @@ def selftest(app):
     app.processEvents()
     dlg.reject()
     english = w.menuBar().actions()[0].text() == "&File"
-    print("Engels:", "OK" if english else "FOUT")
+    print("English:", "OK" if english else "FAIL")
     ok = ok and english
-    print("OK" if ok else "FOUT")
+    print("OK" if ok else "FAIL")
     return 0 if ok else 1
 
 
 def app_icon():
-    """Het PixelPickle icoon (augurk van pixels), meegeleverd in alle formaten."""
+    """The PixelPickle icon (pickle made of pixels), shipped in all formats."""
     import os
     from PySide6.QtGui import QIcon
     icon = QIcon()
@@ -49,18 +49,18 @@ def app_icon():
 
 
 def _qt_translations(app, lang):
-    """Standaardvensters en -knoppen van Qt (Ja/Nee, kleur- en bestandskiezer) in dezelfde taal."""
+    """Standard Qt windows and buttons (Yes/No, color and file chooser) in the same language."""
     from PySide6.QtCore import QLibraryInfo, QTranslator
     if lang == "en":
         return
     t = QTranslator(app)
-    name = {"zh": "zh_CN"}.get(lang, lang)  # Qt kent vereenvoudigd Chinees als zh_CN
+    name = {"zh": "zh_CN"}.get(lang, lang)  # Qt calls Simplified Chinese zh_CN
     if t.load(f"qtbase_{name}", QLibraryInfo.path(QLibraryInfo.LibraryPath.TranslationsPath)):
         app.installTranslator(t)
 
 
 def _crash_log():
-    """Bij een harde crash (Qt) de Python-stapel wegschrijven, zodat de oorzaak te vinden is:
+    """On a hard crash (Qt) write out the Python stack so the cause can be found:
     ~/.cache/PixelPickle/crash.log"""
     import faulthandler
     import os
@@ -80,20 +80,20 @@ def _crash_log():
 
 
 def main():
-    _log = _crash_log()  # noqa: F841 (bestand moet open blijven)
+    _log = _crash_log()  # noqa: F841 (file must stay open)
     app = QApplication(sys.argv)
     app.setApplicationName("PixelPickle")
-    # alleen als het menu-item geïnstalleerd is; anders klaagt de desktop-portal bij afsluiten
+    # only if the menu item is installed; otherwise the desktop portal complains on exit
     from PySide6.QtCore import QStandardPaths
     if QStandardPaths.locate(QStandardPaths.StandardLocation.ApplicationsLocation, "pixelpickle.desktop"):
         app.setDesktopFileName("pixelpickle")
-    app.setWindowIcon(app_icon())  # titelbalk en taakbalk, ook zonder geïnstalleerd menu-item
+    app.setWindowIcon(app_icon())  # title bar and taskbar, even without an installed menu item
     app.setStyle("Fusion")
     from . import i18n
-    # de selftest start zoals een eerste start: Engels, met automatisch vertalen al actief
+    # the selftest starts like a first start: English, with automatic translation already active
     lang = i18n.load("en" if "--selftest" in sys.argv[1:] else None)
     _qt_translations(app, lang)
-    if i18n.is_rtl():  # Arabisch: hele venster van rechts naar links
+    if i18n.is_rtl():  # Arabic: whole window right to left
         from PySide6.QtCore import Qt
         app.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
     i18n.install(app)
@@ -107,8 +107,8 @@ def main():
     from PySide6.QtCore import QTimer
     QTimer.singleShot(400, w.offer_recovery)
     code = app.exec()
-    # Het opruimen van Qt-objecten door Python bij het afsluiten kan crashen (bekend PySide-probleem);
-    # alles is dan al opgeslagen, dus direct stoppen.
+    # Python cleaning up Qt objects at exit can crash (known PySide issue);
+    # everything is already saved, so stop immediately.
     w.settings.sync()
     sys.stdout.flush()
     sys.stderr.flush()

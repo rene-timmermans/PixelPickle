@@ -1,4 +1,4 @@
-"""Pixelbewerkingen met NumPy: conversies, vulgebieden, maskers en aanpassingen."""
+"""Pixel operations with NumPy: conversions, fill areas, masks and adjustments."""
 from bisect import bisect_right
 
 import numpy as np
@@ -9,7 +9,7 @@ FMT = QImage.Format.Format_ARGB32_Premultiplied
 
 
 def qimage_to_rgba(img: QImage) -> np.ndarray:
-    """QImage naar (h, w, 4) uint8 RGBA, niet voorvermenigvuldigd. Altijd een kopie."""
+    """QImage to (h, w, 4) uint8 RGBA, not premultiplied. Always a copy."""
     im = img.convertToFormat(QImage.Format.Format_RGBA8888)
     w, h, bpl = im.width(), im.height(), im.bytesPerLine()
     buf = np.frombuffer(im.constBits(), np.uint8, count=bpl * h)
@@ -20,11 +20,11 @@ def rgba_to_qimage(arr: np.ndarray) -> QImage:
     arr = np.ascontiguousarray(arr, dtype=np.uint8)
     h, w = arr.shape[:2]
     im = QImage(arr.data, w, h, w * 4, QImage.Format.Format_RGBA8888)
-    return im.convertToFormat(FMT)  # maakt een eigen kopie
+    return im.convertToFormat(FMT)  # makes its own copy
 
 
 def qimage_to_mask(img: QImage) -> np.ndarray:
-    """Alpha8 QImage naar (h, w) uint8."""
+    """Alpha8 QImage to (h, w) uint8."""
     if img.format() != QImage.Format.Format_Alpha8:
         img = img.convertToFormat(QImage.Format.Format_Alpha8)
     w, h, bpl = img.width(), img.height(), img.bytesPerLine()
@@ -47,7 +47,7 @@ def mask_bbox(m: np.ndarray):
 
 
 def _runs(e: np.ndarray):
-    """Aaneengesloten True stukken per rij: (rij, start, eind)."""
+    """Contiguous True runs per row: (row, start, end)."""
     pad = np.zeros((e.shape[0], e.shape[1] + 2), np.int8)
     pad[:, 1:-1] = e
     d = np.diff(pad, axis=1)
@@ -60,8 +60,8 @@ MAX_EDGES = 150_000
 
 
 def mask_edges(m: np.ndarray):
-    """Omtrek van een selectiemasker als lijnstukken (voor de mierenlijn).
-    Bij extreem grillige selecties wordt alleen het omsluitende kader getoond."""
+    """Outline of a selection mask as line segments (for the marching ants).
+    For extremely ragged selections only the bounding box is shown."""
     sel = m > 127
     h, w = sel.shape
     lines = []
@@ -88,7 +88,7 @@ def similar(rgba: np.ndarray, x: int, y: int, tol: int) -> np.ndarray:
 
 
 def connected(sim: np.ndarray, x: int, y: int) -> np.ndarray:
-    """Vulgebied (4 buren) vanaf (x, y) binnen het booleaanse masker sim."""
+    """Fill area (4 neighbors) from (x, y) within the boolean mask sim."""
     h, w = sim.shape
     out = np.zeros((h, w), bool)
     if not sim[y, x]:
@@ -126,7 +126,7 @@ def region_mask(rgba, x, y, tol, contiguous=True) -> np.ndarray:
 
 
 def box_blur(a: np.ndarray, radius: int, passes: int = 3) -> np.ndarray:
-    """Snelle benadering van gaussiaans vervagen (2D of 3D float array)."""
+    """Fast approximation of gaussian blur (2D or 3D float array)."""
     if radius < 1:
         return a
     out = a.astype(np.float32)
@@ -147,7 +147,7 @@ def box_blur(a: np.ndarray, radius: int, passes: int = 3) -> np.ndarray:
     return out
 
 
-# ---------------------------------------------------------------- aanpassingen
+# ---------------------------------------------------------------- adjustments
 
 def adj_brightness_contrast(a, brightness=0, contrast=0):
     rgb = a[..., :3].astype(np.float32)
@@ -175,7 +175,7 @@ def adj_grayscale(a):
 def adj_blur(a, radius=2):
     out = a.copy()
     alpha = a[..., 3:4].astype(np.float32) / 255
-    pm = a[..., :3].astype(np.float32) * alpha  # vervagen in voorvermenigvuldigde ruimte
+    pm = a[..., :3].astype(np.float32) * alpha  # blur in premultiplied space
     pm = box_blur(pm, int(radius))
     al = box_blur(alpha[..., 0], int(radius))[..., None]
     rgb = np.where(al > 1e-6, pm / np.maximum(al, 1e-6), 0)
@@ -192,10 +192,10 @@ def adj_sharpen(a, radius=2, amount=100):
     return out
 
 
-# ---------------------------------------------------------------- kleurruimtes
+# ---------------------------------------------------------------- color spaces
 
 def rgb_to_hsl(rgb):
-    """rgb float 0..255 (..., 3) naar h (0..1), s, l (0..1)."""
+    """rgb float 0..255 (..., 3) to h (0..1), s, l (0..1)."""
     c = rgb / 255.0
     mx, mn = c.max(axis=-1), c.min(axis=-1)
     l = (mx + mn) / 2
@@ -306,7 +306,7 @@ def adj_emboss(a):
 
 
 def adj_median(a, radius=1):
-    """Mediaanfilter (klein, via gestapelde verschuivingen)."""
+    """Median filter (small, via stacked shifts)."""
     r = int(radius)
     p = np.pad(a[..., :3], ((r, r), (r, r), (0, 0)), mode='edge')
     h, w = a.shape[:2]
@@ -316,7 +316,7 @@ def adj_median(a, radius=1):
     return out
 
 
-# ---------------------------------------------------------------- overeenkomst (tolerantie zoals PSP: 0 tot 200)
+# ---------------------------------------------------------------- similarity (tolerance: 0 to 200)
 MATCH_MODES = ["Geen", "RGB-waarde", "Kleur", "Helderheid", "Perceptueel", "Traditioneel", "Alles dekkend", "Dekking"]
 
 
@@ -332,31 +332,31 @@ def rgb_to_lab(rgb):
 
 
 def match_distance(rgba: np.ndarray, x: int, y: int, mode: int) -> np.ndarray:
-    """Afstand (0..255) van elke pixel tot de pixel op (x, y) volgens de PSP overeenkomstmodus."""
+    """Distance (0..255) of each pixel to the pixel at (x, y) according to the similarity mode."""
     a = rgba.astype(np.float32)
     s = a[y, x]
     if mode in (0, 6):
         return np.zeros(a.shape[:2], np.float32)
-    if mode == 1:  # RGB-waarde
+    if mode == 1:  # RGB value
         return np.sqrt(((a[..., :3] - s[:3]) ** 2).sum(axis=-1) / 3)
-    if mode == 5:  # traditioneel: grootste verschil per kanaal
+    if mode == 5:  # traditional: largest difference per channel
         return np.abs(a[..., :3] - s[:3]).max(axis=-1)
-    if mode == 7:  # dekking
+    if mode == 7:  # opacity
         return np.abs(a[..., 3] - s[3])
-    if mode == 4:  # perceptueel: Lab kleurafstand
+    if mode == 4:  # perceptual: Lab color distance
         lab = rgb_to_lab(a[..., :3])
         return np.sqrt(((lab - rgb_to_lab(s[None, None, :3])) ** 2).sum(axis=-1)) * 2.55
     Y = a[..., 0] * 0.299 + a[..., 1] * 0.587 + a[..., 2] * 0.114
     sY = s[0] * 0.299 + s[1] * 0.587 + s[2] * 0.114
-    if mode == 3:  # helderheid
+    if mode == 3:  # brightness
         return np.abs(Y - sY)
-    cb, cr = a[..., 2] - Y, a[..., 0] - Y  # kleur: vooral chroma
+    cb, cr = a[..., 2] - Y, a[..., 0] - Y  # color: mostly chroma
     return np.sqrt((cb - (s[2] - sY)) ** 2 + (cr - (s[0] - sY)) ** 2) * 0.9 + np.abs(Y - sY) * 0.25
 
 
 def region_mask2(rgba, x, y, tol, contiguous=True, mode=1) -> np.ndarray:
-    """Vulgebied met PSP tolerantie (0 tot 200)."""
-    if mode == 6:  # alles dekkend
+    """Fill area with tolerance (0 to 200)."""
+    if mode == 6:  # everything opaque
         sim = rgba[..., 3] > 0
     elif mode == 0 or tol >= 200:
         sim = np.ones(rgba.shape[:2], bool)
@@ -366,13 +366,13 @@ def region_mask2(rgba, x, y, tol, contiguous=True, mode=1) -> np.ndarray:
 
 
 def antialias_mask(m: np.ndarray, where="outside") -> np.ndarray:
-    """m: bool masker. Geeft uint8 met zachte rand binnen of buiten de selectie."""
+    """m: bool mask. Returns uint8 with a soft edge inside or outside the selection."""
     f = m.astype(np.float32) * 255
     b = box_blur(f, 1, passes=1)
     return np.clip(np.maximum(f, b) if where == "outside" else np.minimum(f, b), 0, 255).astype(np.uint8)
 
 
-# ---------------------------------------------------------------- snappen langs randen
+# ---------------------------------------------------------------- snapping along edges
 def edge_map(rgba: np.ndarray) -> np.ndarray:
     y = (rgba[..., 0] * 0.299 + rgba[..., 1] * 0.587 + rgba[..., 2] * 0.114).astype(np.float32)
     y = box_blur(y, 1, passes=1)
@@ -385,8 +385,8 @@ def edge_map(rgba: np.ndarray) -> np.ndarray:
 
 
 def snap_segment(G: np.ndarray, a, b, rng: int, stiffness=0.15):
-    """Zoek tussen a en b het pad met de sterkste randen binnen een band van +-rng pixels
-    (dynamisch programmeren). Begin- en eindpunt liggen vast. Geeft lijst (x, y)."""
+    """Find between a and b the path with the strongest edges within a band of +-rng pixels
+    (dynamic programming). Start and end point are fixed. Returns a list (x, y)."""
     ax, ay = a
     bx, by = b
     L = float(np.hypot(bx - ax, by - ay))
@@ -431,7 +431,7 @@ def smooth_points(pts, amount):
         return pts
     a = np.array(pts, np.float32)
     k = int(amount) * 2 + 1
-    pad = np.concatenate([a[-k:], a, a[:k]])  # gesloten vorm
+    pad = np.concatenate([a[-k:], a, a[:k]])  # closed shape
     ker = np.ones(k, np.float32) / k
     sx = np.convolve(pad[:, 0], ker, mode="same")[k:-k]
     sy = np.convolve(pad[:, 1], ker, mode="same")[k:-k]
@@ -439,7 +439,7 @@ def smooth_points(pts, amount):
 
 
 def snap_point(G: np.ndarray, x, y, rng: int):
-    """Verplaats een aangeklikt punt naar de sterkste rand in de buurt (dichtbij weegt zwaarder)."""
+    """Move a clicked point to the strongest edge nearby (nearby weighs more)."""
     h, w = G.shape
     x0, x1 = max(0, int(x) - rng), min(w, int(x) + rng + 1)
     y0, y1 = max(0, int(y) - rng), min(h, int(y) + rng + 1)
@@ -457,8 +457,8 @@ def snap_point(G: np.ndarray, x, y, rng: int):
 
 
 def snap_path(G: np.ndarray, a, b, rng: int, depth=3):
-    """snap_segment, maar splitst het stuk als het pad tegen de rand van het bereik aanloopt,
-    zodat ook sterk gebogen randen gevolgd worden."""
+    """snap_segment, but splits the segment if the path runs against the edge of the range,
+    so that strongly curved edges are followed as well."""
     path = snap_segment(G, a, b, rng)
     if depth <= 0 or len(path) < 8:
         return path
@@ -469,7 +469,7 @@ def snap_path(G: np.ndarray, a, b, rng: int, depth=3):
     offs = [abs((x - ax) * nx + (y - ay) * ny) for x, y in path]
     if max(offs) < rng - 1.5:
         return path
-    # splitspunt: zoek loodrecht op de koorde (vanuit het midden) naar de sterkste rand
+    # split point: search perpendicular to the chord (from the middle) for the strongest edge
     mx, my = (ax + bx) / 2, (ay + by) / 2
     reach = int(min(L / 2, rng * 4))
     ts = np.arange(-reach, reach + 1, dtype=np.float32)

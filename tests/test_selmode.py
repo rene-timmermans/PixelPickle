@@ -1,4 +1,4 @@
-"""Selectiemodus Toevoegen/Verwijderen uit de optiebalk: QT_QPA_PLATFORM=offscreen .venv/bin/python tests/test_selmode.py"""
+"""Selection mode Add/Remove from the option bar: QT_QPA_PLATFORM=offscreen .venv/bin/python tests/test_selmode.py"""
 import os
 import sys
 import tempfile
@@ -34,23 +34,23 @@ def sel(x, y):
 
 
 before = QColor(doc.layers[0].image.pixelColor(60, 60))
-# 1. selectie: rechthoek 20..180 x 20..130
+# 1. selection: rectangle 20..180 x 20..130
 rect = w.tools[0xd021]; w.opts["sel_mode"] = 0; w.select_tool(rect)
 drag_rect(rect, P(20, 20), P(180, 130)); assert sel(100, 75)
-# 2. lasso punt tot punt, modus Verwijderen, alle klikken BINNEN de selectie
+# 2. lasso point to point, mode Remove, all clicks INSIDE the selection
 lasso = w.tools[0xd022]; w.opts["lasso_type"] = 1; w.opts["sel_mode"] = 2; w.select_tool(lasso)
-assert lasso.hover_cursor(cv, P(60, 60)) is None, "geen verplaats-cursor bij Verwijderen"
+assert lasso.hover_cursor(cv, P(60, 60)) is None, "no move cursor with Verwijderen"
 for q in (P(50, 40), P(110, 40), P(110, 100), P(50, 100)):
     lasso.press(cv, q, ev(QEvent.Type.MouseButtonPress, q))
     lasso.release(cv, q, ev(QEvent.Type.MouseButtonRelease, q))
 lasso.double_click(cv, P(50, 100), None)
-assert not sel(80, 70) and sel(150, 70), "gebied binnen de lasso hoort uit de selectie"
-assert doc.layers[0].image.pixelColor(60, 60) == before, "pixels mogen niet verplaatst zijn"
-# 3. Toevoegen binnen de selectie: rechthoek die deels erbuiten valt breidt uit
+assert not sel(80, 70) and sel(150, 70), "area inside the lasso must leave the selection"
+assert doc.layers[0].image.pixelColor(60, 60) == before, "pixels must not have moved"
+# 3. Add inside the selection: a rectangle that partly falls outside extends it
 w.opts["sel_mode"] = 1; w.select_tool(rect)
 drag_rect(rect, P(150, 100), P(195, 145)); assert sel(190, 140) and sel(150, 70)
-# 4. Vervangen: slepen binnen de selectie verplaatst nog steeds de pixels
+# 4. Replace: dragging inside the selection still moves the pixels
 w.opts["sel_mode"] = 0; w.select_tool(rect)
 assert rect.hover_cursor(cv, P(160, 60)) == Qt.CursorShape.SizeAllCursor
 doc.set_modified(False)
-print("ALLES OK")
+print("ALL OK")

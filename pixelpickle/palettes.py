@@ -1,4 +1,4 @@
-"""Paletten: Materialen, Lagen en Geschiedenis."""
+"""Palettes: Materials, Layers and History."""
 from PySide6.QtCore import QPointF, QRect, QRectF, QSize, Qt, QTimer, Signal
 from PySide6.QtGui import QBrush, QColor, QIcon, QImage, QLinearGradient, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import (QColorDialog, QComboBox, QHBoxLayout, QInputDialog, QLabel, QMenu,
@@ -9,7 +9,7 @@ from . import icons
 from .document import BLEND_MODES
 
 
-# ---------------------------------------------------------------- materialen
+# ---------------------------------------------------------------- materials
 class Spectrum(QWidget):
     picked = Signal(QColor, bool)
 
@@ -23,7 +23,7 @@ class Spectrum(QWidget):
     def resizeEvent(self, e):
         w, h = self.width(), self.height()
         img = QImage(w, h, QImage.Format.Format_RGB32)
-        img.fill(self.palette().window().color())  # ook de strook tussen kleurvlak en grijsbalk vullen
+        img.fill(self.palette().window().color())  # also fill the strip between the color swatch and the gray bar
         p = QPainter(img)
         gw = w - 14
         g = QLinearGradient(0, 0, gw, 0)
@@ -135,7 +135,7 @@ class MaterialsPalette(QWidget):
         self.sw.update()
 
 
-# ---------------------------------------------------------------- lagen
+# ---------------------------------------------------------------- layers
 def _checker_thumb(img, w=44, h=44):
     pm = QPixmap(w, h)
     p = QPainter(pm)
@@ -166,14 +166,15 @@ class LayerRow(QWidget):
             tog.setToolTip("Groep in- of uitklappen")
             tog.clicked.connect(lambda: palette.toggle_collapse(layer))
             h.addWidget(tog)
-            h.addSpacing(8)  # ruimte tot het oogje, zodat je bij in- of uitklappen niet per ongeluk de groep verbergt
+            h.addSpacing(8)  # space up to the eye icon, so expanding or collapsing does not hide the group by accident
         self.eye = QToolButton()
         self.eye.setCheckable(True)
         self.eye.setChecked(layer.visible)
         self.eye.setAutoRaise(True)
         self.eye.setFixedSize(22, 22)
         self.eye.setToolTip("Zichtbaarheid aan/uit")
-        # geen eigen knopvlak: het oogje staat direct op de rij, zodat het ook op de selectiebalk goed te zien is
+        # no button face of its own: the eye icon sits directly on the row,
+        # so it is also clearly visible on the selection bar
         self.eye.setStyleSheet("QToolButton { border: none; background: transparent; border-radius: 3px; }"
                                "QToolButton:hover { background: rgba(127, 127, 127, 70); }")
         self._paint_icons()
@@ -197,7 +198,7 @@ class LayerRow(QWidget):
             self.thumb.setPixmap(_checker_thumb(layer.image))
             h.addWidget(self.thumb)
         self.name = QLabel(layer.name)
-        self.name.setProperty("pp_notr", True)  # laagnamen zijn gegevens, niet vertalen
+        self.name.setProperty("pp_notr", True)  # layer names are data, do not translate
         h.addWidget(self.name, 1)
         if layer.lock_alpha:
             lk = QLabel()
@@ -224,8 +225,8 @@ class LayerRow(QWidget):
             self._paint_icons()
 
     def _paint_icons(self):
-        """Oogje en uitklappijltje; op de geselecteerde rij in de tekstkleur van de selectie, anders vallen ze
-        weg tegen de selectiebalk (die dezelfde accentkleur heeft als de iconen)."""
+        """Eye icon and expand arrow; on the selected row in the text color of the selection, otherwise they
+        blend into the selection bar (which has the same accent color as the icons)."""
         from PySide6.QtWidgets import QApplication
         col = QApplication.palette().highlightedText().color() if self.selected else None
         icons.set_button(self.eye, "eye" if self.eye.isChecked() else "eye_off", 16, color=col)
@@ -274,7 +275,7 @@ class LayersPalette(QWidget):
 
         row = QHBoxLayout()
         from .tools import SliderSpinBox
-        self.spin = SliderSpinBox()  # met schuifbalk onderaan, net als de invoervelden in de optiebalk
+        self.spin = SliderSpinBox()  # with a scroll bar at the bottom, like the input fields in the options bar
         self.spin.setRange(0, 100)
         self.spin.setToolTip("Dekking")
         self.spin.valueChanged.connect(self.on_opacity)
@@ -314,7 +315,7 @@ class LayersPalette(QWidget):
         self.set_doc(None)
 
     def _fill_new_menu(self):
-        """Zelfde indeling als de knop 'Nieuwe laag' in PSP (zelfde acties als het menu Lagen)."""
+        """Drop-down menu of the 'Nieuwe laag' (New layer) button (same actions as the Layers menu)."""
         m = self.new_menu
         m.clear()
         acts = self.main.actions_by_id
@@ -417,8 +418,9 @@ class LayersPalette(QWidget):
         self.doc.titleChanged.emit()
 
     def on_moved(self, parent, start, end, dest, row):
-        """Slepen in het lagenpalet. De laag komt direct onder de laag die er nu boven staat:
-        onder een uitgeklapte groepskop wordt hij lid van die groep, anders van dezelfde groep als de buur."""
+        """Dragging in the layers palette. The layer goes directly below the layer that is now above it:
+        below an expanded group header it becomes a member of that group, otherwise of the same group as its
+        neighbor."""
         if self._busy or self.doc is None:
             return
         d = self.doc
@@ -431,7 +433,7 @@ class LayersPalette(QWidget):
             return
         d.push_undo("Laag verplaatsen")
         rest = [l for l in d.layers if l not in subtree]
-        if above is None:  # helemaal bovenaan
+        if above is None:  # at the very top
             moved.group = None
             pos = len(rest)
         elif above.kind == "group" and not above.collapsed:
@@ -455,7 +457,7 @@ class LayersPalette(QWidget):
         self.refresh()
 
     def context_menu(self, pos):
-        """Rechtsklik op een laag: die laag wordt actief en het volledige Lagen menu verschijnt (zoals PSP)."""
+        """Right click on a layer: that layer becomes active and the full Layers menu appears."""
         it = self.list.itemAt(pos)
         if it is not None:
             self.list.setCurrentItem(it)
@@ -494,7 +496,7 @@ class LayersPalette(QWidget):
         self.doc.changed.emit(QRect())
 
 
-# ---------------------------------------------------------------- geschiedenis
+# ---------------------------------------------------------------- history
 class HistoryPalette(QWidget):
     def __init__(self, main):
         super().__init__()
@@ -544,10 +546,10 @@ class HistoryPalette(QWidget):
             QApplication.restoreOverrideCursor()
 
 
-# ================================================================ Histogram, Overzicht, Penseelvariantie
+# ================================================================ Histogram, Overview, Brush variance
 class _CanvasWatcher(QWidget):
-    """Basis voor paletten die het actieve beeld volgen: kijkt een paar keer per seconde of er iets
-    veranderd is (alleen als het palet zichtbaar is)."""
+    """Base for palettes that follow the active image: checks a few times per second whether anything
+    has changed (only when the palette is visible)."""
 
     def __init__(self, main, interval=250):
         super().__init__()
@@ -574,8 +576,8 @@ class _CanvasWatcher(QWidget):
 
 
 class HistogramPalette(_CanvasWatcher):
-    """Histogram van de afbeelding (alle zichtbare lagen): helderheid of een kleurkanaal, met gemiddelde en
-    mediaan. Wordt bijgewerkt als de afbeelding verandert."""
+    """Histogram of the image (all visible layers): brightness or a color channel, with mean and
+    median. Updated when the image changes."""
     CHANNELS = ["Helderheid", "Rood", "Groen", "Blauw", "RGB"]
 
     def __init__(self, main):
@@ -605,7 +607,7 @@ class HistogramPalette(_CanvasWatcher):
         self.hist = None
         if cv is not None and cv.cache is not None:
             a = ops.qimage_to_rgba(cv.cache)
-            step = max(1, int((a.shape[0] * a.shape[1] / 400000) ** 0.5))  # grote foto's: steekproef
+            step = max(1, int((a.shape[0] * a.shape[1] / 400000) ** 0.5))  # large photos: sample
             a = a[::step, ::step].reshape(-1, 4)
             a = a[a[:, 3] > 0]
             if len(a):
@@ -628,7 +630,7 @@ class HistogramPalette(_CanvasWatcher):
                     (self.hist[3], QColor(60, 90, 230, 150))] if ch == 4 else \
                 [(self.hist[ch], [self.palette().text().color(), QColor(220, 50, 50), QColor(40, 170, 40),
                                   QColor(50, 80, 220)][ch])]
-            top = max(float(h[1:255].max()) for h, _ in sets) or 1.0  # uitersten niet laten overheersen
+            top = max(float(h[1:255].max()) for h, _ in sets) or 1.0  # do not let the extremes dominate
             for h, col in sets:
                 p.setPen(Qt.PenStyle.NoPen)
                 c = QColor(col)
@@ -644,8 +646,8 @@ class HistogramPalette(_CanvasWatcher):
 
 
 class OverviewPalette(_CanvasWatcher):
-    """Overzicht: de hele afbeelding verkleind, met een kader om wat er in het venster te zien is. Klik of
-    sleep in het overzicht om het beeld te verschuiven."""
+    """Overview: the whole image scaled down, with a frame around what is visible in the window. Click or
+    drag in the overview to scroll the view."""
 
     def __init__(self, main):
         super().__init__(main, 150)
@@ -670,7 +672,7 @@ class OverviewPalette(_CanvasWatcher):
             r, s = self._geom(cv)
             p.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
             p.drawImage(r, cv.cache)
-            # zichtbaar deel van het venster
+            # visible part of the window
             vx, vy = -cv.ox / cv.zoom, -cv.oy / cv.zoom
             vw, vh = cv.width() / cv.zoom, cv.height() / cv.zoom
             view = QRectF(r.x() + vx * s, r.y() + vy * s, vw * s, vh * s).intersected(r)
@@ -708,8 +710,8 @@ class OverviewPalette(_CanvasWatcher):
 
 
 class BrushVariancePalette(QWidget):
-    """Penseelvariantie: willekeurige afwijking per stempel in grootte, dekking, rotatie en plaats (spreiding),
-    voor een natuurlijker streek. Geldt voor het penseel, de airbrush en de wisser."""
+    """Brush variance: random deviation per stamp in size, opacity, rotation and position (spread),
+    for a more natural stroke. Applies to the brush, the airbrush and the eraser."""
     FIELDS = [("var_size", "Grootte"), ("var_opacity", "Dekking"), ("var_rotation", "Rotatie"),
               ("var_spread", "Spreiding")]
 

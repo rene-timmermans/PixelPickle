@@ -1,12 +1,12 @@
-"""Leest alle voorbeeldbestanden (.pspimage en verwanten) uit een lokale installatie van het oorspronkelijke
-programma. Die bestanden worden niet meegeleverd; staan ze er niet, dan wordt deze test overgeslagen."""
+"""Reads all sample files (.pspimage and related) from a local installation of the original
+program. Those files are not shipped; if they are not there, this test is skipped."""
 import sys, glob, collections, struct, os, tempfile
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 base = os.path.expanduser("~/.var/app/com.usebottles.bottles/data/bottles/bottles/pspxi/drive_c/Program Files/"
                           "Corel/Corel Paint Shop Pro Photo XI/")
 if not os.path.isdir(base):
-    print("overgeslagen: geen lokale voorbeeldbestanden")
-    print("ALLES OK")
+    print("skipped: no local sample files")
+    print("ALL OK")
     sys.exit(0)
 from PySide6.QtWidgets import QApplication
 app = QApplication(sys.argv)
@@ -24,7 +24,7 @@ for f in files:
         samples.setdefault(os.path.splitext(f)[1].lower(), (f, doc))
     except Exception as e:
         fail.append((v, f.split("/")[-1], repr(e)[:120]))
-print("gelukt per versie:", dict(ok), "soorten lagen:", dict(kinds)); print("mislukt:", len(fail))
+print("succeeded per version:", dict(ok), "layer kinds:", dict(kinds)); print("failed:", len(fail))
 for x in fail[:8]: print(x)
 from PySide6.QtGui import QImage, QPainter, QColor
 sheet = QImage(1200, 300, QImage.Format.Format_ARGB32); sheet.fill(QColor(200, 200, 200))
@@ -33,5 +33,5 @@ for ext, (f, doc) in samples.items():
     im = doc.composite().scaled(230, 260, aspectMode=__import__("PySide6.QtCore").QtCore.Qt.AspectRatioMode.KeepAspectRatio)
     p.drawImage(x, 30, im); p.drawText(x, 15, f"{ext} {len(doc.layers)} lagen"); x += 240
 p.end(); sheet.save(os.path.join(tempfile.gettempdir(), "psp_sheet.png"))
-assert files and not fail, f"{len(fail)} bestanden niet te openen"
-print("ALLES OK")
+assert files and not fail, f"{len(fail)} files could not be opened"
+print("ALL OK")

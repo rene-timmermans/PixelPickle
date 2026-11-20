@@ -1,8 +1,9 @@
-"""Paint Shop Pro bestanden lezen (.pspimage, .psp, .pspframe, .psptube, .pspmask, .tub, .msk).
+"""Read and write files in the .pspimage format (.pspimage, .psp, .pspframe, .psptube, .pspmask, .tub,
+.msk), compatible with Paint Shop Pro, so that existing user work stays open and editable.
 
-Opbouw (openbare PSP bestandsspecificatie): 32 bytes handtekening, versie (major, minor), daarna blokken
-'~BK\\0' + blok ID (WORD) + lengte (DWORD). Vanaf versie 6 beginnen blokken met een 'chunk' waarvan het
-eerste DWORD de eigen lengte is; onbekende velden aan het eind slaan we daarmee veilig over."""
+Layout (public file specification): 32 byte signature, version (major, minor), then blocks
+'~BK\\0' + block ID (WORD) + length (DWORD). From version 6 on, blocks start with a 'chunk' whose
+first DWORD is its own length; unknown fields at the end are safely skipped this way."""
 import struct
 import zlib
 
@@ -20,7 +21,7 @@ B_VECTOR_EXT, B_SHAPE, B_PAINTSTYLE, B_LINESTYLE = 13, 14, 15, 19
 
 
 
-# PSP mengmodus -> index in pixelpickle.document.BLEND_MODES
+# PSP blend mode -> index in pixelpickle.document.BLEND_MODES
 PSP_BLEND = {0: 0, 1: 1, 2: 2, 3: 4, 4: 6, 5: 8, 6: 10, 7: 11, 8: 12, 9: 13, 10: 14, 11: 15, 12: 16,
              13: 17, 14: 18, 15: 19, 16: 20, 17: 3, 18: 5, 19: 7, 20: 9}
 LT_RASTER, LT_FLOATING, LT_VECTOR, LT_ADJUST, LT_GROUP, LT_MASK, LT_ARTMEDIA = 1, 2, 3, 4, 5, 6, 7
@@ -36,8 +37,8 @@ class Reader:
             raise PspError("Geen geldig .pspimage bestand.")
         self.d = data
         self.major, self.minor = struct.unpack_from("<HH", data, 32)
-        self.hdr = 14 if self.major <= 3 else 10  # versie 3 heeft een extra lengteveld
-        self.chunked = self.major >= 4               # vanaf PSP 6 (versie 4) beginnen blokken met hun lengte
+        self.hdr = 14 if self.major <= 3 else 10  # version 3 has an extra length field
+        self.chunked = self.major >= 4               # from version 4 (PSP 6) on, blocks start with their length
 
     def blocks(self, start, end):
         pos = start
@@ -55,22 +56,22 @@ class Reader:
             yield bid, body, min(body + ln, end)
             pos = body + ln
 
-    # ---------------------------------------------------------------- algemene info
+    # ---------------------------------------------------------------- general info
     def image_info(self, body):
         d = self.d
         p = body + (4 if self.chunked else 0)
         w, h = struct.unpack_from("<ii", d, p)
         res = struct.unpack_from("<d", d, p + 8)[0]
         unit = d[p + 16]
-        p += 8 + 8 + 1  # resolutie (double) + eenheid
+        p += 8 + 8 + 1  # resolution (double) + unit
         comp, depth, planes = struct.unpack_from("<HHH", d, p)
         return dict(w=w, h=h, compression=comp, depth=depth, res=res, res_unit=unit)
 
     @staticmethod
     def px_per_point(info):
-        """Omrekening tekstgrootte in punten naar pixels. Gemeten aan PSP XI bestanden met eenheid cm (2):
-        pixels = punten * resolutie / 2,54 / 72 (klopt op 4 teksten in 2 bestanden). Voor inch (1) aangenomen
-        pixels = punten * resolutie / 72 (nog niet met een voorbeeld gecontroleerd)."""
+        """Conversion of text size in points to pixels. Measured on PSP XI files with unit cm (2):
+        pixels = points * resolution / 2.54 / 72 (holds for 4 texts in 2 files). Assumed for inch (1):
+        pixels = points * resolution / 72 (not yet checked against an example)."""
         res = info.get("res") or 72.0
         if not 1 <= res <= 10000:
             res = 72.0
@@ -83,7 +84,7 @@ class Reader:
         pal = np.frombuffer(d, np.uint8, count=n * 4, offset=p + 4).reshape(n, 4)
         return pal[:, [2, 1, 0]].copy()  # BGRx -> RGB
 
-    # ---------------------------------------------------------------- kanalen
+    # ---------------------------------------------------------------- channels
     def decompress(self, raw, comp, size):
         if comp == 0:
             return raw
@@ -131,7 +132,7 @@ class Reader:
         return btype, ctype, a
 
     def bitmap(self, info, chans, w, h, pal=None):
-        """Kanalen samenvoegen tot RGBA (h, w, 4) en eventueel een gebruikersmasker."""
+        """Merge channels into RGBA (h, w, 4) and optionally a user mask."""
         rgba = np.zeros((h, w, 4), np.uint8)
         rgba[..., 3] = 255
         mask = None
@@ -139,21 +140,21 @@ class Reader:
         for btype, ctype, a in chans:
             if a.shape != (h, w):
                 continue
-            if btype in (0, 8):  # 0 = laagbeeld, 8 = samengesteld beeld
+            if btype in (0, 8):  # 0 = layer image, 8 = composite image
                 if ctype in (1, 2, 3):
                     rgba[..., ctype - 1] = a
                 elif pal is not None and info["depth"] <= 8:
                     rgba[..., :3] = pal[np.minimum(a, len(pal) - 1)]
                 else:
                     rgba[..., 0] = rgba[..., 1] = rgba[..., 2] = a
-            elif btype in (1, 9):  # transparantiemasker van laag of samengesteld beeld
+            elif btype in (1, 9):  # transparency mask of a layer or composite image
                 rgba[..., 3] = a
                 have_alpha = True
             elif btype == 2:
                 mask = a
         return rgba, mask, have_alpha
 
-    # ---------------------------------------------------------------- lagen
+    # ---------------------------------------------------------------- layers
     def layer(self, body, end, info, pal):
         d = self.d
         L = {}
@@ -172,7 +173,7 @@ class Reader:
             L["mask_disabled"] = d[p + 71] if p + 71 < body + cl else 0
             L["ranges"] = _read_ranges(d, p + 75) if p + 115 <= body + cl else None
             tail_end = body + cl
-            if tail_end - p >= 120 and d[tail_end - 5] == 1:  # markeren in lagenpalet + COLORREF
+            if tail_end - p >= 120 and d[tail_end - 5] == 1:  # mark in layer palette + COLORREF
                 r_, g_, b_ = d[tail_end - 4], d[tail_end - 3], d[tail_end - 2]
                 L["highlight"] = (r_, g_, b_)
             q = body + cl
@@ -191,13 +192,13 @@ class Reader:
             L["mask_saved"] = struct.unpack_from("<4i", d, p + 54)
             L["mask_disabled"] = d[p + 71]
             L["ranges"] = _read_ranges(d, p + 75)
-            # vaste lengte: + mengbereiken (5x2x4) + bitmap/kanaal aantallen
+            # fixed length: + blend ranges (5x2x4) + bitmap/channel counts
             sub_start = p + 75 + 2 + 40 + 4
             nxt = d.find(b"~BK\0", p, end)
             sub_start = nxt if nxt >= 0 else end
         sx0, sy0, sx1, sy1 = L["saved"]
         sw, sh = max(0, sx1 - sx0), max(0, sy1 - sy0)
-        # de opgeslagen rechthoek ligt binnen de laagrechthoek (gecontroleerd met PSP XI bestanden)
+        # the saved rectangle lies inside the layer rectangle (checked against PSP XI files)
         L["pos"] = (L["rect"][0] + sx0, L["rect"][1] + sy0)
         mx0, my0, mx1, my1 = L["mask_saved"]
         mw, mh = max(0, mx1 - mx0), max(0, my1 - my0)
@@ -211,7 +212,7 @@ class Reader:
                     btype = struct.unpack_from("<H", d, b + 12)[0]
                 else:
                     btype = struct.unpack_from("<H", d, b + 8)[0]
-                if btype in (2, 7):  # 2 = (laag)masker, 7 = masker van een aanpassingslaag
+                if btype in (2, 7):  # 2 = (layer) mask, 7 = mask of an adjustment layer
                     chans.append(self.channel(b, e, info["compression"], mw, mh))
                 else:
                     chans.append(self.channel(b, e, info["compression"], sw, sh, info["depth"] if info["depth"] == 48 else 8))
@@ -219,7 +220,7 @@ class Reader:
                 cl = struct.unpack_from("<I", d, b)[0]
                 if cl >= 8:
                     L["children"] = struct.unpack_from("<I", d, b + 4)[0]
-            elif bid == B_MASK_EXT and self.chunked:  # masker zonder pixels: één vulwaarde
+            elif bid == B_MASK_EXT and self.chunked:  # mask without pixels: a single fill value
                 L["mask_fill"] = struct.unpack_from("<I", d, b + 4)[0] & 0xff
             elif bid == B_ADJUST_EXT and self.chunked:
                 L["adjust"] = self.adjustment(b, e)
@@ -233,9 +234,9 @@ class Reader:
         L["rgba"] = rgba
         return L
 
-    # ---------------------------------------------------------------- vectoren (tekst)
+    # ---------------------------------------------------------------- vectors (text)
     def vector(self, b, e):
-        """Lees tekstobjecten uit een vectorlaag. Andere vormen worden (nog) overgeslagen."""
+        """Read text objects from a vector layer. Other shapes are (still) skipped."""
         d = self.d
         shapes = []
         q = b + struct.unpack_from("<I", d, b)[0]
@@ -265,12 +266,12 @@ class Reader:
         p += struct.unpack_from("<I", d, p)[0]
         font = dict(family="Arial", size=24.0, points=True, weight=400, italic=False)
         stroke = fill = None
-        runs = []  # [(lettertype, rand, vulling, tekst)]
+        runs = []  # [(font, edge, fill, text)]
         for _ in range(n_el):
             ecl = struct.unpack_from("<I", d, p)[0]
             etype = struct.unpack_from("<H", d, p + 4)[0]
             p += ecl
-            if etype == 1:  # teken
+            if etype == 1:  # character
                 ccl = struct.unpack_from("<I", d, p)[0]
                 ch = chr(struct.unpack_from("<I", d, p + 4)[0])
                 p += ccl
@@ -278,7 +279,7 @@ class Reader:
                     runs.append((font, stroke, fill, ""))
                 f_, s_, fi_, t_ = runs[-1]
                 runs[-1] = (f_, s_, fi_, t_ + ch)
-            elif etype == 2:  # lettertype en stijl, gevolgd door verf- en lijnstijlblokken
+            elif etype == 2:  # font and style, followed by paint and line style blocks
                 fcl = struct.unpack_from("<I", d, p)[0]
                 fl = struct.unpack_from("<H", d, p + 4)[0]
                 fam = d[p + 6:p + 6 + fl].decode("cp1252", "replace")
@@ -306,14 +307,14 @@ class Reader:
                     text=text.replace("\r\n", "\n").replace("\r", "\n").rstrip("\n"))
 
     def adjustment(self, b, e):
-        """Aanpassingslaag. Type 2 = curven: vier opzoektabellen (hoofd, R, G, B) van 256 bytes."""
+        """Adjustment layer. Type 2 = curves: four lookup tables (main, R, G, B) of 256 bytes."""
         d = self.d
         cl = struct.unpack_from("<I", d, b)[0]
         kind = struct.unpack_from("<H", d, b + 4)[0]
         out = {"kind": kind}
         if kind == 2:
             luts = []
-            # tabellen staan op vaste afstand (299 bytes per kanaal, waarvan 256 de tabel)
+            # tables sit at a fixed distance (299 bytes per channel, of which 256 are the table)
             start = b + 49
             for k in range(4):
                 t = d[start + k * 299: start + k * 299 + 256]
@@ -322,7 +323,7 @@ class Reader:
             out["luts"] = luts
         return out
 
-    # ---------------------------------------------------------------- hele bestand
+    # ---------------------------------------------------------------- whole file
     def read(self) -> Document:
         d = self.d
         info, pal, layers, composite = None, None, [], None
@@ -365,7 +366,7 @@ class Reader:
 
     @staticmethod
     def _mask_image(W, H, fill, L):
-        """Grijswaardenmasker: vulwaarde buiten de maskerrechthoek, opgeslagen pixels erbinnen."""
+        """Grayscale mask: fill value outside the mask rectangle, stored pixels inside it."""
         from PySide6.QtGui import QPainter
         img = new_image(W, H, QColor(fill, fill, fill))
         m = L.get("mask")
@@ -381,7 +382,7 @@ class Reader:
         W, H = info["w"], info["h"]
         doc = Document(W, H, None)
         out = []
-        open_groups = []  # [groepslaag, nog te verwachten lagen]
+        open_groups = []  # [group layer, layers still expected]
         notes = []
         for L in layers:
             t = L["type"]
@@ -423,7 +424,7 @@ class Reader:
                 lay.name += " (vectorlaag, nog niet ondersteund)"
                 lay.visible = False
                 notes.append(f"{L['name']}: deze vectorvormen worden nog niet ondersteund (verborgen)")
-            # groepslidmaatschap: de groepskop staat in het bestand vóór zijn lagen
+            # group membership: the group header comes before its layers in the file
             if open_groups:
                 lay.group = open_groups[-1][0]
                 for g in open_groups:
@@ -433,7 +434,7 @@ class Reader:
             out.append(lay)
             if t == LT_GROUP and L["children"] > 0:
                 open_groups.append([lay, L["children"]])
-            # oud laagmasker (PSP 7/8): omzetten naar groep + maskerlaag zoals PSP XI dat doet
+            # old layer mask (file version of PSP 7/8): convert to group + mask layer
             if L["mask"] is not None and not L["mask_disabled"] and t not in (LT_MASK, LT_ADJUST):
                 mimg = new_image(W, H, QColor(255, 255, 255))
                 m = L["mask"]
@@ -464,7 +465,7 @@ class Reader:
 
 
 def render_text_shapes(shapes, W, H, px_per_pt=1.0):
-    """Teken PSP tekstobjecten: begin van de basislijn op het ankerpunt, daarna de vormmatrix."""
+    """Draw PSP text objects: start of the baseline at the anchor point, then the shape matrix."""
     from PySide6.QtCore import QPointF
     from PySide6.QtGui import QFont, QFontMetricsF, QPainter, QPainterPath, QPen, QTransform
     img = new_image(W, H)
@@ -516,7 +517,7 @@ def load(path) -> Document:
 
 
 def inspect(path):
-    """Overzicht voor diagnose: versie, afmetingen en lagen."""
+    """Overview for diagnostics: version, dimensions and layers."""
     r = Reader(open(path, "rb").read())
     out = [f"versie {r.major}.{r.minor}"]
     info = None
@@ -534,8 +535,8 @@ def inspect(path):
     return "\n".join(out)
 
 
-# ================================================================ schrijven (PSP 8 formaat, versie 6.0)
-# 120 bytes laaginformatie na de naam, overgenomen uit een PSP bestand; we vullen alleen bekende velden in.
+# ================================================================ writing (PSP 8 format, version 6.0)
+# 120 bytes of layer information after the name, taken from a PSP file; we only fill in known fields.
 _LAYER_TAIL = bytes.fromhex(
     "01000000000000000020030000e8030000000000000000000020030000e8030000ff00010000000000000000000000000000"
     "000000000000000000000000000000000000000000000000000000ffff0000ffff0000ffff0000ffff0000ffff0000ffff00"
@@ -577,7 +578,7 @@ _CURVE_SEP = bytes.fromhex("2b0100000002000000ffff000000000000000000000000000000
 
 
 def _ranges_bytes(ranges):
-    """Mengbereiken als 5 x (bron, doel) x 4 bytes: grijs, rood, groen, blauw en een ongebruikt vijfde."""
+    """Blend ranges as 5 x (source, target) x 4 bytes: gray, red, green, blue and an unused fifth."""
     out = bytearray()
     for ch in BLEND_CHANNELS + [None]:
         mine, below = (ranges or {}).get(ch, (FULL_RANGE, FULL_RANGE)) if ch else (FULL_RANGE, FULL_RANGE)
@@ -602,7 +603,7 @@ def _info_chunk(name, ltype, rect, opacity, blend, visible, protect, link, highl
     tail = bytearray(_LAYER_TAIL)
     tail[0] = ltype
     tail[1:17] = struct.pack("<4i", *rect)
-    tail[17:33] = struct.pack("<4i", 0, 0, rect[2] - rect[0], rect[3] - rect[1])  # relatief t.o.v. rect
+    tail[17:33] = struct.pack("<4i", 0, 0, rect[2] - rect[0], rect[3] - rect[1])  # relative to rect
     tail[33] = max(0, min(255, round(opacity * 255)))
     tail[34] = blend
     tail[35] = 1 if visible else 0
@@ -613,7 +614,7 @@ def _info_chunk(name, ltype, rect, opacity, blend, visible, protect, link, highl
     if ranges_active(ranges):
         tail[75:115] = _ranges_bytes(ranges)
     if ltype in (LT_MASK, LT_ADJUST):
-        tail[72] = 1  # zo schrijft PSP XI het bij masker- en aanpassingslagen
+        tail[72] = 1  # this is how PSP XI writes it for mask and adjustment layers
         if mask_rect is not None:
             tail[38:54] = struct.pack("<4i", *mask_rect)
             tail[54:70] = struct.pack("<4i", 0, 0, mask_rect[2] - mask_rect[0], mask_rect[3] - mask_rect[1])
@@ -625,7 +626,7 @@ def _no_bitmap():
 
 
 def _curves_ext(points):
-    """Aanpassingslaag curven: zelfde opbouw als PSP XI (hoofdcurve + identieke R/G/B)."""
+    """Adjustment layer curves: same layout as PSP XI (main curve + identical R/G/B)."""
     from .effects.adjust import _monotone_lut
     master = np.clip(np.rint(_monotone_lut(points)), 0, 255).astype(np.uint8).tobytes()
     ident = bytes(range(256))
@@ -636,7 +637,7 @@ def _curves_ext(points):
 
 
 def _cropped(rgba):
-    """Bijsnijden tot de niet-transparante pixels (zoals PSP opslaat). Geeft (rect, deelbeeld)."""
+    """Crop to the non-transparent pixels (this is how layers are stored in the file). Returns (rect, sub-image)."""
     ys, xs = np.nonzero(rgba[..., 3])
     if len(xs) == 0:
         return None, None
@@ -645,8 +646,8 @@ def _cropped(rgba):
 
 
 def save(doc, path):
-    """Schrijf een .pspimage in het formaat van PSP XI (versie 9.0) met lagen, groepen, maskers en
-    curven-aanpassingslagen. Geeft een lijst met waarschuwingen terug."""
+    """Write a .pspimage in the PSP XI format (version 9.0) with layers, groups, masks and
+    curves adjustment layers. Returns a list of warnings."""
     W, H = doc.w, doc.h
     full = W * H * 3
     warn = []

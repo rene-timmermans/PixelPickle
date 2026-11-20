@@ -1,7 +1,7 @@
-"""Maakt pixelpickle/data/manual/structure.json: de opbouw van de uitgebreide handleiding, rechtstreeks
-uit het programma (gereedschappen met hun opties, effecten met hun instellingen, menu's). De uitleg zelf
-staat per taal in pixelpickle/data/manual/prose_<taal>.json.
-Gebruik: QT_QPA_PLATFORM=offscreen .venv/bin/python -I tools/make_manual_structure.py"""
+"""Creates pixelpickle/data/manual/structure.json: the structure of the extensive manual, directly
+from the program (tools with their options, effects with their settings, menus). The explanatory text itself
+is stored per language in pixelpickle/data/manual/prose_<language>.json.
+Usage: QT_QPA_PLATFORM=offscreen .venv/bin/python -I tools/make_manual_structure.py"""
 import json
 import os
 import sys
@@ -35,7 +35,7 @@ for gi, group in enumerate(TOOLBAR, 1):
                 label = x.text()
                 continue
             o = {"label": label}
-            if isinstance(x, QFontComboBox):  # de geïnstalleerde lettertypen verschillen per computer
+            if isinstance(x, QFontComboBox):  # the installed fonts differ per computer
                 o.update(type="font")
             elif isinstance(x, QComboBox):
                 o.update(type="choice", choices=[x.itemText(i) for i in range(x.count())])

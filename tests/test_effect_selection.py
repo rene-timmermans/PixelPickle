@@ -1,4 +1,4 @@
-"""Effectvenster met actieve selectie: QT_QPA_PLATFORM=offscreen .venv/bin/python tests/test_effect_selection.py"""
+"""Effect window with an active selection: QT_QPA_PLATFORM=offscreen .venv/bin/python tests/test_effect_selection.py"""
 import os
 import sys
 import tempfile
@@ -17,7 +17,7 @@ doc = Document(400, 300, QColor(255, 255, 255)); w.add_document(doc); doc.add_la
 lay = doc.layer(); lay.image = new_image(400, 300)
 p = QPainter(lay.image); p.fillRect(150, 80, 150, 120, QColor(200, 120, 60)); p.end()
 eff = w.effects[0x8052]
-d = EffectDialog(w, doc, eff); assert not hasattr(d, "sel_note"), "geen selectie: geen melding"; d.reject()
+d = EffectDialog(w, doc, eff); assert not hasattr(d, "sel_note"), "no selection: no notice"; d.reject()
 m = QImage(400, 300, QImage.Format.Format_Alpha8)
 
 
@@ -27,9 +27,9 @@ def select(x, y, ww, hh):
     doc.set_selection(QImage(m))
 
 
-select(10, 220, 200, 70)  # selectie naast de inhoud van de laag (zoals bij de gebruiker)
+select(10, 220, 200, 70)  # selection next to the layer content (as with the user)
 d = EffectDialog(w, doc, eff); assert "buiten de inhoud" in d.sel_note.text(); d.reject()
-select(100, 50, 150, 100)  # selectie over de inhoud
+select(100, 50, 150, 100)  # selection over the content
 d = EffectDialog(w, doc, eff); assert d.sel_note.text().startswith("Alleen binnen de selectie"); d.reject()
 doc.set_modified(False)
-print("ALLES OK")
+print("ALL OK")

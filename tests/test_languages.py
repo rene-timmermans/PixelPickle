@@ -1,6 +1,6 @@
-"""Alle vertalingen: QT_QPA_PLATFORM=offscreen .venv/bin/python tests/test_languages.py
-Per taal: catalogus compleet, invulplekken kloppen, handleiding aanwezig, en na het starten in die taal
-staat er geen Nederlandse tekst meer in de menu's, de optiebalk en een effectvenster."""
+"""All translations: QT_QPA_PLATFORM=offscreen .venv/bin/python tests/test_languages.py
+Per language: catalog complete, placeholders correct, manual present, and after starting in that language
+there is no Dutch text left in the menus, the option bar and an effect window."""
 import json
 import os
 import subprocess
@@ -10,7 +10,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "pixelpickle", "data")
 sys.path.insert(0, ROOT)
 
-if len(sys.argv) > 1:  # één taal in een eigen proces (de taal wordt bij het starten gekozen)
+if len(sys.argv) > 1:  # one language in its own process (the language is chosen at startup)
     import tempfile
     os.environ["XDG_CONFIG_HOME"] = tempfile.mkdtemp()
     from PySide6.QtCore import Qt
@@ -25,7 +25,7 @@ if len(sys.argv) > 1:  # één taal in een eigen proces (de taal wordt bij het s
     from pixelpickle.document import Document
     from pixelpickle.mainwindow import MainWindow
     cat = json.load(open(os.path.join(DATA, f"lang_{lang}.json"), encoding="utf-8"))
-    # alles wat in deze taal een andere tekst heeft, mag niet meer in de oorspronkelijke vorm te zien zijn
+    # everything that has different text in this language must no longer be visible in its original form
     dutch = {k for k, v in cat.items() if v and v != k and k.replace("&", "") != v.replace("&", "")}
     left = set()
     w = MainWindow(); w.show(); app.processEvents()
@@ -67,8 +67,8 @@ if len(sys.argv) > 1:  # één taal in een eigen proces (de taal wordt bij het s
     dlg.reject()
     html = w.manual_html()
     assert "{tools}" not in html and os.path.exists(os.path.join(DATA, f"manual_{lang}.html")), lang
-    print(lang, "menu Bestand:", w.menuBar().actions()[0].text(), "| richting:",
-          "rtl" if app.layoutDirection() == Qt.LayoutDirection.RightToLeft else "ltr", "| Nederlands over:", len(left))
+    print(lang, "menu Bestand:", w.menuBar().actions()[0].text(), "| direction:",
+          "rtl" if app.layoutDirection() == Qt.LayoutDirection.RightToLeft else "ltr", "| Dutch left over:", len(left))
     for t_, wh in sorted(left)[:10]:
         print("   ", repr(t_), "@", wh)
     doc.set_modified(False)
@@ -76,21 +76,21 @@ if len(sys.argv) > 1:  # één taal in een eigen proces (de taal wordt bij het s
 
 from pixelpickle.i18n import LANGUAGES  # noqa: E402
 en = json.load(open(os.path.join(DATA, "lang_en.json"), encoding="utf-8"))
-# alle teksten van alle effecten (naam, labels, keuzes) moeten in de catalogus staan
+# all texts of all effects (name, labels, choices) must be in the catalog
 from pixelpickle.effects import load_all  # noqa: E402
 gaps = set()
 for e in load_all().values():
     for t in [e.name] + [p["label"] for p in e.params] + [o for p in e.params for o in p.get("options", [])]:
-        if t not in en and t.replace("&", "") not in en:  # precies zoals het op het scherm komt
+        if t not in en and t.replace("&", "") not in en:  # exactly as it appears on screen
             gaps.add(t)
-assert not gaps, f"effectteksten zonder vertaling: {sorted(gaps)}"
-print("effectteksten: alle namen, labels en keuzes staan in de catalogus")
+assert not gaps, f"effect texts without translation: {sorted(gaps)}"
+print("effect texts: all names, labels and choices are in the catalog")
 failed = []
 for code, name in LANGUAGES:
     if code in ("nl", "en"):
         continue
     path = os.path.join(DATA, f"lang_{code}.json")
-    assert os.path.exists(path), f"ontbreekt: {path}"
+    assert os.path.exists(path), f"missing: {path}"
     cat = json.load(open(path, encoding="utf-8"))
     missing = set(en) - set(cat)
     bad = [k for k in en if k in cat and (en[k].count("{}") != cat[k].count("{}") or not cat[k])]
@@ -102,4 +102,4 @@ for code, name in LANGUAGES:
     if r.returncode != 0:
         failed.append(code)
         print(r.stderr[-800:])
-print("ALLES OK" if not failed else f"LET OP: {failed}")
+print("ALL OK" if not failed else f"NOTE: {failed}")

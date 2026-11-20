@@ -1,4 +1,4 @@
-"""Materialen palet en het venster Materiaaleigenschappen (kleurenring, stalen, RGB/HSL)."""
+"""Materials palette and the Material Properties window (color ring, swatches, RGB/HSL)."""
 import math
 
 from PySide6.QtCore import QPointF, QRect, QRectF, QSize, Qt, QTimer, Signal
@@ -26,7 +26,7 @@ BASIC = [
 
 
 class ColorWheel(QWidget):
-    """Kleurtoonring met een vierkant voor verzadiging (horizontaal) en waarde (verticaal)."""
+    """Hue ring with a square for saturation (horizontal) and value (vertical)."""
     changed = Signal(QColor)
 
     def __init__(self, color):
@@ -110,7 +110,7 @@ class Swatch(QWidget):
     def __init__(self, color, size=QSize(16, 16)):
         super().__init__()
         self.color = QColor(color)
-        self.image = None  # verloop of patroon in plaats van de kleur
+        self.image = None  # gradient or pattern instead of the color
         self.setFixedSize(size)
 
     def paintEvent(self, e):
@@ -126,14 +126,14 @@ class Swatch(QWidget):
         self.clicked.emit()
 
 
-KEY = Qt.ItemDataRole.UserRole + 2  # naam van een patroon (de getoonde tekst kan vertaald zijn)
+KEY = Qt.ItemDataRole.UserRole + 2  # name of a pattern (the displayed text may be translated)
 
 
 class MaterialDialog(QDialog):
     def __init__(self, parent, color, title="Materiaaleigenschappen", mat=None, fg=None, bg=None,
                  documents=()):
-        """mat: huidig materiaal (None = effen kleur); fg/bg: kleuren voor verlopen als
-        Voorgrond-achtergrond; documents: [(naam, QImage)] open afbeeldingen, te gebruiken als patroon."""
+        """mat: current material (None = solid color); fg/bg: colors for gradients such as
+        Voorgrond-achtergrond (foreground-background); documents: [(name, QImage)] open images, usable as a pattern."""
         super().__init__(parent)
         self.setWindowTitle(title)
         self.prev = QColor(color)
@@ -209,7 +209,7 @@ class MaterialDialog(QDialog):
         tabs.setCurrentIndex({None: 0, "gradient": 1, "pattern": 2}[mat["kind"] if mat else None])
         self._update_current()
 
-    # ------------------------------------------------------------ verloop
+    # ------------------------------------------------------------ gradient
     def _gradient_page(self):
         page = QWidget()
         v = QVBoxLayout(page)
@@ -269,7 +269,7 @@ class MaterialDialog(QDialog):
         self.ginv.toggled.connect(self._grad_changed)
         form.addWidget(self.ginv, 4, 0, 1, 2)
         v.addLayout(form)
-        for k in ("cx", "cy"):  # middelpunt telt niet bij een lineair verloop
+        for k in ("cx", "cy"):  # the center does not count for a linear gradient
             self.gsp[k].setEnabled(self.grad["style"] != 0)
         return page
 
@@ -302,7 +302,7 @@ class MaterialDialog(QDialog):
         if it is None:
             return
         key = it.data(Qt.ItemDataRole.UserRole)
-        # een ingebouwd verloop (of een uit een eigen installatie) wordt als kopie bewerkt
+        # a built-in gradient (or one from a user's own installation) is edited as a copy
         name = key[len(M.USER_PREFIX):] if key.startswith(M.USER_PREFIX) else _free_name(M.gradient_label(key))
         self._grad_edit_dialog(name, M.gradient_stops(key))
 
@@ -332,7 +332,7 @@ class MaterialDialog(QDialog):
         self.gsp["cy"].setEnabled(centered)
         self._update_current()
 
-    # ------------------------------------------------------------ patroon
+    # ------------------------------------------------------------ pattern
     def _pattern_page(self):
         page = QWidget()
         v = QVBoxLayout(page)
@@ -404,9 +404,9 @@ class MaterialDialog(QDialog):
         self.pat.update({k: sp.value() for k, sp in self.psp.items()})
         self._update_current()
 
-    # ------------------------------------------------------------ algemeen
+    # ------------------------------------------------------------ general
     def material(self):
-        """Gekozen materiaal: None (effen kleur), een verloop of een patroon."""
+        """Chosen material: None (solid color), a gradient or a pattern."""
         i = self.tabs.currentIndex()
         if i == 1:
             return dict(self.grad)
@@ -472,9 +472,9 @@ class MaterialDialog(QDialog):
         return QColor(self.cur)
 
 
-# ---------------------------------------------------------------- verloopbewerker
+# ---------------------------------------------------------------- gradient editor
 def load_user_gradients():
-    """Eigen verlopen uit de instellingen inlezen (bij het starten)."""
+    """Read the own gradients from the settings (at startup)."""
     import json
     from PySide6.QtCore import QSettings
     try:
@@ -512,8 +512,8 @@ def _free_name(base=None):
 
 
 class GradientBar(QWidget):
-    """Verloopbalk met kleurpunten eronder: klik een punt om het te kiezen, sleep om het te verschuiven,
-    klik op een lege plek om een punt toe te voegen."""
+    """Gradient bar with color points below it: click a point to select it, drag to move it,
+    click an empty spot to add a point."""
     changed = Signal()
     selected = Signal(int)
     MARK = 9
@@ -572,7 +572,7 @@ class GradientBar(QWidget):
     def mousePressEvent(self, e):
         x = e.position().x()
         i = self._hit(x)
-        if i is None:  # nieuw punt met de kleur die het verloop daar al heeft
+        if i is None:  # new point with the color the gradient already has there
             pos = self._pos(x)
             lut = M.stops_lut(self.stops, self.fg, self.bg)
             r, g, b, a = (int(round(v)) for v in lut[int(round(pos * 255))])
@@ -596,7 +596,7 @@ class GradientBar(QWidget):
 
 
 class GradientEditor(QDialog):
-    """Verloopbewerker: kleurpunten met een eigen kleur of de voorgrond-/achtergrondkleur, dekking en positie."""
+    """Gradient editor: color points with an own color or the foreground/background color, opacity and position."""
 
     SOURCES = ["Eigen kleur", "Voorgrondkleur", "Achtergrondkleur"]
 
@@ -665,7 +665,7 @@ class GradientEditor(QDialog):
         self._show_stop(0)
         self.resize(440, 0)
 
-    # een kleurpunt: (bron 0/1/2, QColor, dekking 0..255)
+    # a color point: (source 0/1/2, QColor, opacity 0..255)
     def _parse(self, spec):
         r, g, b, a = M._rgba(spec, self.fg, self.bg)
         src = 1 if spec.startswith("fg") else 2 if spec.startswith("bg") else 0
@@ -737,10 +737,10 @@ class GradientEditor(QDialog):
 
 
 class MaterialBox(QWidget):
-    """Groot kleurvak met daaronder stijlknopjes en de transparant-schakelaar."""
+    """Large color box with style buttons and the transparent toggle below it."""
     clicked = Signal()
     toggled_none = Signal(bool)
-    kind_chosen = Signal(int)  # 0 kleur, 1 verloop, 2 patroon
+    kind_chosen = Signal(int)  # 0 color, 1 gradient, 2 pattern
 
     def __init__(self, main, fg):
         super().__init__()
@@ -748,7 +748,7 @@ class MaterialBox(QWidget):
         v = QVBoxLayout(self)
         v.setContentsMargins(0, 0, 0, 0)
         v.setSpacing(1)
-        # het kleurvak is precies zo breed als de vier knopjes eronder, die tegen elkaar aan staan
+        # the color box is exactly as wide as the four buttons below it, which sit against each other
         self.box = Swatch(QColor(0, 0, 0), QSize(4 * self.BTN, 30))
         self.box.clicked.connect(self.clicked)
         v.addWidget(self.box)
@@ -776,7 +776,7 @@ class MaterialBox(QWidget):
         from PySide6.QtWidgets import QSizePolicy
         self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
 
-    BTN = 18  # grootte van de stijlknopjes
+    BTN = 18  # size of the style buttons
 
     def refresh(self, color, none, mat=None, fg=None, bg=None):
         self.box.color = QColor(color) if not none else QColor(255, 255, 255)
@@ -789,7 +789,7 @@ class MaterialBox(QWidget):
 
 
 def _tab_icon(kind):
-    """Icoontjes voor de tabbladen van het materialenpalet (zoals in PSP, zonder tekst)."""
+    """Small icons for the tabs of the materials palette (no text)."""
     img = QImage(18, 18, QImage.Format.Format_ARGB32_Premultiplied)
     img.fill(Qt.GlobalColor.transparent)
     p = QPainter(img)
@@ -827,7 +827,7 @@ class MaterialsPalette(QWidget):
         tabs = QTabWidget()
         tabs.setTabPosition(QTabWidget.TabPosition.North)
         tabs.setIconSize(QSize(18, 18))
-        # compacte tabbladen: alleen een icoontje, dus weinig opvulling (kleuren uit het thema)
+        # compact tabs: only an icon, so little padding (colors from the theme)
         tabs.tabBar().setStyleSheet(
             "QTabBar::tab { width: 18px; padding: 3px 6px; margin-right: 1px; border: 1px solid palette(mid);"
             " border-bottom: none; border-top-left-radius: 3px; border-top-right-radius: 3px;"
@@ -871,25 +871,25 @@ class MaterialsPalette(QWidget):
         swap.setFixedSize(20, 20)
         swap.clicked.connect(main.swap_colors)
         right.addWidget(swap, 0, 1, 3, 1, Qt.AlignmentFlag.AlignVCenter)
-        right.setRowStretch(1, 1)  # ruimte tussen voorgrond en achtergrond: achtergrond onderaan
+        right.setRowStretch(1, 1)  # space between foreground and background: background at the bottom
         right.addWidget(self.bgbox, 2, 0)
         right.setContentsMargins(0, 0, 0, 0)
         self.right = right
         self.tabs = tabs
         tabs.currentChanged.connect(lambda *_: QTimer.singleShot(0, self._align_right))
         lay.addLayout(right)
-        # het vinkje op een eigen regel onder het palet, zodat de kolom met de kleurvakken smal blijft
+        # the check box on its own row below the palette, so the column with the color boxes stays narrow
         self.all_tools = QCheckBox("Alle gereedschappen")
         self.all_tools.setChecked(True)
         outer.addWidget(self.all_tools)
-        # niet hoger dan nodig, zodat Lagen en Geschiedenis de ruimte krijgen (zoals in PSP)
+        # no taller than needed, so that Layers and History get the space
         from PySide6.QtWidgets import QSizePolicy
         self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
         self.refresh()
 
     def _align_right(self):
-        """De kolom met de kleurvakken precies naast het spectrum: de bovenkant van het voorgrondvak op de
-        bovenkant van het spectrum, de onderste knopjes op de onderkant (los van de hoogte van de tabbladen)."""
+        """The column with the color boxes exactly next to the spectrum: the top of the foreground box at the
+        top of the spectrum, the bottom buttons at the bottom (independent of the height of the tabs)."""
         page = self.tabs.currentWidget()
         if page is None or not page.isVisible():
             return

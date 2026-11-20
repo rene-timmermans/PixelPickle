@@ -1,5 +1,5 @@
-"""Engelse taal: QT_QPA_PLATFORM=offscreen .venv/bin/python tests/test_i18n.py
-Start PixelPickle in het Engels en zoekt Nederlandse teksten die nog op het scherm staan."""
+"""English language: QT_QPA_PLATFORM=offscreen .venv/bin/python tests/test_i18n.py
+Starts PixelPickle in English and looks for Dutch texts that are still on screen."""
 import json
 import os
 import sys
@@ -28,7 +28,7 @@ def check(text, where):
 
 w = MainWindow(); w.show(); app.processEvents()
 doc = Document(200, 150); w.add_document(doc); app.processEvents()
-print("menubalk:", [a.text() for a in w.menuBar().actions()])
+print("menu bar:", [a.text() for a in w.menuBar().actions()])
 assert w.menuBar().actions()[0].text() == "&File", w.menuBar().actions()[0].text()
 assert doc.layers[0].name == "Background" and doc.untitled.startswith("Image")
 
@@ -45,7 +45,7 @@ def walk_menu(m, path):
 
 for a in w.menuBar().actions():
     walk_menu(a.menu(), a.text())
-# elk gereedschap: optiebalk en statusbalk
+# every tool: option bar and status bar
 for t in [t for t in w.tools.values() if t.available]:
     w.select_tool(t); app.processEvents()
     for c in w.opt_bar.findChildren(QWidget):
@@ -58,18 +58,18 @@ for t in [t for t in w.tools.values() if t.available]:
     msg = w.statusBar().currentMessage()
     for part in msg.split(": ", 1):
         check(part, "status " + t.name)
-# een effectvenster
+# an effect window
 from pixelpickle.effectdialog import EffectDialog
 dlg = EffectDialog(w, doc, w.effects[0x809e]); dlg.show(); app.processEvents()
 for c in dlg.findChildren(QWidget):
     if isinstance(c, (QLabel, QAbstractButton)):
         check(c.text(), "effectvenster")
-print("effectvenster titel:", dlg.windowTitle(), "| labels:", [c.text() for c in dlg.findChildren(QLabel) if c.text()][:6])
+print("effect dialog title:", dlg.windowTitle(), "| labels:", [c.text() for c in dlg.findChildren(QLabel) if c.text()][:6])
 dlg.reject()
-print("statusbalk Toverstaf:", (w.select_tool(w.tools[0xd023]), w.statusBar().currentMessage())[1])
-print("NIET VERTAALD op het scherm:", len(left))
+print("status bar Magic Wand:", (w.select_tool(w.tools[0xd023]), w.statusBar().currentMessage())[1])
+print("NOT TRANSLATED on screen:", len(left))
 for t, wh in sorted(left)[:40]:
     print("  ", repr(t), "@", wh)
 for s in w.mdi.subWindowList():
     s.canvas.doc.set_modified(False)
-print("ALLES OK" if not left else "LET OP: onvertaalde teksten")
+print("ALL OK" if not left else "NOTE: untranslated texts")

@@ -1,5 +1,5 @@
-"""Vectorobjecten: kiezen, uitlijnen, verdelen, even groot, schikken, groeperen, eigenschappen, tekst in
-curven en tekst op een pad: QT_QPA_PLATFORM=offscreen .venv/bin/python tests/test_objects.py"""
+"""Vector objects: choose, align, distribute, same size, arrange, group, properties, text to
+curves and text on a path: QT_QPA_PLATFORM=offscreen .venv/bin/python tests/test_objects.py"""
 import os
 import sys
 import tempfile
@@ -60,50 +60,50 @@ def drag(a, b, mods=Qt.KeyboardModifier.NoModifier):
     pick.release(cv, b, ev(QEvent.Type.MouseButtonRelease, b, mods))
 
 
-# kiezen: klik, Shift+klik, kader
+# choose: click, Shift+click, frame
 click(QPointF(30, 25)); assert doc.vsel == [0]
 click(QPointF(110, 70), Qt.KeyboardModifier.ShiftModifier); assert doc.vsel == [0, 1]
 click(QPointF(350, 280)); assert doc.vsel == []
 drag(QPointF(5, 5), QPointF(130, 90)); assert sorted(doc.vsel) == [0, 1]
-print("1 Kiezen: klik, Shift+klik, leeg vlak, kader", doc.vsel)
-# verplaatsen van de gekozen objecten
+print("1 Choosing: click, Shift+click, empty area, frame", doc.vsel)
+# move the chosen objects
 b0 = VO.obj_bounds(lay.vector[1])
 drag(QPointF(110, 70), QPointF(130, 80))
 b1 = VO.obj_bounds(lay.vector[1])
 assert round(b1.x() - b0.x()) == 20 and round(VO.obj_bounds(lay.vector[2]).x()) == 200
-print("2 slepen verplaatst alleen de gekozen objecten")
+print("2 dragging moves only the chosen objects")
 run = lambda cid: w.actions_by_id[cid].trigger()  # noqa: E731
 doc.vsel = [0, 1, 2]
-run(0x8163)  # uitlijnen boven
+run(0x8163)  # align top
 assert len({round(VO.obj_bounds(o).top()) for o in lay.vector}) == 1
-run(0x8162)  # horizontaal centreren
+run(0x8162)  # center horizontally
 cx = {round(VO.obj_bounds(o).center().x()) for o in lay.vector}
 assert len(cx) == 1, cx
 doc.undo(); doc.undo()
-lay = doc.layer()  # na ongedaan maken zijn de lagen nieuwe kopieën
-print("3 Uitlijnen boven en horizontaal centreren")
+lay = doc.layer()  # after undo the layers are new copies
+print("3 Align top and center horizontally")
 doc.vsel = [0, 1, 2]
-run(0x816f)  # horizontaal gelijkmatig verdelen
+run(0x816f)  # distribute horizontally evenly
 bs = sorted((VO.obj_bounds(o) for o in lay.vector), key=lambda b: b.left())
 g1, g2 = bs[1].left() - bs[0].right(), bs[2].left() - bs[1].right()
 assert abs(g1 - g2) < 0.01, (g1, g2)
-print("4 Verdelen: gelijke tussenruimte", round(g1, 1))
+print("4 Distribute: equal spacing", round(g1, 1))
 doc.vsel = [2, 0]
-run(0x816b)  # even groot (beide), maat = eerst gekozen (2)
+run(0x816b)  # same size (both), size = first chosen (2)
 assert round(VO.obj_bounds(lay.vector[0]).width()) == 60 and round(VO.obj_bounds(lay.vector[0]).height()) == 50
-print("5 Even groot maken naar het eerst gekozen object")
+print("5 Make same size as the first chosen object")
 doc.vsel = [0]
-run(0x8139)  # vooraan
+run(0x8139)  # to front
 assert doc.vsel == [2] and round(VO.obj_bounds(lay.vector[2]).width()) == 60
-print("6 Schikken: vooraan")
+print("6 Arrange: to front")
 doc.vsel = [0, 1]
-run(0x8154)  # groeperen
+run(0x8154)  # group
 assert lay.vector[0].get("group") and lay.vector[0]["group"] == lay.vector[1]["group"]
 doc.vsel = []; click(QPointF(VO.obj_bounds(lay.vector[0]).center()))
 assert sorted(doc.vsel) == [0, 1]
 run(0x8156); assert "group" not in lay.vector[0]
-print("7 Groeperen: klik kiest de hele groep; groep opheffen")
-# eigenschappen
+print("7 Group: click chooses the whole group; ungroup")
+# properties
 orig_exec = dialogs.VectorPropertiesDialog.exec
 
 
@@ -117,32 +117,32 @@ dialogs.VectorPropertiesDialog.exec = fake_exec
 doc.vsel = [0]
 run(0x81e6)
 assert lay.vector[0]["width"] == 5 and lay.vector[0]["fill"] is None
-print("8 Eigenschappen: breedte en geen vulling")
-# snelmenu bij Kiezen
+print("8 Properties: width and no fill")
+# context menu when choosing
 cv.mousePressEvent(ev(QEvent.Type.MouseButtonPress, QPointF(390, 290), btn=Qt.MouseButton.RightButton))
 cv.mouseReleaseEvent(ev(QEvent.Type.MouseButtonRelease, QPointF(390, 290), btn=Qt.MouseButton.RightButton))
 items = shown[-1]
 assert "Knippen" in items and "Rasterselectie maken" in items and any("Uitlijnen" in x for x in items), items
-print("9 snelmenu vectorobjecten:", items)
+print("9 context menu vector objects:", items)
 pick.object_edit("raster_selection", cv); assert doc.sel is not None
 pick.object_edit("copy", cv); pick.object_edit("paste", cv); assert len(lay.vector) == 4
 doc.set_selection(None)
-# tekst in curven
+# text to curves
 tl = Layer("Tekst", new_image(400, 300))
 w.opts.update(font_size=40, text_units=1, text_stroke=0)
 tl.text = new_text("Ok", 20, 250, w.opts, QColor(0, 0, 0), QColor(0, 0, 200))
 doc.add_layer(tl); doc.render_text(tl)
-run(0x814d)  # als afzonderlijke lettervormen
+run(0x814d)  # as individual letter shapes
 assert tl.text is None and tl.vector is not None and len(tl.vector) == 2
-assert tl.vector[0].get("more"), "de O heeft een gat (samengesteld object)"
+assert tl.vector[0].get("more"), "the O has a hole (compound object)"
 inside_hole = V.qpath(tl.vector[0]).boundingRect().center()
-assert not V.qpath(tl.vector[0]).contains(inside_hole), "het gat van de O blijft open"
+assert not V.qpath(tl.vector[0]).contains(inside_hole), "the hole of the O stays open"
 doc.undo()
 run(0x814c); assert len(doc.layer().vector) == 1
 doc.undo()
 lay = next(l for l in doc.layers if l.name == "Vormen")
-print("10 Tekst omzetten in curven: per letter (O met gat) en als één vorm")
-# tekst op een pad
+print("10 Convert text to curves: per letter (O with hole) and as one shape")
+# text on a path
 doc.active = doc.layers.index(lay)
 lay.vector.append(V.make_object([[QPointF(20, 200), None, QPointF(150, 100)], [QPointF(380, 200), QPointF(250, 100), None]],
                                 False, [0, 0, 0, 255], None, 1))
@@ -155,6 +155,6 @@ r = bounds(tl2.text)
 assert r.width() > 30 and r.top() < 200, r
 doc.active = doc.layers.index(tl2)
 run(0x1793); assert not tl2.text.get("on_path")
-print("11 Tekst inpassen in pad en weer loskoppelen")
+print("11 Fit text to path and detach again")
 doc.set_modified(False)
-print("ALLES OK")
+print("ALL OK")

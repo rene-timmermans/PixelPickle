@@ -1,7 +1,7 @@
-"""Vervormings-, geometrische, afbeeldings- en reflectie-effecten (PSP XI).
+"""Distortion, geometric, image and reflection effects (compatible with Paint Shop Pro XI).
 
-Alle geometrische effecten werken met een inverse afbeelding: voor elke uitvoerpixel wordt berekend
-waar in de bron bemonsterd moet worden, daarna doet common.remap het bilineair bemonsteren.
+All geometric effects use an inverse mapping: for each output pixel it is computed
+where in the source to sample, after which common.remap does the bilinear sampling.
 """
 import math
 
@@ -15,7 +15,7 @@ TAU = 2 * math.pi
 
 
 def _edge(mode, ctx):
-    """PSP randmodus -> (edge, fill) voor remap."""
+    """Edge mode -> (edge, fill) for remap."""
     if mode == 0:
         return "fill", (*ctx.bg, 255)
     if mode == 2:
@@ -35,17 +35,17 @@ def _edge_param(default=1, label="Randmodus"):
 
 
 def _center(h, w, px, py):
-    """Middelpunt uit percentages (0..100) van breedte/hoogte."""
+    """Center from percentages (0..100) of width/height."""
     return px / 100 * (w - 1), py / 100 * (h - 1)
 
 
 def _center_off(h, w, ox, oy):
-    """Middelpunt uit verschuiving -100..100 t.o.v. het beeldmidden."""
+    """Center from an offset -100..100 relative to the image center."""
     return (w - 1) / 2 * (1 + ox / 100), (h - 1) / 2 * (1 + oy / 100)
 
 
 def _radial(a, ctx, cx, cy, rx, ry, func, mode=1):
-    """Radiale vervorming binnen een ellips (rx, ry): bronstraal = func(rho) voor rho < 1."""
+    """Radial distortion within an ellipse (rx, ry): source radius = func(rho) for rho < 1."""
     h, w = a.shape[:2]
     yy, xx = grid(h, w)
     rx, ry = max(rx, 0.5), max(ry, 0.5)
@@ -58,14 +58,14 @@ def _radial(a, ctx, cx, cy, rx, ry, func, mode=1):
 
 
 def _rotate_map(xx, yy, cx, cy, theta):
-    """Bronpositie bij draaiing van de inhoud over theta (rad, positief = met de klok mee op het scherm)."""
+    """Source position for rotating the content by theta (rad, positive = clockwise on screen)."""
     dx, dy = xx - cx, yy - cy
     c, s = np.cos(theta), np.sin(theta)
     return cx + dx * c + dy * s, cy - dx * s + dy * c
 
 
 def _sphere_curve(t, k):
-    """Bolle (k>0) of holle (k<0) profielkromme voor t in 0..1 (k = -1..1)."""
+    """Convex (k>0) or concave (k<0) profile curve for t in 0..1 (k = -1..1)."""
     t = np.clip(t, 0, 1)
     if k >= 0:
         f = np.arcsin(t) * (2 / math.pi)
@@ -78,7 +78,7 @@ def _signed_curve(u, k):
     return np.sign(u) * _sphere_curve(np.abs(u), k)
 
 
-# ================================================================ Vervormingseffecten
+# ================================================================ Distortion effects
 
 @effect(0x80ae, "Krullen", [Int("cols", "Aantal kolommen", 1, 100, 3), Int("rows", "Aantal rijen", 1, 100, 3),
                             Bool("sym", "Symmetrisch", True), Int("radius", "Straal (%)", 1, 100, 50),
@@ -110,7 +110,7 @@ def displacement(a, ctx, map, strength, scale, edge):
     if map == 0:
         g = gray(a) * (a[..., 3].astype(np.float32) / 255) / 255
         m1 = blur(g, grain / 4)
-        m2 = blur(g.T, grain / 4).T  # zelfde kaart, voor y licht ander verloop door gradiënt
+        m2 = blur(g.T, grain / 4).T  # same map, for y a slightly different course through the gradient
         gy, gx = np.gradient(m2)
         m2 = np.clip(m1 + (gx - gy) * grain, 0, 1)
     else:
@@ -132,14 +132,14 @@ def lens(a, ctx, kind, strength, cx, cy, edge):
     dx, dy = (xx - x0) / R, (yy - y0) / R
     r = np.sqrt(dx * dx + dy * dy)
     k = strength / 100
-    if kind == 0:      # ton: midden vergroot, randen samengedrukt
+    if kind == 0:      # barrel: center enlarged, edges compressed
         rs = r * (1 + k * r * r)
-    elif kind == 3:    # kussen
+    elif kind == 3:    # pincushion
         rs = r / (1 + k * r * r)
-    elif kind == 1:    # visoog
+    elif kind == 1:    # fisheye
         th = k * math.radians(85)
         rs = r if th < 1e-4 else np.tan(np.minimum(r, 1.5) * th) / math.tan(th)
-    else:              # visoog (sferisch): bol binnen ingeschreven cirkel
+    else:              # fisheye (spherical): sphere within the inscribed circle
         Rc = max(min(w, h) / 2 / R, 1e-6)
         t = r / Rc
         rs = np.where(t < 1, _sphere_curve(t, k) * Rc, r)
@@ -148,7 +148,7 @@ def lens(a, ctx, kind, strength, cx, cy, edge):
 
 
 def _bulge(k):
-    """Gladde radiale profielfunctie: k>0 vergroot het midden, k<0 knijpt (|k| < 1 blijft monotoon)."""
+    """Smooth radial profile function: k>0 enlarges the center, k<0 pinches (|k| < 1 stays monotone)."""
     k = max(-0.95, min(0.95, k))
     return lambda t: t * (1 - k * (1 - t) ** 2)
 
@@ -201,7 +201,7 @@ def polar(a, ctx, mode, edge):
     if mode == 0:
         nx, ny = (xx - cx) / rx, (yy - cy) / ry
         r = np.sqrt(nx * nx + ny * ny)
-        ang = np.mod(np.arctan2(nx, -ny), TAU)  # 0 = boven, met de klok mee
+        ang = np.mod(np.arctan2(nx, -ny), TAU)  # 0 = top, clockwise
         mx = ang / TAU * w - 0.5
         my = r * h - 0.5
     else:
@@ -293,7 +293,7 @@ def wind(a, ctx, dir, strength):
     rng = np.random.default_rng(ctx.seed)
     row = rng.random(h).astype(np.float32)
     rowL = (L * (0.3 + 1.4 * row * row))[:, None]
-    dec = np.exp(-1.0 / rowL)  # verval per rij: strepen van verschillende lengte
+    dec = np.exp(-1.0 / rowL)  # decay per row: streaks of different lengths
     sm = np.empty_like(src)
     cur = src[:, 0].copy()
     lum = src[..., :3].mean(axis=2)
@@ -301,7 +301,7 @@ def wind(a, ctx, dir, strength):
     sm[:, 0] = cur
     for x in range(1, w):
         v = src[:, x]
-        # heldere pixels worden als strepen meegeblazen
+        # bright pixels are blown along as streaks
         brighter = (curl * dec[:, 0] > lum[:, x])[:, None]
         cur = np.where(brighter, cur * dec + v * (1 - dec), v)
         curl = np.where(brighter[:, 0], curl * dec[:, 0] + lum[:, x] * (1 - dec[:, 0]), lum[:, x])
@@ -315,10 +315,10 @@ def wind(a, ctx, dir, strength):
     return np.dstack([to_u8(rgb), to_u8(alpha[..., 0])])
 
 
-# ================================================================ Geometrische effecten
+# ================================================================ Geometric effects
 
 def _polygon_map(a, ctx, sides, edge):
-    """Beeld in een regelmatige veelhoek (sides) of cirkel (sides=0) vervormen."""
+    """Distort the image into a regular polygon (sides) or circle (sides=0)."""
     h, w = a.shape[:2]
     yy, xx = grid(h, w)
     cx, cy = (w - 1) / 2, (h - 1) / 2
@@ -328,15 +328,15 @@ def _polygon_map(a, ctx, sides, edge):
     phi = np.arctan2(ny, nx)
     if sides:
         seg = TAU / sides
-        rel = np.mod(phi + math.pi / 2, seg) - seg / 2  # punt boven
+        rel = np.mod(phi + math.pi / 2, seg) - seg / 2  # point at the top
         rp = math.cos(seg / 2) / np.cos(rel)
     else:
         rp = 1.0
     rho = r / rp
     c, s = np.cos(phi), np.sin(phi)
-    rs = 1.0 / np.maximum(np.maximum(np.abs(c), np.abs(s)), 1e-6)  # straal van het vierkant
+    rs = 1.0 / np.maximum(np.maximum(np.abs(c), np.abs(s)), 1e-6)  # radius of the square
     k = rho * rs
-    k = np.where(rho > 1, k * rho, k)  # buiten de vorm zeker buiten het beeld
+    k = np.where(rho > 1, k * rho, k)  # outside the shape is certainly outside the image
     return _remap(a, cx + c * k * rx, cy + s * k * ry, edge, ctx)
 
 
@@ -374,12 +374,12 @@ def _perspective(a, ctx, distortion, edge, vertical):
     h, w = a.shape[:2]
     yy, xx = grid(h, w)
     d = distortion / 100
-    sl = max(1 - max(0.0, -d), 0.01)  # lengte linkerzijde
+    sl = max(1 - max(0.0, -d), 0.01)  # length of the left side
     sr = max(1 - max(0.0, d), 0.01)
     t = xx / max(w - 1, 1)
-    # perspectivisch correcte verdeling langs x (hyperbolisch)
+    # perspective-correct distribution along x (hyperbolic)
     u = t * sr / (sl + (sr - sl) * t) if abs(sr - sl) > 1e-6 else t
-    sc = sl + (sr - sl) * t  # zichtbare hoogte in deze kolom
+    sc = sl + (sr - sl) * t  # visible height in this column
     cy = (h - 1) / 2
     mx = u * (w - 1)
     my = cy + (yy - cy) / sc
@@ -421,7 +421,7 @@ def spherize(a, ctx, strength, shape):
     return _radial(a, ctx, (w - 1) / 2, (h - 1) / 2, rx, ry, lambda t: _sphere_curve(t, k))
 
 
-# ================================================================ Afbeeldingseffecten
+# ================================================================ Image effects
 
 @effect(0x80bb, "Verschuiving", [Int("dx", "Horizontale verschuiving (%)", -100, 100, 50),
                                  Int("dy", "Verticale verschuiving (%)", -100, 100, 50), _edge_param(3)])
@@ -457,7 +457,7 @@ def page_curl(a, ctx, corner, width, height, radius, color, edge):
     nl = math.hypot(nx, ny)
     nx, ny = nx / nl, ny / nl
     c0 = nx * Wc
-    d = xx * nx + yy * ny - c0  # < 0: hoekkant van de vouwlijn
+    d = xx * nx + yy * ny - c0  # < 0: corner side of the fold line
     R = max(radius / 100 * 0.35 * c0, 0.5)
     q = np.clip(-d / R, 0, 1)
     asn = np.arcsin(q)
@@ -465,7 +465,7 @@ def page_curl(a, ctx, corner, width, height, radius, color, edge):
     s_low = R * asn
 
     def source(s):
-        k = d + s  # terug langs de normaal naar de oorspronkelijke positie
+        k = d + s  # back along the normal to the original position
         return xx - k * nx, yy - k * ny
 
     tx, ty = source(s_top)
@@ -483,7 +483,7 @@ def page_curl(a, ctx, corner, width, height, radius, color, edge):
     base_sh = base.copy()
     base_sh[..., :3] *= shadow[..., None]
     out = np.where(flat[..., None], base_sh, out)
-    # binnenkant van de krul (achterzijde van het papier) met cilinderbelichting
+    # inside of the curl (back of the paper) with cylinder lighting
     alpha_t = math.pi - asn
     shade_t = (0.6 + 0.4 * np.sin(alpha_t / 2 + 0.3))[..., None]
     col = np.array([*color[:3], 255], np.float32)
@@ -494,7 +494,7 @@ def page_curl(a, ctx, corner, width, height, radius, color, edge):
     lowc = low.copy()
     lowc[..., :3] *= shade_l
     out = np.where(low_ok[..., None], lowc, out)
-    # oorspronkelijke transparantie respecteren voor het gekrulde papier
+    # respect the original transparency for the curled paper
     talpha = remap(src, tx, ty, "clamp")[..., 3].astype(np.float32)
     out[..., 3] = np.where(top_ok, talpha, out[..., 3])
     return flip(to_u8(out)).copy()
@@ -529,7 +529,7 @@ def seamless(a, ctx, method, dir, trans):
     return np.dstack([to_u8(rgb), to_u8(al[..., 0] * 255)])
 
 
-# ================================================================ Reflectie-effecten
+# ================================================================ Reflection effects
 
 @effect(0x80ac, "Weerspiegeling", [Int("opacity", "Dekking", 0, 100, 100), Int("intensity", "Intensiteit", 1, 100, 50),
                                    Int("cx", "Horizontale verschuiving (%)", 0, 100, 50),
@@ -543,8 +543,8 @@ def feedback(a, ctx, opacity, intensity, cx, cy, ellipse):
     ey = np.where(dy >= 0, max(h - 1 - y0, 0.5), max(y0, 0.5))
     nx, ny = dx / ex, dy / ey
     rho = np.sqrt(nx * nx + ny * ny) if ellipse else np.maximum(np.abs(nx), np.abs(ny))
-    f = 0.9 - 0.6 * intensity / 100      # verkleining per herhaling
-    n = 1 + intensity // 5               # aantal herhalingen
+    f = 0.9 - 0.6 * intensity / 100      # reduction per repetition
+    n = 1 + intensity // 5               # number of repetitions
     lf = math.log(f)
     k = np.floor(np.log(np.maximum(rho, 1e-9)) / lf)
     k = np.clip(k, 0, n)
@@ -593,7 +593,7 @@ def kaleidoscope(a, ctx, ox, oy, angle, scale, petals, orbits, suction, edge):
 
 
 def _tri(t):
-    """Driehoeksgolf 0..1..0 met periode 2 (spiegelend tegelen)."""
+    """Triangle wave 0..1..0 with period 2 (mirrored tiling)."""
     m = np.mod(t, 2)
     return np.where(m > 1, 2 - m, m)
 
@@ -606,7 +606,7 @@ def _tri(t):
 def pattern(a, ctx, ox, oy, angle, scale, cols, rows, hshift, vshift):
     h, w = a.shape[:2]
     yy, xx = grid(h, w)
-    # uitvoer in tegeleenheden rond het midden
+    # output in tile units around the center
     u = ((xx + 0.5) / w - 0.5 + hshift / 100) * cols
     v = ((yy + 0.5) / h - 0.5 + vshift / 100) * rows
     th = math.radians(angle)
@@ -627,7 +627,7 @@ def rotating_mirror(a, ctx, ox, oy, angle, edge):
     yy, xx = grid(h, w)
     px, py = _center_off(h, w, ox, oy)
     th = math.radians(angle)
-    nx, ny = math.cos(th), math.sin(th)  # 0 graden: verticale spiegellijn
+    nx, ny = math.cos(th), math.sin(th)  # 0 degrees: vertical mirror line
     d = (xx - px) * nx + (yy - py) * ny
     k = np.where(d > 0, 2 * d, 0)
     return _remap(a, xx - k * nx, yy - k * ny, edge, ctx)

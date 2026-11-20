@@ -1,4 +1,5 @@
-"""Hoofdvenster van PixelPickle, met de menu-, werkbalk- en gereedschapsindeling van PSP XI."""
+"""Main window of PixelPickle. The layout of menus, toolbars and tools is compatible with
+Paint Shop Pro XI, so anyone who knows that program finds their way right away."""
 import os
 import traceback
 
@@ -27,8 +28,8 @@ APP = "PixelPickle"
 
 
 def glyph_icon(glyph, enabled=True, size=24):
-    """Icoon voor een gereedschap of werkbalkknop: een eigen lijnicoon in de accentkleur van het thema
-    (zie icons.py); alleen als daar geen tekening voor is, het teken zelf."""
+    """Icon for a tool or toolbar button: a custom line icon in the accent color of the theme
+    (see icons.py); only when there is no drawing for it, the character itself."""
     from . import icons
     ic = icons.icon(glyph, enabled)
     if ic is not None:
@@ -41,7 +42,7 @@ def glyph_icon(glyph, enabled=True, size=24):
     p.setFont(f)
     if not enabled:
         p.setOpacity(0.35)
-    p.setPen(QApplication.palette().windowText().color())  # volgt licht/donker thema
+    p.setPen(QApplication.palette().windowText().color())  # follows the light/dark theme
     p.drawText(pm.rect(), Qt.AlignmentFlag.AlignCenter, glyph)
     p.end()
     return QIcon(pm)
@@ -52,10 +53,10 @@ class DocWindow(QMdiSubWindow):
         super().__init__()
         self.main, self.canvas = main, canvas
         from .canvas import CanvasView
-        self.setWidget(CanvasView(canvas))  # canvas met schuifbalken
+        self.setWidget(CanvasView(canvas))  # canvas with scroll bars
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-        # het ingebouwde vensterknopmenu van Qt heeft eigen sneltoetsen (Ctrl+F4, Ctrl+W ...); die botsen met de
-        # menu's (Sluiten, Aanpassen aan afbeelding) en dan werkt geen van beide: hier weghalen
+        # the built-in window button menu of Qt has its own shortcuts (Ctrl+F4, Ctrl+W ...); they clash with the
+        # menus ("Sluiten", "Aanpassen aan afbeelding") and then neither works: remove it here
         if self.systemMenu() is not None:
             for a in self.systemMenu().actions():
                 a.setShortcuts([])
@@ -78,7 +79,7 @@ class DocWindow(QMdiSubWindow):
 
 
 class ToolGroupButton(QToolButton):
-    """Knop op de gereedschapsbalk; met een uitklappijltje als de groep meer gereedschappen heeft."""
+    """Button on the tool bar; with a drop-down arrow when the group has more tools."""
 
     def __init__(self, main, tools):
         super().__init__()
@@ -91,8 +92,8 @@ class ToolGroupButton(QToolButton):
             menu = QMenu(self)
             for t in tools:
                 key = main.tool_key(t)
-                # de letter alleen tonen (rechts in het menu), niet als tweede sneltoets: de sneltoets zit al op
-                # het gereedschap zelf, en twee acties met dezelfde toets maakt Qt "dubbelzinnig" (dan werkt geen van beide)
+                # show the letter only (on the right in the menu), not as a second shortcut: the shortcut is already on
+                # the tool itself, and two actions with the same key make Qt "ambiguous" (then neither works)
                 a = menu.addAction(glyph_icon(t.glyph, t.available), f"{t.name}\t{key}" if key else t.name)
                 a.triggered.connect(lambda _=False, tool=t: main.select_tool(tool))
             self.setMenu(menu)
@@ -107,7 +108,7 @@ class ToolGroupButton(QToolButton):
 
 
 def restart_pixelpickle():
-    """Start PixelPickle opnieuw: de geïnstalleerde starter, of anders vanuit de broncode."""
+    """Restart PixelPickle: the installed launcher, or else from the source code."""
     import shutil
     import sys
     from PySide6.QtCore import QProcess, QProcessEnvironment
@@ -126,7 +127,7 @@ def restart_pixelpickle():
 
 
 class TrStatusBar(QStatusBar):
-    """Statusbalk die meldingen in de gekozen taal toont."""
+    """Status bar that shows messages in the chosen language."""
 
     def showMessage(self, text, timeout=0):
         super().showMessage(tr(text), timeout)
@@ -151,15 +152,15 @@ class MainWindow(QMainWindow):
         self.fg = QColor(0, 0, 0)
         self.bg = QColor(255, 255, 255)
         self.fg_none = self.bg_none = False
-        self.fg_mat = self.bg_mat = None  # verloop of patroon in plaats van effen kleur
-        self._last_mat = {}  # (voorgrond?, soort) -> laatst gekozen verloop/patroon
+        self.fg_mat = self.bg_mat = None  # gradient or pattern instead of a plain color
+        self._last_mat = {}  # (foreground?, kind) -> last chosen gradient/pattern
         self.opts = dict(DEFAULT_OPTS)
         self.menu_tree, self.tool_keys = load_layout()
         self.effects = effects_pkg.load_all()
         self.last_command = None
 
         self.mdi = QMdiArea()
-        self.setAcceptDrops(True)  # bestanden en afbeeldingen uit andere programma's hierheen slepen
+        self.setAcceptDrops(True)  # drag files and images from other programs here
         self.mdi.setBackground(QColor(112, 112, 112))
         self.mdi.subWindowActivated.connect(self.on_active)
         self.mdi.viewport().setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
@@ -186,8 +187,8 @@ class MainWindow(QMainWindow):
         self.set_tab_mode(self.settings.value("tabs", "true") == "true")
         from .autosave import AutoSaver
         self.autosaver = AutoSaver(self)
-        # zonder afbeelding is er geen gereedschap actief (zoals in PSP); bij de eerste afbeelding
-        # wordt het laatst gebruikte gereedschap weer gekozen, ook na een herstart
+        # without an image no tool is active; at the first image
+        # the last used tool is selected again, also after a restart
         try:
             last = int(str(self.settings.value("last_tool", "d001")), 16)
         except ValueError:
@@ -205,7 +206,7 @@ class MainWindow(QMainWindow):
         self.update_actions()
         self.sync_bar_checks()
 
-    # ================================================================ opbouw
+    # ================================================================ construction
     def tool_key(self, tool):
         keys = self.tool_keys.get(tool.cid)
         return keys[0] if keys else ""
@@ -218,19 +219,19 @@ class MainWindow(QMainWindow):
         self.addToolBar(Qt.ToolBarArea.LeftToolBarArea, tb)
         self.tools_toolbar = tb
         tb.visibilityChanged.connect(lambda _: self.sync_bar_checks())
-        # past de balk niet in het venster, dan valt de pijlknop op in de accentkleur van het thema
+        # if the bar does not fit in the window, the arrow button stands out in the accent color of the theme
         tb.setStyleSheet("QToolButton#qt_toolbar_ext_button { background-color: palette(highlight);"
                          " border-radius: 4px; }")
         self.group_buttons = {}
         for group in TOOLBAR:
             tools = [self.tools[c] for c in group if self.tools[c].available]
-            if not tools:  # nog niet gebouwde gereedschappen niet tonen
+            if not tools:  # do not show tools that are not built yet
                 continue
             btn = ToolGroupButton(self, tools)
             tb.addWidget(btn)
             for t in tools:
                 self.group_buttons[t.cid] = btn
-        # sneltoetsen van gereedschappen (uit de PSP instellingen van de gebruiker)
+        # tool shortcuts (compatible assignment, see data/pp_menus.json)
         for cid, keys in self.tool_keys.items():
             if cid in self.tools and self.tools[cid].available:
                 a = QAction(self)
@@ -243,7 +244,7 @@ class MainWindow(QMainWindow):
         self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.opt_bar)
 
     def _fit_tools(self):
-        """Icoontjes van de gereedschapsbalk zo groot mogelijk, maar zo dat alles zichtbaar blijft."""
+        """Make the toolbar icons as large as possible, but so that everything stays visible."""
         tb = self.tools_toolbar
         if tb.orientation() != Qt.Orientation.Vertical:
             return
@@ -290,7 +291,7 @@ class MainWindow(QMainWindow):
         D = lambda f: (lambda: f(self.doc()))  # noqa: E731
         adj = self.adjust
         return {
-            # Bestand
+            # "Bestand" (File) menu
             0xe100: self.file_new, 0xe101: self.file_open, 0xe102: self.close_active,
             0xe103: self.file_save, 0xe104: self.file_save_as, 0xe10b: lambda: self.file_save_as(copy=True),
             0xe141: self.close, 0x8012: self.preferences, 0x812d: self.export_gif, 0x814b: self.export_jpeg,
@@ -300,14 +301,14 @@ class MainWindow(QMainWindow):
             0x822c: self.export_frame, 0x815c: self.export_shape, 0x801b: self.batch_process,
             0x81ad: self.batch_rename, 0x8014: self.file_format_prefs, 0x8152: self.file_locations,
             0x8204: self.reset_preferences,
-            # Bewerken
+            # "Bewerken" (Edit) menu
             0xe12b: D(lambda d: d.undo()), 0xe12c: D(lambda d: d.redo()), 0xe128: self.repeat_last,
             0xe123: self.edit_cut, 0xe122: self.edit_copy, 0x8105: lambda: self.edit_copy(merged=True),
             0x80e6: self.paste_new_image, 0x810d: self.paste_new_layer, 0x801e: self.paste_new_selection,
             0x801f: self.paste_into_selection, 0xe120: self.edit_clear,
             0x80f0: self.paste_transparent_selection, 0x8023: self.paste_vector_selection,
             0x8020: lambda: QApplication.clipboard().clear(),
-            # Beeld
+            # "Beeld" (View) menu
             0x8007: lambda: self.canvas().actual_size(), 0x8132: lambda: self.canvas().zoom_step(True),
             0x8136: lambda: self.canvas().zoom_step(False), 0x801d: self.toggle_fullscreen,
             0x8021: self.toggle_grid,
@@ -328,7 +329,7 @@ class MainWindow(QMainWindow):
             0x8125: self.check_updates,
             0xe800: lambda: self.std_toolbar.setVisible(not self.std_toolbar.isVisible()),
             0xe801: lambda: (self.statusBar().setVisible(not self.statusBar().isVisible()), self.sync_bar_checks()),
-            # Afbeelding
+            # "Afbeelding" (Image) menu
             0x8242: D(lambda d: d.rotate(90)), 0x8243: D(lambda d: d.rotate(-90)), 0x800e: self.free_rotate,
             0x80d1: self.image_resize, 0x80d2: self.image_canvas, 0x807a: self.add_borders,
             0x80cf: self.crop_to_selection, 0x800d: D(lambda d: d.mirror_layer(True)),
@@ -336,7 +337,7 @@ class MainWindow(QMainWindow):
             0x8079: D(lambda d: d.apply_to_layer(ops.adj_grayscale, "Grijswaarden")),
             0x804b: D(lambda d: d.apply_to_layer(ops.adj_invert, "Negatief")),
             0x823f: lambda: self.count_colors(False),
-            # Aanpassen
+            # "Aanpassen" (Adjust) menu
             0x8240: D(lambda d: d.apply_to_layer(auto_fix, "Eénstaps-fotocorrectie")),
             0x8057: D(lambda d: d.apply_to_layer(stretch, "Histogram uitbreiden")),
             0x8056: D(lambda d: d.apply_to_layer(equalize, "Histogram egaliseren")),
@@ -367,11 +368,11 @@ class MainWindow(QMainWindow):
                                 ("amount", "Sterkte:", 1, 300, 50), ("clip", "Clip:", 0, 0, 0)]),
             0x8087: D(lambda d: d.apply_to_layer(lambda a: ops.adj_blur(a, 1), "Verzachten")),
             0x8088: D(lambda d: d.apply_to_layer(lambda a: ops.adj_blur(a, 2), "Nog zachter")),
-            # Effecten
+            # "Effecten" (Effects) menu
             0x804c: lambda: adj("Aantal niveaus beperken", ops.adj_posterize, [("levels", "Niveaus:", 2, 255, 4)]),
             0x804d: lambda: adj("Solariseren", ops.adj_solarize, [("threshold", "Drempel:", 0, 255, 128)]),
             0x808c: D(lambda d: d.apply_to_layer(ops.adj_emboss, "Bosseleren")),
-            # Lagen
+            # "Lagen" (Layers) menu
             0x8140: self.new_raster_layer, 0x8141: self.new_vector_layer, 0x80f7: D(lambda d: d.duplicate_layer()),
             0x80f6: D(lambda d: d.delete_layer()), 0x80fe: self.layer_properties,
             0x8101: D(lambda d: d.arrange_layer("top")), 0x8104: D(lambda d: d.move_layer(1)),
@@ -391,7 +392,7 @@ class MainWindow(QMainWindow):
             0x810f: lambda: self.channel_save(selection=True), 0x810e: lambda: self.channel_load(selection=True),
             0x8111: lambda: self.channel_save(selection=False), 0x8110: lambda: self.channel_load(selection=False),
             0x81e4: self.channel_delete, 0x80f5: D(lambda d: d.selection_from_mask()),
-            # Selecties
+            # "Selecties" (Selections) menu
             0x80dc: self.select_all, 0x80e2: self.select_none, 0x80dd: self.select_invert,
             0x811b: lambda: self.modify_selection("expand", "Uitbreiden", "Aantal pixels:"),
             0x811c: lambda: self.modify_selection("contract", "Inkrimpen", "Aantal pixels:"),
@@ -409,12 +410,12 @@ class MainWindow(QMainWindow):
             0x81e7: self.sel_recover_aa, 0x81f6: self.sel_specks, 0x81f5: self.sel_smooth, 0x81ec: self.sel_borders,
             0x8283: self.sel_clip_canvas, 0x80de: self.sel_load_disk, 0x80df: self.sel_save_disk,
             0x81f4: self.sel_edit, 0x80e4: self.sel_float, 0x80e5: self.sel_defloat,
-            # Venster
+            # "Venster" (Window) menu
             0xe130: self.new_window, 0x82ce: lambda: self.set_tab_mode(self.mdi.viewMode() != QMdiArea.ViewMode.TabbedView),
             0xe132: self.mdi.cascadeSubWindows, 0xe133: lambda: self.tile(False), 0xe134: lambda: self.tile(True),
             0x80d3: self.mdi.closeAllSubWindows, 0x80d4: self.duplicate_image, 0x80d5: self.fit_window_to_image,
             0x81d0: lambda: self.canvas().fit(),
-            # Help
+            # "Help" (Help) menu
             0x8028: self.show_shortcuts, 0xe140: self.about, 0xe142: self.show_manual, 0x8151: self.autosave_settings,
         }
 
@@ -439,7 +440,7 @@ class MainWindow(QMainWindow):
                 H[cid] = lambda c=eff_cid: self.new_adjustment_layer(c)
         return H
 
-    # Opdrachten die ook zonder geopende afbeelding werken (o.a. voorkeuren, zoals in PSP)
+    # Commands that also work without an open image (among others preferences)
     NO_DOC = {0x8012, 0x8125, 0x80e0, 0x80e1, 0x8203, 0x801b, 0x81ad, 0x8014, 0x8152, 0x8204, 0x8216, 0x8022, 0x8159, 0x822d, 0x821d, 0x821c, 0x810a, 0x817c, 0x817a, 0x817b, 0x8155, 0xe100, 0xe101, 0xe141, 0x80e6, 0x8020, 0x8185, 0x81ae, 0x8002, 0x81ba, 0x81f9, 0xe800, 0xe801,
               0x801d, 0x82ce, 0xe132, 0xe133, 0xe134, 0x80d3, 0x8028, 0xe140, 0xe142, 0x8151}
     CHECKABLE = {0x821f: None, 0x8185: "dock_mat", 0x81ae: "dock_layers", 0x8002: "dock_hist", 0x82ce: None, 0x8021: None,
@@ -450,7 +451,7 @@ class MainWindow(QMainWindow):
 
     @staticmethod
     def _tidy_menu(menu):
-        """Lege submenu's weghalen en scheidingslijnen opruimen (geen dubbele, niet aan begin of eind)."""
+        """Remove empty submenus and tidy up separators (no doubles, none at the start or end)."""
         for a in list(menu.actions()):
             sub = a.menu()
             if sub is not None:
@@ -485,17 +486,17 @@ class MainWindow(QMainWindow):
                     sub = menu.addMenu(it["text"])
                     build(sub, it["items"])
                     continue
-                if it["items"]:  # Recente bestanden
+                if it["items"]:  # "Recente bestanden" (recent files)
                     self.recent_menu = menu.addMenu(it["text"])
                     self.recent_menu.setProperty("pp_dynamic", True)
                     self.recent_menu.aboutToShow.connect(self._fill_recent)
                     continue
                 cid = it["id"]
-                if cid in self.actions_by_id:  # staat ook al elders (bijvoorbeeld in Foto verbeteren): dezelfde opdracht
+                if cid in self.actions_by_id:  # also exists elsewhere (e.g. "Foto verbeteren"): same command
                     menu.addAction(self.actions_by_id[cid])
                     continue
                 fn = H.get(cid)
-                if fn is None:  # nog niet gebouwd: niet tonen (komt vanzelf terug zodra het werkt)
+                if fn is None:  # not built yet: do not show (comes back by itself as soon as it works)
                     self.hidden_menu_items += 1
                     continue
                 a = QAction(it["text"], self)
@@ -513,7 +514,7 @@ class MainWindow(QMainWindow):
             m = mb.addMenu(top["text"])
             build(m, top["items"])
             self._tidy_menu(m)
-            if not m.actions():  # bijvoorbeeld Objecten: nog niets beschikbaar
+            if not m.actions():  # for example "Objecten" (Objects): nothing available yet
                 mb.removeAction(m.menuAction())
                 continue
             self.top_menus[top["text"].replace("&", "")] = m
@@ -530,7 +531,7 @@ class MainWindow(QMainWindow):
                 dock.visibilityChanged.connect(lambda v, act=a[cid]: act.setChecked(v))
                 a[cid].setChecked(dock.isVisible() or cid in (0x8185, 0x81ae, 0x8002))
         self._build_extra_toolbars()
-        if 0x81ba in a:  # optiebalk: vinkje volgt de zichtbaarheid (ook na sluiten via het balkmenu)
+        if 0x81ba in a:  # options bar: the check mark follows the visibility (also after closing via the bar menu)
             self.opt_bar.visibilityChanged.connect(lambda v, act=a[0x81ba]: act.setChecked(v))
             a[0x81ba].setChecked(True)
         self.sync_view_checks()
@@ -559,7 +560,7 @@ class MainWindow(QMainWindow):
                 if item in icons:
                     a.setIcon(icons[item])
                 tb.addAction(a)
-        # vinkjes in Beeld > Werkbalken bijhouden, ook als een balk via het rechtsklikmenu dicht gaat
+        # keep the check marks in View > Toolbars up to date, also when a bar is closed via the right-click menu
         tb.visibilityChanged.connect(lambda _: self.sync_bar_checks())
 
     def _build_status(self):
@@ -571,7 +572,7 @@ class MainWindow(QMainWindow):
             w.setMinimumWidth(120)
             sb.addPermanentWidget(w)
 
-    # ================================================================ hulpjes
+    # ================================================================ helpers
     def _run(self, fn, cid=None):
         try:
             fn()
@@ -581,7 +582,7 @@ class MainWindow(QMainWindow):
             self.report_error(e)
 
     def run_command(self, cid):
-        """Een menu-opdracht uitvoeren alsof hij gekozen werd (als hij bestaat en beschikbaar is)."""
+        """Run a menu command as if it was chosen (if it exists and is available)."""
         a = self.actions_by_id.get(cid)
         if a is not None and a.isEnabled():
             a.trigger()
@@ -591,8 +592,8 @@ class MainWindow(QMainWindow):
             self.last_command()
 
     def eventFilter(self, obj, e):
-        """Pijltoetsen verschuiven de selectie of de laag ook als de focus net op een palet of werkbalk
-        staat (bijvoorbeeld na het aanklikken van een laag). Invoervelden houden hun pijltoetsen."""
+        """Arrow keys move the selection or the layer even when the focus is on a palette or toolbar
+        for a moment (for example after clicking a layer). Input fields keep their arrow keys."""
         if e.type() == QEvent.Type.KeyPress and e.key() in Canvas.ARROWS and isinstance(obj, QWidget) \
                 and obj is QApplication.focusWidget() and obj.window() is self and not isinstance(obj, Canvas):
             from PySide6.QtWidgets import QAbstractSpinBox, QComboBox, QLineEdit, QPlainTextEdit, QSlider, QTextEdit
@@ -625,7 +626,7 @@ class MainWindow(QMainWindow):
         self.update_undo_actions()
 
     def update_undo_actions(self):
-        """Ongedaan maken en Opnieuw grijs als er niets (meer) ongedaan te maken of opnieuw uit te voeren is."""
+        """Undo and Redo are greyed out when there is nothing (more) to undo or redo."""
         acts = getattr(self, "actions_by_id", {})
         d = self._active_doc if self.canvas() is not None else None
         for cid, stack in ((0xe12b, "undo_stack"), (0xe12c, "redo_stack")):
@@ -634,7 +635,7 @@ class MainWindow(QMainWindow):
                 a.setEnabled(bool(d is not None and getattr(d, stack)))
 
     def _tools_enabled(self, on):
-        """Gereedschapsbalk en optiebalk alleen actief als er een afbeelding open is."""
+        """Tool bar and options bar are only active when an image is open."""
         self.tools_toolbar.setEnabled(on)
         self.opt_bar.setEnabled(on)
         if on and self.tool is None:
@@ -647,7 +648,7 @@ class MainWindow(QMainWindow):
                     btn.setChecked(False)
                 self.statusBar().clearMessage()
             if not getattr(self, "_idle_opts", False):
-                # zoals in PSP: de instellingen van het (laatste) gereedschap staan er grijs
+                # the settings of the (last) tool are greyed out
                 self._build_options(self._last_tool)
                 self._idle_opts = True
 
@@ -698,14 +699,14 @@ class MainWindow(QMainWindow):
         if dock.isVisible():
             dock.raise_()
 
-    # ================================================================ gereedschap en kleur
+    # ================================================================ tool and color
     def select_tool(self, tool, force=False):
         if tool.cid in self.group_buttons:
             self._last_tool = tool
             self.settings.setValue("last_tool", f"{tool.cid:04x}")
         if not force and self.tool is None and not self.mdi.subWindowList():
             self._idle_opts = False
-            self._tools_enabled(False)  # geen afbeelding open: onthouden en grijs tonen
+            self._tools_enabled(False)  # no image open: remember and show greyed out
             return
         if self.tool is not None:
             self.tool.deactivate()
@@ -713,7 +714,7 @@ class MainWindow(QMainWindow):
         for btn in set(self.group_buttons.values()):
             btn.setChecked(False)
         btn = self.group_buttons.get(tool.cid)
-        if btn is None:  # gereedschap staat (nog) niet op de balk
+        if btn is None:  # tool is not (yet) on the bar
             return
         btn.show_tool(tool)
         btn.setChecked(True)
@@ -724,12 +725,12 @@ class MainWindow(QMainWindow):
             sw.canvas.update()
 
     def _build_options(self, tool):
-        """Optiebalk vullen met de instellingen van een gereedschap."""
+        """Fill the options bar with the settings of a tool."""
         self._idle_opts = False
         self.opt_bar.clear()
         widgets, self.tool_opt_keys = recorded_keys(tool)
-        # vooraan alleen een groot icoon van het gereedschap (de naam staat in de tooltip en de statusbalk);
-        # zo begint de rest van de opties bij elk gereedschap op dezelfde plek
+        # at the front only a large icon of the tool (the name is in the tooltip and the status bar);
+        # this way the rest of the options starts at the same place for every tool
         H = self._opt_height()
         head = QLabel()
         head.setFixedSize(H + 12, H)
@@ -739,16 +740,16 @@ class MainWindow(QMainWindow):
         head.setContentsMargins(6, 0, 0, 0)
         self.opt_bar.addWidget(head)
         gap = QWidget()
-        gap.setFixedWidth(8)  # wat lucht tussen het icoon en de voorinstellingen
+        gap.setFixedWidth(8)  # some air between the icon and the presets
         self.opt_bar.addWidget(gap)
         self.opt_bar.addWidget(self._presets_button(tool))
         i = 0
-        while i < len(widgets):  # label boven het invoerveld, zoals in PSP
+        while i < len(widgets):  # label above the input field
             w = widgets[i]
             if isinstance(w, QLabel) and i + 1 < len(widgets):
                 j = i + 1
                 if isinstance(widgets[j], QAbstractButton) and not isinstance(widgets[j], QCheckBox):
-                    # een rij knoppen onder één label (bijvoorbeeld uitlijnen bij bijsnijden)
+                    # a row of buttons under one label (for example alignment for cropping)
                     row = QWidget()
                     h = QHBoxLayout(row)
                     h.setContentsMargins(0, 0, 0, 0)
@@ -764,18 +765,18 @@ class MainWindow(QMainWindow):
                 self.opt_bar.addWidget(self._opt_column(w, widgets[i + 1]))
                 i += 2
             elif isinstance(w, QCheckBox):
-                # vinkjes per twee onder elkaar, zoals in PSP; zo blijft de balk compact
+                # check boxes two at a time on top of each other; this keeps the bar compact
                 pair = [w]
                 if i + 1 < len(widgets) and isinstance(widgets[i + 1], QCheckBox):
                     pair.append(widgets[i + 1])
                 self.opt_bar.addWidget(self._opt_column(pair[0], pair[1] if len(pair) > 1 else None, small=False))
                 i += len(pair)
-            else:  # los veld of knop: op de hoogte van de invoervelden
+            else:  # standalone field or button: at the height of the input fields
                 self.opt_bar.addWidget(self._opt_column(None, w))
                 i += 1
 
     def _opt_metrics(self):
-        """Hoogte van een klein label, een invoerveld en een vinkje in deze stijl (eenmalig gemeten)."""
+        """Height of a small label, an input field and a check box in this style (measured once)."""
         if not hasattr(self, "_optm"):
             from PySide6.QtWidgets import QComboBox
             lab = QLabel("Xg")
@@ -784,20 +785,20 @@ class MainWindow(QMainWindow):
                           QCheckBox("Xg").sizeHint().height())
         return self._optm
 
-    # vinkjes in de optiebalk: zelfde kleine letter als de labels en een kleiner vakje; het klikbare
-    # gebied blijft de hele regel (vakje en tekst)
+    # check boxes in the options bar: the same small font as the labels and a smaller box; the clickable
+    # area remains the whole line (box and text)
     CHECK_CSS = "QCheckBox { font-size: 10px; spacing: 4px; } QCheckBox::indicator { width: 11px; height: 11px; }"
 
     def _opt_height(self):
-        """Vaste hoogte voor elke kolom, zodat de balk bij elk gereedschap even hoog is: label boven
-        invoerveld. Twee vinkjes passen daar ook in (bovenste op de lijn van de labels, onderste op die
-        van de invoervelden)."""
+        """Fixed height for every column, so that the bar is equally tall for every tool: label above
+        input field. Two check boxes fit there too (the top one on the line of the labels, the bottom one on that of
+        the input fields)."""
         lab, inp, cb = self._opt_metrics()
         return lab + inp
 
     def _opt_column(self, top, bottom, small=True):
-        """Kolom in de optiebalk met vaste hoogte: klein label boven het invoerveld (onderaan uitgelijnd,
-        zodat labels en velden van alle kolommen op dezelfde lijn staan), of twee vinkjes onder elkaar."""
+        """Column in the options bar with fixed height: small label above the input field (aligned at the bottom,
+        so that labels and fields of all columns are on the same line), or two check boxes on top of each other."""
         lab_h, inp_h, cb_h = self._opt_metrics()
         H = self._opt_height()
         box = QWidget()
@@ -805,7 +806,7 @@ class MainWindow(QMainWindow):
         v = QVBoxLayout(box)
         v.setContentsMargins(4, 0, 4, 0)
         v.setSpacing(0)
-        if not small:  # vinkjes: bovenste (of een los vinkje) op de lijn van de labels, onderste bij de velden
+        if not small:  # check boxes: top (or single) one on the label line, bottom one at the fields
             for w, hgt in ((top, lab_h), (bottom, inp_h)):
                 if w is None:
                     spacer = QWidget()
@@ -824,10 +825,10 @@ class MainWindow(QMainWindow):
         top.setFixedHeight(lab_h)
         v.addWidget(top)
         if isinstance(bottom, QLabel):
-            # tekst even hoog als een invoerveld en verticaal gecentreerd
+            # text as tall as an input field and vertically centered
             bottom.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
-        # het veld staat altijd in een vak met de hoogte van een keuzelijst, zodat labels en velden van
-        # alle kolommen precies op dezelfde lijn liggen, ook als een knop lager is dan een keuzelijst
+        # the field is always in a box with the height of a combo box, so that labels and fields of
+        # all columns are exactly on the same line, even if a button is lower than a combo box
         holder = QWidget()
         holder.setFixedHeight(inp_h)
         hl = QHBoxLayout(holder)
@@ -838,7 +839,7 @@ class MainWindow(QMainWindow):
         v.addWidget(holder, 0, Qt.AlignmentFlag.AlignLeft)
         return box
 
-    # ---------------------------------------------------------------- voorinstellingen
+    # ---------------------------------------------------------------- presets
     def psp_preset_list(self, cid):
         if not hasattr(self, "_psp_presets"):
             try:
@@ -858,13 +859,13 @@ class MainWindow(QMainWindow):
         b = QToolButton()
         b.setIcon(glyph_icon(tool.glyph, tool.available))
         inp_h = self._opt_metrics()[1]
-        b.setFixedSize(inp_h + 14, inp_h)  # even hoog als de keuzelijsten (ruimte voor het pijltje)
+        b.setFixedSize(inp_h + 14, inp_h)  # as tall as the combo boxes (room for the arrow)
         b.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
         b.setToolTip("Voorinstellingen voor dit gereedschap")
         m = QMenu(b)
         m.aboutToShow.connect(lambda: self._fill_tool_presets(m, tool))
         b.setMenu(m)
-        return self._opt_column(QLabel("Voorinstellingen:"), b)  # label op dezelfde hoogte als 'Vorm:'
+        return self._opt_column(QLabel("Voorinstellingen:"), b)  # label at the same height as "Vorm:" (Shape:)
 
     def _fill_tool_presets(self, m, tool):
         import json
@@ -904,10 +905,10 @@ class MainWindow(QMainWindow):
         for k, v in vals.items():
             if k in self.opts:
                 self.opts[k] = v
-        self.select_tool(tool)  # optiebalk opnieuw opbouwen met de nieuwe waarden
+        self.select_tool(tool)  # rebuild the options bar with the new values
 
     def _materials_changed(self):
-        """Palet bijwerken; een tekst die nog bewerkt wordt, neemt kleur, verloop of patroon meteen over."""
+        """Update the palette; text still being edited immediately takes over the color, gradient or pattern."""
         self.materials.refresh()
         if isinstance(self.tool, TextTool):
             self.tool.refresh()
@@ -937,9 +938,9 @@ class MainWindow(QMainWindow):
         self.fg_mat = self.bg_mat = None
         self._materials_changed()
 
-    # ---------------------------------------------------------------- verloop en patroon
+    # ---------------------------------------------------------------- gradient and pattern
     def material(self, fg=True):
-        """Verloop of patroon voor voorgrond/achtergrond, of None bij een effen kleur."""
+        """Gradient or pattern for foreground/background, or None for a plain color."""
         return self.fg_mat if fg else self.bg_mat
 
     def set_material(self, fg, mat):
@@ -952,7 +953,7 @@ class MainWindow(QMainWindow):
         self._materials_changed()
 
     def set_material_kind(self, fg, kind):
-        """Stijlknopjes onder het materiaalvak: 0 kleur, 1 verloop, 2 patroon (laatst gebruikte)."""
+        """Style buttons under the material box: 0 color, 1 gradient, 2 pattern (last used)."""
         from . import material as M
         if kind == 0:
             self.set_material(fg, None)
@@ -962,7 +963,7 @@ class MainWindow(QMainWindow):
         self.set_material(fg, dict(mat))
 
     def material_image(self, fg, rect, span=None):
-        """Afbeelding van het verloop/patroon voor rect (documentcoördinaten), of None bij effen kleur."""
+        """Image of the gradient/pattern for rect (document coordinates), or None for a plain color."""
         from . import material as M
         return M.render(self.material(fg), rect, span, self.fg, self.bg)
 
@@ -971,7 +972,7 @@ class MainWindow(QMainWindow):
         return M.brush(self.material(fg), span, self.fg, self.bg)
 
     def pattern_sources(self):
-        """Open afbeeldingen, te gebruiken als patroon."""
+        """Open images, usable as a pattern."""
         out = []
         for s in self.mdi.subWindowList():
             cv = getattr(s, "canvas", None)
@@ -979,7 +980,7 @@ class MainWindow(QMainWindow):
                 out.append((cv.doc.title().rstrip(" *"), cv.doc.composite()))
         return out
 
-    # ================================================================ documenten
+    # ================================================================ documents
     def add_document(self, doc, canvas_of=None):
         self._tools_enabled(True)
         cv = Canvas(doc, self)
@@ -1043,14 +1044,14 @@ class MainWindow(QMainWindow):
         self._add_recent(path)
         self.add_document(doc)
 
-    # ---------------------------------------------------------------- slepen en neerzetten
+    # ---------------------------------------------------------------- drag and drop
     @staticmethod
     def _image_ext():
         import re
         return {e.lower() for e in re.findall(r"\*\.(\w+)", fileio.OPEN_FILTER.split(";;")[0])}
 
     def _dropped_files(self, mime):
-        """Lokale afbeeldingsbestanden uit een sleepactie (andere bestanden en internetadressen niet)."""
+        """Local image files from a drag action (other files and internet addresses are ignored)."""
         exts = self._image_ext()
         out = []
         for u in mime.urls() if mime.hasUrls() else []:
@@ -1070,7 +1071,7 @@ class MainWindow(QMainWindow):
         self.dragEnterEvent(e)
 
     def _canvas_at(self, pos):
-        """Het canvas onder een punt in het hoofdvenster, of None."""
+        """The canvas under a point in the main window, or None."""
         from .canvas import Canvas
         w = self.childAt(pos)
         while w is not None and not isinstance(w, Canvas):
@@ -1078,7 +1079,7 @@ class MainWindow(QMainWindow):
         return w
 
     def _drop_as_layers(self, cv, pos, images):
-        """Afbeeldingen als nieuwe lagen in de afbeelding van cv, met het midden op de plek van loslaten."""
+        """Images as new layers in the image of cv, centered on the drop position."""
         d = cv.doc
         c = cv.to_doc(cv.mapFrom(self, pos))
         for name, img in images:
@@ -1098,7 +1099,7 @@ class MainWindow(QMainWindow):
         pos = e.position().toPoint()
         mods = e.modifiers() if hasattr(e, "modifiers") else QApplication.keyboardModifiers()
         cv = self._canvas_at(pos) if mods & Qt.KeyboardModifier.ControlModifier else None
-        if cv is not None:  # Ctrl: als nieuwe laag(en) in de afbeelding waarop je loslaat
+        if cv is not None:  # Ctrl: as new layer(s) in the image you drop on
             images = []
             for path in files:
                 try:
@@ -1118,7 +1119,7 @@ class MainWindow(QMainWindow):
             for path in files:
                 self.open_path(path)
             return
-        if m.hasImage():  # afbeelding zonder bestand (bijvoorbeeld uit een browser): nieuwe afbeelding
+        if m.hasImage():  # image without a file (for example from a browser): new image
             img = QImage(m.imageData())
             if not img.isNull():
                 e.acceptProposedAction()
@@ -1130,8 +1131,8 @@ class MainWindow(QMainWindow):
         e.ignore()
 
     def _recent(self):
-        """Recente bestanden als lijst. Qt geeft één bewaard item soms terug als tekst; die niet per
-        letter opknippen. Losse letters uit oudere versies worden weggelaten."""
+        """Recent files as a list. Qt sometimes returns a single stored item as text; do not split that
+        into letters. Single letters from older versions are dropped."""
         v = self.settings.value("recent") or []
         if isinstance(v, str):
             v = [v]
@@ -1155,9 +1156,9 @@ class MainWindow(QMainWindow):
     def file_save_as(self, copy=False):
         self.save_doc(self.doc(), ask=True, copy=copy)
 
-    # ---------------------------------------------------------------- Bestand: overige opdrachten
+    # ---------------------------------------------------------------- File: other commands
     def file_revert(self):
-        """Naar vorige versie: de laatst opgeslagen versie opnieuw inlezen (ongedaan te maken)."""
+        """Revert to previous version: reload the last saved version (can be undone)."""
         d = self.doc()
         if not d.path or not os.path.exists(d.path):
             self.statusBar().showMessage(tr("Deze afbeelding is nog niet opgeslagen."), 4000)
@@ -1183,7 +1184,7 @@ class MainWindow(QMainWindow):
         d.changed.emit(QRect())
 
     def file_delete(self):
-        """Verwijderen: het bestand van de actieve afbeelding naar de prullenbak verplaatsen en sluiten."""
+        """Delete: move the file of the active image to the trash and close it."""
         from PySide6.QtCore import QFile
         d = self.doc()
         if not d.path or not os.path.exists(d.path):
@@ -1199,7 +1200,7 @@ class MainWindow(QMainWindow):
         self.close_active()
 
     def _paint_page(self, printer, fit=True):
-        """De afbeelding op de pagina: passend (midden) of op ware grootte volgens de resolutie."""
+        """The image on the page: fitted (centered) or at actual size according to the resolution."""
         from PySide6.QtGui import QPageLayout
         d = self.doc()
         img = d.flattened(QColor(255, 255, 255))
@@ -1224,7 +1225,7 @@ class MainWindow(QMainWindow):
             self._paint_page(printer)
 
     def print_preview(self):
-        """Afdrukweergave: voorbeeld van de pagina, passend of op ware grootte, met afdrukken vanuit het voorbeeld."""
+        """Print view: preview of the page, fitted or at actual size, with printing from the preview."""
         from PySide6.QtPrintSupport import QPrinter, QPrintPreviewDialog
         v = dialogs.ask_form(self, tr("Afdrukweergave"), [
             ("fit", tr("Afmeting:"), "choice", [tr("Passend op de pagina"), tr("Ware grootte (volgens de resolutie)")], 0)])
@@ -1236,7 +1237,7 @@ class MainWindow(QMainWindow):
         dlg.exec()
 
     def capture_setup(self):
-        """Schermopname instellen: wat er wordt vastgelegd en na hoeveel seconden."""
+        """Set up screen capture: what is captured and after how many seconds."""
         st = self.settings
         v = dialogs.ask_form(self, tr("Schermopname"), [
             ("kind", tr("Opname van:"), "choice", [tr("Volledig scherm"), tr("Gebied (zelf kiezen)"), tr("Actief venster")],
@@ -1249,8 +1250,8 @@ class MainWindow(QMainWindow):
             st.setValue("cap_hide", "true" if v["hide"] else "false")
 
     def capture_start(self):
-        """Schermopname maken; het resultaat opent als nieuwe afbeelding. Gebruikt het schermafdrukprogramma van
-        het bureaublad (onder Wayland kan een programma zelf niet zomaar het scherm vastleggen)."""
+        """Make a screen capture; the result opens as a new image. Uses the screenshot program of
+        the desktop (under Wayland a program cannot simply capture the screen itself)."""
         import shutil
         import subprocess
         import tempfile
@@ -1292,7 +1293,7 @@ class MainWindow(QMainWindow):
         self.add_document(d)
 
     def import_brush(self):
-        """Aangepast penseel importeren: een afbeelding wordt een eigen penseel (donker = verf)."""
+        """Import custom brush: an image becomes a custom brush (dark = paint)."""
         from . import userdata
         paths, _ = QFileDialog.getOpenFileNames(self, tr("Aangepast penseel importeren"), "",
                                                 tr("Afbeeldingen") + " (*.png *.jpg *.jpeg *.bmp *.gif *.tif *.tiff *.webp)")
@@ -1308,12 +1309,12 @@ class MainWindow(QMainWindow):
                 self._build_options(self.tool)
 
     def export_brush(self):
-        """Aangepast penseel exporteren: de selectie (of de hele afbeelding) wordt een eigen penseel."""
+        """Export custom brush: the selection (or the whole image) becomes a custom brush."""
         from . import userdata
         d = self.doc()
         r = d.selection_bbox() if d.sel is not None else d.rect()
         img = d.composite().copy(r)
-        if d.sel is not None:  # buiten de selectie niets
+        if d.sel is not None:  # nothing outside the selection
             m = d.sel.copy(r)
             q = QPainter(img)
             q.setCompositionMode(QPainter.CompositionMode.CompositionMode_DestinationIn)
@@ -1339,7 +1340,7 @@ class MainWindow(QMainWindow):
             dlg.save(path)
 
     def export_image_map(self):
-        """Afbeelding met hyperlinks: gebieden met links op de afbeelding, bewaard als HTML-pagina met afbeelding."""
+        """Image with hyperlinks: areas with links on the image, saved as an HTML page with the image."""
         d = self.doc()
         img = d.flattened()
         dlg = dialogs.ImageMapDialog(self, img)
@@ -1356,7 +1357,7 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(tr("Bewaard: {} en {}").format(os.path.basename(path), os.path.basename(img_path)), 6000)
 
     def export_frame(self):
-        """Fotolijst exporteren: de afbeelding (met een doorzichtig midden) wordt een eigen lijst voor Fotolijst."""
+        """Export picture frame: the image (with a transparent center) becomes a custom frame for Picture Frame."""
         from . import userdata
         d = self.doc()
         img = d.composite()
@@ -1372,8 +1373,8 @@ class MainWindow(QMainWindow):
             self.statusBar().showMessage(tr("Lijst bewaard; kies hem bij Afbeelding > Fotolijst."), 6000)
 
     def export_shape(self):
-        """Vorm exporteren: de gekozen vectorobjecten (of alle op de vectorlaag) worden een eigen vorm voor
-        het gereedschap Basisvormen."""
+        """Export shape: the chosen vector objects (or all on the vector layer) become a custom shape for
+        the Preset Shapes tool."""
         from . import userdata
         d = self.doc()
         lay = d.layer()
@@ -1387,7 +1388,7 @@ class MainWindow(QMainWindow):
             self.statusBar().showMessage(tr("Vorm bewaard; kies hem bij het gereedschap Basisvormen."), 6000)
 
     def batch_process(self):
-        """Batchverwerking: bestanden omzetten naar een andere indeling (eventueel verkleind)."""
+        """Batch processing: convert files to another format (optionally scaled down)."""
         files = [s.canvas.doc.path for s in self.mdi.subWindowList() if s.canvas.doc.path]
         dlg = dialogs.BatchDialog(self, files)
         if not dlg.exec():
@@ -1417,7 +1418,7 @@ class MainWindow(QMainWindow):
                     target = f"{stem} ({n}){v['ext']}"
                 fileio.save(doc, target, v["quality"])
                 done += 1
-            except Exception as e:  # noqa: BLE001 - een kapot bestand overslaan
+            except Exception as e:  # noqa: BLE001 - skip a broken file
                 failed.append(f"{os.path.basename(path)}: {e}")
         prog.setValue(len(v["files"]))
         msg = tr("{} bestanden verwerkt.").format(done)
@@ -1435,7 +1436,7 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, APP, tr("Sommige nieuwe namen bestaan al of komen dubbel voor; er is niets hernoemd."))
             return
         tmp = []
-        for old, _new in pairs:  # eerst tijdelijke namen, zodat namen elkaar niet in de weg zitten
+        for old, _new in pairs:  # temporary names first, so that names do not get in each other's way
             t = old + ".pp-rename"
             os.rename(old, t)
             tmp.append(t)
@@ -1460,7 +1461,7 @@ class MainWindow(QMainWindow):
         if dlg.exec():
             dlg.apply()
             from . import material
-            material._psp_pat = None  # patronen opnieuw zoeken
+            material._psp_pat = None  # search for patterns again
             material._cache.clear() if hasattr(material, "_cache") else None
             if self.tool is not None:
                 self._build_options(self.tool)
@@ -1472,11 +1473,11 @@ class MainWindow(QMainWindow):
             return
         self.settings.clear()
         self.settings.sync()
-        self._prefs_reset = True  # bij afsluiten niets meer terugschrijven
+        self._prefs_reset = True  # do not write anything back on exit
         QMessageBox.information(self, APP, tr("De voorkeuren zijn teruggezet. Start PixelPickle opnieuw."))
 
     def save_doc(self, doc, ask=False, copy=False):
-        if doc.seledit_layer() is not None:  # eerst Selectie bewerken afronden (die laag hoort niet in het bestand)
+        if doc.seledit_layer() is not None:  # first finish "Selectie bewerken" (Edit Selection; not part of the file)
             doc.toggle_selection_edit()
             self._sync_seledit_check()
         path = doc.path
@@ -1558,7 +1559,7 @@ class MainWindow(QMainWindow):
                                               subsampling=[0, 1, 2][dlg.sub.currentIndex()], optimize=True)
             self.statusBar().showMessage(f"Geëxporteerd: {path}", 4000)
 
-    # ================================================================ bewerken
+    # ================================================================ edit
     def _selection_image(self, merged=False):
         d = self.doc()
         r = d.selection_bbox() if d.sel is not None else d.rect()
@@ -1588,7 +1589,7 @@ class MainWindow(QMainWindow):
         if r.isEmpty():
             return
         d.push_undo(label)
-        # achtergrondlaag wordt gewist naar de achtergrondkleur, andere lagen naar transparant (zoals PSP)
+        # the background layer is erased to the background color, other layers to transparent
         bg = d.active == 0 and d.layer().name in BG_NAMES
         paint_layer(d.layer(), r, new_image(r.width(), r.height(), self.bg if bg else None), d.sel)
         d.changed.emit(r)
@@ -1635,8 +1636,8 @@ class MainWindow(QMainWindow):
         self.select_tool(self.tools[0xd021])
 
     def paste_transparent_selection(self):
-        """Plakken als transparante selectie: zoals Plakken als nieuwe selectie, maar de pixels in de huidige
-        achtergrondkleur worden doorzichtig (handig voor uitgeknipte voorwerpen op een effen achtergrond)."""
+        """Paste as transparent selection: like Paste as New Selection, but the pixels in the current
+        background color become transparent (handy for cut-out objects on a plain background)."""
         img, d = self._clip_image(), self.doc()
         if img is None or d is None:
             return
@@ -1650,8 +1651,8 @@ class MainWindow(QMainWindow):
         self.select_tool(self.tools[0xd021])
 
     def paste_vector_selection(self):
-        """Plakken als nieuwe vectorselectie: gekopieerde vectorobjecten op de actieve vectorlaag (of een nieuwe)
-        plakken; ze zijn meteen gekozen, zodat je ze met Kiezen kunt verplaatsen."""
+        """Paste as new vector selection: paste copied vector objects on the active vector layer (or a new one);
+        they are selected right away, so you can move them with the Pick tool."""
         from . import vectorlayer as V
         from .tools import PickTool
         d = self.doc()
@@ -1689,7 +1690,7 @@ class MainWindow(QMainWindow):
         d.changed.emit(r)
         d.structureChanged.emit()
 
-    # ================================================================ afbeelding
+    # ================================================================ image
     def crop_to_selection(self):
         d = self.doc()
         if d.sel is not None:
@@ -1749,11 +1750,11 @@ class MainWindow(QMainWindow):
             return
         dialogs.exec_live(dialogs.AdjustDialog(self, self.doc(), title, fn, params), self)
 
-    # ================================================================ lagen
+    # ================================================================ layers
     def layer_properties(self):
         d = self.doc()
         l = d.layer()
-        if l.adjust is not None:  # aanpassingslaag: instellingen van het effect bewerken
+        if l.adjust is not None:  # adjustment layer: edit the settings of the effect
             eff = self.effects.get(l.adjust[0])
             if eff is None:
                 return
@@ -1812,7 +1813,7 @@ class MainWindow(QMainWindow):
         if path:
             d.layer().image.save(path)
 
-    # ------------------------------------------------------------ alfakanalen
+    # ------------------------------------------------------------ alpha channels
     def _channel_name(self, d, base):
         names = set(d.channel_names())
         n = 1
@@ -1821,7 +1822,7 @@ class MainWindow(QMainWindow):
         return f"{base} {n}"
 
     def channel_save(self, selection):
-        """Selectie of masker opslaan in een alfakanaal van de afbeelding."""
+        """Save selection or mask in an alpha channel of the image."""
         d = self.doc()
         if selection and d.sel is None:
             self.statusBar().showMessage(tr("Er is geen selectie om op te slaan."), 4000)
@@ -1893,14 +1894,14 @@ class MainWindow(QMainWindow):
         layer.adjust = (eff_cid, params)
         d.add_layer(layer, label="Nieuwe aanpassingslaag")
 
-    # ================================================================ voorkeuren
+    # ================================================================ preferences
     def preferences(self):
         from . import i18n
         dlg = dialogs.PreferencesDialog(self, i18n.setting() or i18n.language())
         if not dlg.exec():
             return
         dlg.save_view_settings()
-        for sw in self.mdi.subWindowList():  # ruitjespatroon en arcering meteen bijwerken
+        for sw in self.mdi.subWindowList():  # update checkerboard pattern and hatching right away
             sw.canvas.apply_view_settings()
         if self.tool is not None:
             self._build_options(self.tool)
@@ -1914,10 +1915,10 @@ class MainWindow(QMainWindow):
             self._restart = True
             self.close()
 
-    # ================================================================ snelmenu's (rechtsklik)
+    # ================================================================ context menus (right click)
     CANVAS_MENU = [0xe12b, 0xe12c, None, 0xe123, 0xe122, 0x810d, 0x801e, 0x801f, None,
                    0x80dd, 0x8109, None, 0x8007, 0x81d0]
-    # rechtsklik op het lege werkvlak (naast of zonder afbeelding)
+    # right click on the empty workspace (next to or without an image)
     WORKSPACE_MENU = [0xe100, 0xe101, None, 0x80d3, None, 0x80e6, 0x8020, None, 0x8216, None, 0x8012]
 
     def _fill_menu(self, m, items):
@@ -1932,11 +1933,11 @@ class MainWindow(QMainWindow):
                 m.addAction(self.actions_by_id[it])
 
     def show_canvas_menu(self, cv, pos):
-        """Snelmenu op de afbeelding, met dezelfde opdrachten als de menubalk."""
+        """Context menu on the image, with the same commands as the menu bar."""
         self.mdi.setActiveSubWindow(self._subwindow_of(cv))
         m = QMenu(self)
         build = getattr(self.tool, "build_context_menu", None)
-        if build is not None and build(cv, m):  # gereedschap met een eigen snelmenu (zoals de Pen)
+        if build is not None and build(cv, m):  # tool with its own context menu (like the Pen)
             m.exec(cv.mapToGlobal(pos.toPoint()))
             return
         extra = list(self.tool.context_actions(cv))
@@ -1953,8 +1954,9 @@ class MainWindow(QMainWindow):
         self._fill_menu(m, self.CANVAS_MENU)
         m.exec(cv.mapToGlobal(pos.toPoint()))
 
-    # Objecten > Bewerken, Tekenpunttype en Geselecteerde tekenpunten transformeren: werken op de lijnen
-    # van de Pen (ook op een opgepakt vectorobject); hetzelfde als het snelmenu van de Pen
+    # "Objecten" > "Bewerken", "Tekenpunttype" and "Geselecteerde tekenpunten transformeren" (Objects > Edit,
+    # Node Type, Transform Selected Nodes): act on the lines of the Pen (also on a picked-up vector object);
+    # same as the context menu of the Pen
     NODE_COMMANDS = {0x1770: "cut", 0x1771: "copy", 0x1772: "paste", 0x1773: "delete", 0x1774: "select_all",
                      0x1775: "select_none", 0x1776: "invert", 0x1777: "join", 0x1778: "merge", 0x1779: "break",
                      0x177a: "close", 0x177b: "reverse_contour", 0x177c: "reverse_path", 0x177d: "duplicate_offset",
@@ -1963,7 +1965,7 @@ class MainWindow(QMainWindow):
                      0x1787: "curve_after", 0x1788: "flip", 0x1789: "mirror", 0x178a: "rotate", 0x178b: "skew_x",
                      0x178c: "skew_y", 0x178d: "contract", 0x178e: "expand"}
 
-    # menu Objecten: bewerkingen op hele vectorobjecten (gekozen met Kiezen op een vectorlaag)
+    # "Objecten" (Objects) menu: operations on whole vector objects (chosen with Pick on a vector layer)
     OBJECT_COMMANDS = {
         0x8163: ("align", "top"), 0x815e: ("align", "bottom"), 0x8160: ("align", "left"), 0x815f: ("align", "right"),
         0x8161: ("align", "vcenter"), 0x8162: ("align", "hcenter"), 0x8172: ("align", "canvas"),
@@ -2049,12 +2051,12 @@ class MainWindow(QMainWindow):
             cv.update()
 
     def _group_object_command(self, d, g, kind, arg):
-        """Uitlijnen, Verdelen en Even groot maken op een lagengroep: elke laag (of subgroep) in de groep is
-        een object, met de niet-transparante pixels als omhullende. De berekening is dezelfde als bij
-        vectorobjecten; elke laag krijgt daarna de verschuiving (en schaal) van haar eigen kader."""
+        """Align, Distribute and Make Same Size on a layer group: each layer (or subgroup) in the group is
+        an object, with the non-transparent pixels as its bounding box. The calculation is the same as for
+        vector objects; each layer then gets the shift (and scale) of its own frame."""
         from . import vectorops as VO, vectorlayer as V, imageops as ops
         from .textlayer import copy_text, set_transform, transform
-        items = []  # (lagen, omhullende)
+        items = []  # (layers, bounding box)
         for c in d.children(g):
             layers = [l for l in d.subtree(c) if l.kind != "group"]
             r = QRectF()
@@ -2065,7 +2067,7 @@ class MainWindow(QMainWindow):
                         r = r.united(QRectF(b))
             if not r.isEmpty():
                 items.append((layers, r))
-        items.reverse()  # zoals in het lagenpalet: bovenste laag eerst (maatstaf bij Even groot maken)
+        items.reverse()  # as in the layers palette: top layer first (reference for Make Same Size)
         need = {"align": 1, "distribute": 3, "same_size": 2}[kind]
         if len(items) < need:
             self.statusBar().showMessage(tr({"align": "Deze lagengroep is leeg.",
@@ -2090,7 +2092,7 @@ class MainWindow(QMainWindow):
         for (layers, r), o in zip(items, objs):
             nb = VO.obj_bounds(o)
             sx, sy = nb.width() / r.width(), nb.height() / r.height()
-            if abs(sx - 1) < 1e-6 and abs(sy - 1) < 1e-6:  # alleen verschuiven: op hele pixels, blijft scherp
+            if abs(sx - 1) < 1e-6 and abs(sy - 1) < 1e-6:  # only shifting: on whole pixels, stays sharp
                 T = QTransform.fromTranslate(round(nb.left() - r.left()), round(nb.top() - r.top()))
             else:
                 T = (QTransform.fromTranslate(-r.left(), -r.top()) * QTransform.fromScale(sx, sy)
@@ -2121,8 +2123,8 @@ class MainWindow(QMainWindow):
             cv.update()
 
     def text_to_curves(self, how):
-        """Tekst omzetten in curven: de tekstlaag wordt een vectorlaag met bewerkbare vormen
-        (als één vorm, of één vorm per letter)."""
+        """Convert text to curves: the text layer becomes a vector layer with editable shapes
+        (as one shape, or one shape per letter)."""
         from . import textlayer, vectorlayer as V
         d = self.doc()
         layer = d.layer() if d else None
@@ -2160,7 +2162,7 @@ class MainWindow(QMainWindow):
         d.structureChanged.emit()
 
     def fit_text_to_path(self, obj):
-        """Tekst inpassen in pad: een tekstlaag volgt het gekozen vectorobject."""
+        """Fit text to path: a text layer follows the chosen vector object."""
         d = self.doc()
         texts = [l for l in d.layers if l.text is not None]
         if not texts:
@@ -2191,7 +2193,7 @@ class MainWindow(QMainWindow):
         pen.pen_command(name, self.canvas())
 
     def update_node_actions(self):
-        """Beschikbaarheid van de knooppuntopdrachten volgens de Pen (voor het menu en het snelmenu)."""
+        """Availability of the node commands according to the Pen (for the menu and the context menu)."""
         pen = self.tools[0xd110]
         active = self.tool is pen and self.doc() is not None
         state = pen.command_state() if active else {}
@@ -2201,7 +2203,7 @@ class MainWindow(QMainWindow):
                 a.setEnabled(bool(state.get(name)))
 
     def show_workspace_menu(self, pos):
-        """Rechtsklik op het lege werkvlak: bestanden, klembord, vergrootglas en voorkeuren (zoals PSP)."""
+        """Right click on the empty workspace: files, clipboard, magnifier and preferences."""
         m = QMenu(self)
         self._fill_menu(m, self.WORKSPACE_MENU)
         m.exec(self.mdi.viewport().mapToGlobal(pos))
@@ -2227,7 +2229,7 @@ class MainWindow(QMainWindow):
         return w
 
     def edit_text_layer(self, cv):
-        """Tekst bewerken via het snelmenu: tekstgereedschap kiezen en de actieve tekstlaag openen."""
+        """Edit text via the context menu: choose the text tool and open the active text layer."""
         from .textlayer import bounds
         from PySide6.QtGui import QMouseEvent
         from PySide6.QtCore import QEvent
@@ -2250,7 +2252,7 @@ class MainWindow(QMainWindow):
         m.exec(bar.mapToGlobal(pos))
 
     def ensure_raster(self):
-        """Tekst- of vectorlaag eerst omzetten naar een rasterlaag (met bevestiging, zoals PSP)."""
+        """First convert a text or vector layer to a raster layer (with confirmation)."""
         d = self.doc()
         if d is None or (d.layer().text is None and d.layer().vector is None):
             return True
@@ -2272,7 +2274,7 @@ class MainWindow(QMainWindow):
         if d.layer().text is None and d.layer().vector is None:
             return
         tool = self.tool
-        if hasattr(tool, "commit_pending"):  # een lijn die nog bewerkt wordt eerst afronden
+        if hasattr(tool, "commit_pending"):  # finish a line that is still being edited first
             tool.commit_pending()
         d.push_undo("Omzetten in rasterlaag")
         d.layer().text = None
@@ -2287,8 +2289,8 @@ class MainWindow(QMainWindow):
         d.changed.emit(QRect())
 
     def _group_effect_ok(self, d):
-        """Op een lagengroep werkt een effect op elke rasterlaag erin. Zonder rasterlagen kan dat niet;
-        tekst- en vectorlagen in de groep blijven ongemoeid (dat staat even in de statusbalk)."""
+        """On a layer group an effect works on every raster layer in it. Without raster layers that is not possible;
+        text and vector layers in the group are left alone (the status bar mentions this)."""
         g = d.layer()
         if g.kind != "group":
             return True
@@ -2320,7 +2322,7 @@ class MainWindow(QMainWindow):
             return
         dialogs.exec_live(EffectDialog(self, d, eff), self)
 
-    # ================================================================ selecties
+    # ================================================================ selections
     def select_all(self):
         d = self.doc()
         d.push_undo("Alles selecteren")
@@ -2349,7 +2351,7 @@ class MainWindow(QMainWindow):
             d.modify_selection(kind, n)
             QApplication.restoreOverrideCursor()
 
-    # ---------------------------------------------------------------- menu Afbeelding
+    # ---------------------------------------------------------------- "Afbeelding" (Image) menu
     METHOD_NAMES = ["Dichtstbijzijnde kleur", "Foutdiffusie", "Geordende dithering"]
 
     def _raster_layers(self, d):
@@ -2357,7 +2359,7 @@ class MainWindow(QMainWindow):
                 and l.role is None]
 
     def reduce_colors(self, n):
-        """Kleurdiepte verminderen naar een palet (2, 16, 256 of zelf gekozen aantal kleuren)."""
+        """Decrease color depth to a palette (2, 16, 256 or a custom number of colors)."""
         from . import imgops
         d = self.doc()
         title = tr("Kleurdiepte verminderen")
@@ -2411,7 +2413,7 @@ class MainWindow(QMainWindow):
         return nd
 
     def split_channels(self, model):
-        """Kanalen splitsen: elk kanaal wordt een eigen grijswaardenafbeelding."""
+        """Split channels: each channel becomes its own grayscale image."""
         from . import imgops
         d = self.doc()
         a = ops.qimage_to_rgba(d.composite())
@@ -2424,13 +2426,13 @@ class MainWindow(QMainWindow):
         return docs, [x.title().rstrip(" *") for x in docs]
 
     def combine_channels(self, model):
-        """Kanalen combineren: kies voor elk kanaal een open (grijswaarden)afbeelding."""
+        """Combine channels: choose an open (grayscale) image for each channel."""
         from . import imgops
         docs, names = self._doc_choices()
         labels = {"rgb": ["Rood", "Groen", "Blauw"], "hsl": ["Tint", "Verzadiging", "Lichtheid"],
                   "cmyk": ["Cyaan", "Magenta", "Geel", "Zwart"]}[model]
 
-        def guess(lbl, k):  # een afbeelding met de kanaalnaam in de titel voorstellen
+        def guess(lbl, k):  # suggest an image with the channel name in the title
             for i, n in enumerate(names):
                 if n.startswith(tr(lbl)):
                     return i
@@ -2446,7 +2448,7 @@ class MainWindow(QMainWindow):
         self._new_doc_from(imgops.combine(chans, model), tr("Gecombineerd"))
 
     def image_arithmetic(self):
-        """Berekeningen: twee open afbeeldingen met elkaar verrekenen; het resultaat wordt een nieuwe afbeelding."""
+        """Arithmetic: combine two open images with each other; the result becomes a new image."""
         from . import imgops
         docs, names = self._doc_choices()
         cur = docs.index(self.doc()) if self.doc() in docs else 0
@@ -2463,7 +2465,7 @@ class MainWindow(QMainWindow):
             return
         a = ops.qimage_to_rgba(docs[v["a"]].composite())
         b = ops.qimage_to_rgba(docs[v["b"]].composite())
-        if b.shape != a.shape:  # tweede afbeelding linksboven passend maken
+        if b.shape != a.shape:  # fit the second image at the top left
             pad = np.zeros_like(a)
             hh, ww = min(a.shape[0], b.shape[0]), min(a.shape[1], b.shape[1])
             pad[:hh, :ww] = b[:hh, :ww]
@@ -2473,12 +2475,12 @@ class MainWindow(QMainWindow):
         self._new_doc_from(out, tr("Resultaat"))
 
     def picture_frame(self):
-        """Fotolijst: een lijst als nieuwe laag, binnen de afbeelding of eromheen (het doek wordt groter)."""
+        """Picture frame: a frame as a new layer, inside the image or around it (the canvas grows)."""
         from . import imgops
         d = self.doc()
         from . import userdata
         styles = ["Eenvoudig", "Hout", "Goud", "Zilver", "Passe-partout", "Polaroid", "Schaduw"]
-        own = userdata.frame_names()  # eigen lijsten (Bestand > Exporteren > Fotolijst)
+        own = userdata.frame_names()  # custom frames (File > Export > Picture Frame)
         v = dialogs.ask_form(self, tr("Fotolijst"), [
             ("s", tr("Lijst:"), "choice", [tr(x) for x in styles] + own, 2),
             ("t", tr("Breedte:"), "int", 1, 1000, max(4, min(d.w, d.h) // 20)),
@@ -2486,7 +2488,7 @@ class MainWindow(QMainWindow):
             ("out", tr("Plaats:"), "choice", [tr("Lijst binnen de afbeelding"), tr("Lijst buiten de afbeelding")], 0)])
         if v is None:
             return
-        if v["s"] >= len(styles):  # eigen lijst: over de hele afbeelding geschaald
+        if v["s"] >= len(styles):  # custom frame: scaled over the whole image
             fimg = userdata.load_frame(own[v["s"] - len(styles)])
             if fimg is None:
                 return
@@ -2522,13 +2524,13 @@ class MainWindow(QMainWindow):
             d.changed.emit(QRect())
         else:
             d.add_layer(layer, len(d.layers), label="Fotolijst")
-        if outside:  # doek vergroten en lijst toevoegen is samen één stap
+        if outside:  # enlarging the canvas and adding the frame is one step together
             snap = d.undo_stack[first - 1][1]
             del d.undo_stack[first - 1:]
             d.undo_stack.append(("Fotolijst", snap))
             d.historyChanged.emit()
 
-    # ---------------------------------------------------------------- Selecties > Wijzigen en verwanten
+    # ---------------------------------------------------------------- "Selecties" > "Wijzigen" (Modify), related
     def _sel_array(self, d):
         if d.sel is None:
             self.statusBar().showMessage(tr("Er is geen selectie."), 3000)
@@ -2671,7 +2673,7 @@ class MainWindow(QMainWindow):
             d.apply_selection_array(out, "Selectieranden selecteren")
 
     def sel_clip_canvas(self):
-        """Afknippen tot doek: het deel van het selectiekader dat (na verschuiven) buiten het doek viel, weghalen."""
+        """Crop to canvas: remove the part of the selection frame that (after shifting) fell outside the canvas."""
         d = self.doc()
         m = self._sel_array(d)
         if m is not None:
@@ -2688,7 +2690,7 @@ class MainWindow(QMainWindow):
             return
         img = img.scaled(d.w, d.h, Qt.AspectRatioMode.IgnoreAspectRatio, Qt.TransformationMode.SmoothTransformation)
         a = ops.qimage_to_rgba(img).astype(np.float32)
-        # met transparantie: de dekking is de selectie; anders de helderheid (wit = geselecteerd)
+        # with transparency: the opacity is the selection; otherwise the brightness (white = selected)
         v = a[..., 3] if (a[..., 3] < 255).any() else a[..., 0] * 0.299 + a[..., 1] * 0.587 + a[..., 2] * 0.114
         d.apply_selection_array(v, "Selectie laden vanaf schijf")
 
@@ -2732,13 +2734,13 @@ class MainWindow(QMainWindow):
         cv.hide_marquee = not getattr(cv, "hide_marquee", False)
         cv.update()
 
-    # ================================================================ beeld en venster
+    # ================================================================ view and window
     def toggle_fullscreen(self):
         self.showNormal() if self.isFullScreen() else self.showFullScreen()
         self.sync_bar_checks()
 
     def sync_bar_checks(self):
-        """Vinkjes en knopstand van Beeld > Werkbalken en Bewerking op volledig scherm gelijk aan de werkelijkheid."""
+        """Make check marks and button state of View > Toolbars and Edit on full screen match reality."""
         a = getattr(self, "actions_by_id", {})
         for cid, on in ((0xe800, lambda: not self.std_toolbar.isHidden()),
                         (0xe801, lambda: not self.statusBar().isHidden()),
@@ -2747,7 +2749,7 @@ class MainWindow(QMainWindow):
             if act is not None:
                 try:
                     act.setChecked(bool(on()))
-                except AttributeError:  # balk bestaat (nog) niet
+                except AttributeError:  # bar does not exist (yet)
                     pass
 
     def changeEvent(self, e):
@@ -2755,7 +2757,7 @@ class MainWindow(QMainWindow):
         if e.type() == QEvent.Type.WindowStateChange:
             self.sync_bar_checks()
 
-    # werkbalken Effecten en Foto (Beeld > Werkbalken): snelkoppelingen naar veelgebruikte opdrachten
+    # "Effecten" (Effects) and "Foto" (Photo) toolbars (View > Toolbars): shortcuts to frequently used commands
     EFFECTS_BAR = [0x807b, None, 0x809e, 0x80b2, 0x80b3, 0x80a0, 0x809f, 0x80a2]
     PHOTO_BAR = [0x8240, 0x82d8, None, 0x82dc, 0x8052, 0x806a, None, 0x806e, 0x809b, 0x82f1]
 
@@ -2778,7 +2780,7 @@ class MainWindow(QMainWindow):
                 tb.visibilityChanged.connect(lambda v, act=a: act.setChecked(v))
 
     def full_screen_preview(self):
-        """Schermvullend voorbeeld: de afbeelding passend op een zwart scherm; een toets of klik sluit het."""
+        """Full-screen preview: the image fitted on a black screen; a key press or click closes it."""
         d = self.doc()
         img = d.flattened()
         w = QWidget(None, Qt.WindowType.Window | Qt.WindowType.FramelessWindowHint)
@@ -2800,7 +2802,7 @@ class MainWindow(QMainWindow):
         w.showFullScreen()
 
     def fit_to_screen(self):
-        """Schermvullend maken: het afbeeldingsvenster zo groot mogelijk en de afbeelding passend erin."""
+        """Make full screen: the image window as large as possible and the image fitted in it."""
         sw = self.mdi.activeSubWindow()
         if sw is None:
             return
@@ -2822,7 +2824,7 @@ class MainWindow(QMainWindow):
                 a.setChecked(bool(self.view_opts.get(key)))
 
     def toggle_view(self, key):
-        """Linialen, hulplijnen, uitlijnen op raster en uitlijnen op hulplijnen aan of uit."""
+        """Rulers, guides, snap to grid and snap to guides on or off."""
         self.view_opts[key] = not self.view_opts.get(key)
         self._save_view_opts()
         self.sync_view_checks()
@@ -2863,7 +2865,7 @@ class MainWindow(QMainWindow):
             a.setChecked(on)
 
     def _hook_tabbar(self):
-        """Snelmenu op de tabbladen (de tabbalk maakt Qt pas aan als er documenten zijn)."""
+        """Context menu on the tabs (Qt only creates the tab bar once there are documents)."""
         from PySide6.QtWidgets import QTabBar
         for bar in self.mdi.findChildren(QTabBar):
             if bar.contextMenuPolicy() != Qt.ContextMenuPolicy.CustomContextMenu:
@@ -2871,7 +2873,7 @@ class MainWindow(QMainWindow):
                 bar.customContextMenuRequested.connect(self.show_tab_menu)
 
     def _fill_window_menu(self):
-        """Zoals PSP: genummerde lijst van open afbeeldingen onderaan, en vensterschikking grijs bij tabbladen."""
+        """Numbered list of open images at the bottom, and window arrangement greyed out with tabs."""
         m = self.window_menu
         for a in self._window_entries:
             m.removeAction(a)
@@ -2935,7 +2937,7 @@ class MainWindow(QMainWindow):
     PROJECT_URL = "https://github.com/rene-timmermans/PixelPickle"
 
     def check_updates(self):
-        """Op updates controleren: de projectpagina openen (daar staan de nieuwste versies)."""
+        """Check for updates: open the project page (the latest versions are there)."""
         from PySide6.QtCore import QUrl
         from PySide6.QtGui import QDesktopServices
         QDesktopServices.openUrl(QUrl(self.PROJECT_URL))
@@ -2951,7 +2953,7 @@ class MainWindow(QMainWindow):
                 if it["items"]:
                     walk(it["items"], path + [name])
                 elif it["keys"]:
-                    # sneltoets in de taal van het systeem (bijvoorbeeld Strg in het Duits)
+                    # shortcut in the language of the system (for example Strg in German)
                     keys = [QKeySequence(k).toString(QKeySequence.SequenceFormat.NativeText) or k for k in it["keys"]]
                     rows.append((" > ".join(path + [tr(name)]), ", ".join(keys)))
         walk(self.menu_tree, [])
@@ -2964,11 +2966,11 @@ class MainWindow(QMainWindow):
         dialogs.AboutDialog(self, self.windowIcon()).exec()
 
     def manual_html(self):
-        """Beknopte gebruikershandleiding (Nederlands of Engels), met de echte sneltoetsen."""
+        """Short user manual (Dutch or English), with the real shortcuts."""
         from . import i18n
         folder = os.path.join(os.path.dirname(__file__), "data")
         path = os.path.join(folder, f"manual_{i18n.language()}.html")
-        if not os.path.exists(path):  # taal zonder eigen handleiding: Engels
+        if not os.path.exists(path):  # language without its own manual: English
             path = os.path.join(folder, "manual_en.html")
         html = open(path, encoding="utf-8").read()
         rows = "".join(f"<tr><td>{tr(t.name)}</td><td style='padding-left:16px'><b>{self.tool_key(t)}</b></td></tr>"
@@ -2976,24 +2978,24 @@ class MainWindow(QMainWindow):
         return html.replace("{tools}", f"<table cellspacing=2>{rows}</table>")
 
     def show_manual(self):
-        """Uitgebreide handleiding (per gereedschap, menu en effect); zonder die bestanden de beknopte."""
+        """Extended manual (per tool, menu and effect); without those files the short one."""
         from . import manual
         if not os.path.exists(os.path.join(manual.DATA, "prose_en.json")):
             dialogs.text_window(self, tr("Gebruikershandleiding"), self.manual_html(), (900, 820)).show()
             return
-        # één venster dat naast het werk open kan blijven; nogmaals openen brengt het naar voren
+        # one window that can stay open next to the work; opening again brings it to the front
         win = getattr(self, "_manual_win", None)
         try:
             if win is not None and win.isVisible():
                 win.raise_()
                 win.activateWindow()
                 return
-        except RuntimeError:  # al opgeruimd
+        except RuntimeError:  # already cleaned up
             pass
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         try:
-            # zonder ouder: een zelfstandig venster (eigen plek op de taakbalk) dat ook achter het hoofdvenster
-            # kan; met het hoofdvenster als ouder houdt de vensterbeheerder het er altijd boven
+            # without a parent: a standalone window (own place on the taskbar) that can also go behind the main window;
+            # with the main window as parent the window manager always keeps it on top
             self._manual_win = manual.ManualWindow(None)
             self._manual_win.setWindowIcon(self.windowIcon())
         finally:
@@ -3001,7 +3003,7 @@ class MainWindow(QMainWindow):
         self._manual_win.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self._manual_win.show()
 
-    # ---------------------------------------------------------------- automatisch opslaan
+    # ---------------------------------------------------------------- autosave
     def autosave_settings(self):
         a = self.autosaver
         dlg = dialogs.AutosaveDialog(self, a.enabled(), a.minutes())
@@ -3011,7 +3013,7 @@ class MainWindow(QMainWindow):
             a.apply_settings()
 
     def offer_recovery(self):
-        """Na een onverwachte afsluiting: automatisch opgeslagen afbeeldingen terughalen."""
+        """After an unexpected shutdown: recover automatically saved images."""
         import shutil
         from .autosave import leftovers
         found = leftovers()
@@ -3050,13 +3052,13 @@ class MainWindow(QMainWindow):
                 e.ignore()
                 return
             d.set_modified(False)
-        if getattr(self, "_restart", False):  # herstarten na taalwissel
+        if getattr(self, "_restart", False):  # restart after a language change
             restart_pixelpickle()
-        if not getattr(self, "_prefs_reset", False):  # na Voorkeuren herstellen niets terugschrijven
+        if not getattr(self, "_prefs_reset", False):  # after resetting Preferences do not write anything back
             self.settings.setValue("geometry", self.saveGeometry())
             self.settings.setValue("state2", self.saveState())
         self.autosaver.shutdown()
-        win = getattr(self, "_manual_win", None)  # de losse handleiding gaat mee dicht
+        win = getattr(self, "_manual_win", None)  # the separate manual closes with it
         try:
             if win is not None:
                 win.close()
@@ -3065,7 +3067,7 @@ class MainWindow(QMainWindow):
         e.accept()
 
 
-# ---------------------------------------------------------------- automatische correcties
+# ---------------------------------------------------------------- automatic corrections
 def stretch(a, lo=0.5, hi=99.5):
     out = a.copy()
     for c in range(3):

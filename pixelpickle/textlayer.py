@@ -1,9 +1,9 @@
-"""Bewerkbare tekstlagen.
+"""Editable text layers.
 
-Een tekstlaag is een gewone Layer met een 'text' dictionary; layer.image is de getekende weergave.
-De tekst begint (basislijn van de eerste regel) op het ankerpunt (x, y) en wordt daarna door 'matrix'
-(QTransform: m11, m12, m21, m22, dx, dy) geplaatst. Zo blijven verplaatsen, schalen en draaien
-mogelijk zonder dat de tekst pixels wordt. Dezelfde opbouw gebruikt PSP in .pspimage bestanden."""
+A text layer is a regular Layer with a 'text' dictionary; layer.image is the rendered view.
+The text starts (baseline of the first line) at the anchor point (x, y) and is then placed by 'matrix'
+(QTransform: m11, m12, m21, m22, dx, dy). This way moving, scaling and rotating stay possible
+without the text becoming pixels. The structure is compatible with text in .pspimage files."""
 import copy
 
 from PySide6.QtCore import QPointF, QRectF, Qt
@@ -12,12 +12,12 @@ from PySide6.QtGui import QColor, QFont, QFontMetricsF, QImage, QPainter, QPaint
 IDENTITY = (1.0, 0.0, 0.0, 1.0, 0.0, 0.0)
 
 
-# patroonafbeeldingen van tekstmaterialen (QImage hoort niet in de kopieerbare tekstgegevens)
+# pattern images of text materials (QImage does not belong in the copyable text data)
 _MAT_IMAGES = {}
 
 
 def _store_mat(m):
-    """Materiaal (verloop/patroon) als kopieerbare gegevens; een patroonafbeelding gaat in een register."""
+    """Material (gradient/pattern) as copyable data; a pattern image goes into a registry."""
     if m is None:
         return None
     out = {k: v for k, v in m.items() if k != "image"}
@@ -29,7 +29,7 @@ def _store_mat(m):
 
 
 def mat_dict(stored):
-    """Terug naar een materiaal zoals material.py het verwacht (met de patroonafbeelding)."""
+    """Back to a material as material.py expects it (with the pattern image)."""
     if stored is None:
         return None
     m = dict(stored)
@@ -42,8 +42,8 @@ def mat_dict(stored):
 
 
 def new_text(text, x, y, opts, fg, bg, fg_none=False, bg_none=False, fg_mat=None, bg_mat=None):
-    """Tekstgegevens uit de gereedschapsopties. Vulling = achtergrond, rand = voorgrond (zoals PSP); beide
-    kunnen ook een verloop of patroon zijn (fg_mat/bg_mat)."""
+    """Text data from the tool options. Fill = background, stroke = foreground; both
+    can also be a gradient or pattern (fg_mat/bg_mat)."""
     return dict(
         fill_mat=None if bg_none else _store_mat(bg_mat), stroke_mat=None if fg_none else _store_mat(fg_mat),
         mat_fg=fg.getRgb()[:3], mat_bg=bg.getRgb()[:3],
@@ -85,15 +85,16 @@ def _font(style, px_per_pt):
 
 
 def _runs(t):
-    """Opmaakdelen: [(stijl, rand, vulling, tekst)]. PixelPickle tekst heeft één stijl; PSP tekst kan er meer hebben."""
+    """Formatting runs: [(style, stroke, fill, text)]. PixelPickle text has one style;
+    text from .pspimage files can have more."""
     if t.get("runs"):
         return t["runs"]
     return [(t, t.get("stroke"), t.get("fill"), t["text"])]
 
 
 def path_and_strokes(t, px_per_pt=1.0):
-    """Lijst van (pad, rand, vulling, randdikte) in lokale coördinaten (ankerpunt = 0,0)."""
-    lines = [[]]  # per regel: [(lettertype, rand, vulling, tekst)]
+    """List of (path, stroke, fill, stroke width) in local coordinates (anchor point = 0,0)."""
+    lines = [[]]  # per line: [(font, stroke, fill, text)]
     for style, stroke, fill, chunk in _runs(t):
         parts = chunk.replace("\r\n", "\n").replace("\r", "\n").split("\n")
         for i, part in enumerate(parts):
@@ -123,11 +124,11 @@ def path_and_strokes(t, px_per_pt=1.0):
 
 
 def glyph_paths(t, px_per_pt=1.0, per_char=False):
-    """Paden van de tekst op het canvas (met plaats en transformatie): [(pad, rand, vulling, randdikte)].
-    per_char: één pad per letter (voor Tekst omzetten in curven > Als afzonderlijke lettervormen)."""
+    """Paths of the text on the canvas (with position and transformation): [(path, stroke, fill, stroke width)].
+    per_char: one path per letter (for Convert text to curves > As individual letter shapes)."""
     if t.get("on_path"):
         return [(p, s, f, w) for p, s, f, w, _ in _on_path_glyphs(t, px_per_pt)]
-    m = transform(t) * QTransform()  # kopie
+    m = transform(t) * QTransform()  # copy
     place = QTransform.fromTranslate(t["x"], t["y"]) * m
     if not per_char:
         return [(place.map(p), s, f, w) for p, s, f, w in path_and_strokes(t, px_per_pt)]
@@ -159,8 +160,8 @@ def glyph_paths(t, px_per_pt=1.0, per_char=False):
 
 
 def _on_path_glyphs(t, px_per_pt=1.0):
-    """Tekst langs een pad (Tekst inpassen in pad): elke letter staat op het pad, gedraaid langs de richting.
-    Geeft [(pad op het canvas, rand, vulling, randdikte, tekst)] terug."""
+    """Text along a path (Fit text to path): each letter sits on the path, rotated along the direction.
+    Returns [(path on the canvas, stroke, fill, stroke width, text)]."""
     from . import vectorlayer as V
     guide = QPainterPath()
     V._add_contour(guide, t["on_path"]["nodes"], t["on_path"].get("closed", False))
@@ -197,7 +198,7 @@ def render(t, W, H, px_per_pt=1.0) -> QImage:
     p = QPainter(img)
     p.setRenderHint(QPainter.RenderHint.Antialiasing, t.get("antialias", True))
     p.setRenderHint(QPainter.RenderHint.TextAntialiasing, t.get("antialias", True))
-    if t.get("on_path"):  # tekst langs een pad: de letters staan al op hun plek op het canvas
+    if t.get("on_path"):  # text along a path: the letters are already in place on the canvas
         parts = [(gp, st, fi, sw) for gp, st, fi, sw, _ in _on_path_glyphs(t, px_per_pt)]
     else:
         p.setTransform(transform(t))
@@ -216,7 +217,7 @@ def render(t, W, H, px_per_pt=1.0) -> QImage:
     base_fill, base_stroke = t.get("fill"), t.get("stroke")
     for path, stroke, fill, sw in parts:
         if fill is not None:
-            # het materiaal geldt voor tekst met de gewone vulling; woorden met een eigen kleur houden die
+            # the material applies to text with the regular fill; words with their own color keep that
             p.fillPath(path, fill_br if fill_br is not None and tuple(fill) == tuple(base_fill or ()) else QColor(*fill))
         if stroke is not None:
             pen = QPen(stroke_br if stroke_br is not None and tuple(stroke) == tuple(base_stroke or ()) else QColor(*stroke), sw)
@@ -227,7 +228,7 @@ def render(t, W, H, px_per_pt=1.0) -> QImage:
 
 
 def bounds(t, px_per_pt=1.0) -> QRectF:
-    """Omhullende rechthoek op het canvas (voor aanklikken en het tekstkader)."""
+    """Bounding rectangle on the canvas (for clicking and the text frame)."""
     r = QRectF()
     if t.get("on_path"):
         for path, *_ in _on_path_glyphs(t, px_per_pt):

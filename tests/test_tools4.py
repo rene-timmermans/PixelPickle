@@ -1,4 +1,4 @@
-"""Makeover, Object verwijderen, Markering en Paletmes:
+"""Makeover, Object remover, Highlighter and Palette knife:
 QT_QPA_PLATFORM=offscreen .venv/bin/python tests/test_tools4.py"""
 import os
 import sys
@@ -40,9 +40,9 @@ def newdoc(color=QColor(200, 160, 130)):
 
 for cid in (0xd070, 0xd083, 0xd136, 0xd137):
     assert w.tools[cid].available, hex(cid)
-print("1 alle vier beschikbaar op de gereedschapsbalk")
+print("1 all four available on the toolbar")
 
-# Makeover: vlek verwijderen
+# Makeover: remove blemish
 d, cv = newdoc()
 p = QPainter(d.layers[0].image); p.setBrush(QColor(120, 40, 40)); p.setPen(Qt.PenStyle.NoPen)
 p.drawEllipse(QPointF(50, 50), 4, 4); p.end()
@@ -50,26 +50,26 @@ w.select_tool(w.tools[0xd070]); w.opts["mk_mode"] = 0; w.opts["mk_size"] = 14; w
 stroke(cv, [(50, 50)])
 c = d.layers[0].image.pixelColor(50, 50)
 assert abs(c.red() - 200) < 25 and abs(c.green() - 160) < 25, c.getRgb()
-print("2 Makeover vlekken verwijderen: vlek opgevuld met de huidkleur", c.getRgb()[:3])
+print("2 Makeover remove blemishes: blemish filled with the skin color", c.getRgb()[:3])
 
-# Tandenborstel: gelige tand wordt witter, rode lip blijft
+# Toothbrush: yellowish tooth becomes whiter, red lip stays
 p = QPainter(d.layers[0].image); p.fillRect(90, 20, 20, 10, QColor(225, 205, 150)); p.fillRect(90, 30, 20, 10, QColor(190, 60, 70)); p.end()
 w.opts["mk_mode"] = 1
 stroke(cv, [(92, 25), (108, 25), (108, 35), (92, 35)])
 tooth, lip = d.layers[0].image.pixelColor(100, 24), d.layers[0].image.pixelColor(100, 36)
 assert tooth.hslSaturation() < 90 and tooth.lightness() > 190, tooth.getRgb()
 assert lip.red() > 160 and lip.green() < 90, lip.getRgb()
-print("3 Tandenborstel: tand witter", tooth.getRgb()[:3], "lip blijft", lip.getRgb()[:3])
+print("3 Toothbrush: tooth whiter", tooth.getRgb()[:3], "lip stays", lip.getRgb()[:3])
 
-# Zonnebruin: warmer en iets donkerder
+# Suntan: warmer and slightly darker
 w.opts["mk_mode"] = 3
 before = d.layers[0].image.pixelColor(30, 100)
 stroke(cv, [(20, 100), (40, 100)])
 after = d.layers[0].image.pixelColor(30, 100)
 assert after.lightness() < before.lightness() and 10 <= after.hslHue() <= 40, (before.getRgb(), after.getRgb())
-print("4 Zonnebruin:", before.getRgb()[:3], "->", after.getRgb()[:3])
+print("4 Suntan:", before.getRgb()[:3], "->", after.getRgb()[:3])
 
-# Slanker maken: een verticale streep in het midden blijft, eentje opzij schuift naar het midden
+# Thinner: a vertical stripe in the middle stays, one at the side moves toward the middle
 d2, cv2 = newdoc(QColor(255, 255, 255))
 p = QPainter(d2.layers[0].image); p.fillRect(40, 0, 2, 120, QColor(0, 0, 0)); p.fillRect(80, 0, 1, 120, QColor(255, 0, 0)); p.end()
 w.opts["mk_mode"] = 4
@@ -79,9 +79,9 @@ dark = [x for x, c in enumerate(row) if c.red() < 128]
 red = [x for x, c in enumerate(row) if c.red() > 200 and c.green() < 100]
 assert dark and dark[0] > 41 and red and abs(red[0] - 80) <= 1, (dark, red)
 assert row[0] == QColor(255, 255, 255)
-print("5 Slanker maken: zijkant schuift naar het midden", dark[:2], "midden blijft", red[:1])
+print("5 Thinner: side moves toward the middle", dark[:2], "middle stays", red[:1])
 
-# Object verwijderen: blauw blokje op een verloop verdwijnt naadloos
+# Object remover: blue block on a gradient disappears seamlessly
 d3, cv3 = newdoc(QColor(255, 255, 255))
 p = QPainter(d3.layers[0].image)
 for x in range(160):
@@ -90,39 +90,39 @@ p.fillRect(100, 50, 16, 16, QColor(0, 0, 255)); p.end()
 w.select_tool(w.tools[0xd083]); w.opts["or_mode"] = 0
 stroke(cv3, [(96, 46), (120, 46), (120, 70), (96, 70)])
 assert w.opts["or_mode"] == 1 and w.tool.src is not None
-w.tool.src = w.tool.src.translated(0, 0)  # standaard bron (links ernaast)
+w.tool.src = w.tool.src.translated(0, 0)  # default source (next to it on the left)
 w.tool.apply()
 c = d3.layers[0].image.pixelColor(108, 58)
 expect = QColor(60 + 108, 120, 200 - 108 // 2)
 assert abs(c.red() - expect.red()) < 12 and abs(c.blue() - expect.blue()) < 12, (c.getRgb(), expect.getRgb())
 assert w.tool.poly == [] and w.opts["or_mode"] == 0
-print("6 Object verwijderen: object weg, kleur sluit aan", c.getRgb()[:3], "verwacht", expect.getRgb()[:3])
-# Enter past ook toe, Esc gooit weg
+print("6 Object remover: object gone, color blends in", c.getRgb()[:3], "expected", expect.getRgb()[:3])
+# Enter also applies, Esc discards
 stroke(cv3, [(10, 10), (30, 10), (30, 30), (10, 30)])
 assert w.tool.key(cv3, QKeyEvent(QEvent.Type.KeyPress, Qt.Key.Key_Escape, Qt.KeyboardModifier.NoModifier))
 assert w.tool.poly == [] and w.tool.src is None
-print("7 Esc gooit de omtrek weg")
+print("7 Esc discards the outline")
 
-# Markering: doorschijnend; tweede streek eroverheen wordt donkerder; binnen één streek niet
+# Highlighter: translucent; a second stroke over it gets darker; not within one stroke
 d4, cv4 = newdoc(QColor(255, 255, 255))
 w.select_tool(w.tools[0xd136]); w.fg = QColor(255, 220, 0)
-stroke(cv4, [(20, 40), (140, 40), (20, 40)])  # heen en terug in één streek
+stroke(cv4, [(20, 40), (140, 40), (20, 40)])  # back and forth in one stroke
 one = d4.layers[0].image.pixelColor(80, 40)
 stroke(cv4, [(80, 10), (80, 70)])
 two = d4.layers[0].image.pixelColor(80, 40)
 assert one.blue() > 60 and one.blue() < 230, one.getRgb()
 assert two.blue() < one.blue() - 20, (one.getRgb(), two.getRgb())
-print("8 Markering: één laag", one.getRgb()[:3], "overlap donkerder", two.getRgb()[:3])
+print("8 Highlighter: one layer", one.getRgb()[:3], "overlap darker", two.getRgb()[:3])
 
-# Paletmes: dikke verf, smeert de kleur eronder mee
+# Palette knife: thick paint, smears the color underneath along
 d5, cv5 = newdoc(QColor(255, 255, 255))
 p = QPainter(d5.layers[0].image); p.fillRect(0, 0, 60, 120, QColor(0, 0, 200)); p.end()
 w.select_tool(w.tools[0xd137]); w.fg = QColor(230, 30, 30)
 stroke(cv5, [(20, 60), (60, 60), (120, 60)])
 mid = d5.layers[0].image.pixelColor(110, 60)
 assert mid != QColor(255, 255, 255) and mid.red() > 80, mid.getRgb()
-print("9 Paletmes: verf aangebracht", mid.getRgb()[:3])
+print("9 Palette knife: paint applied", mid.getRgb()[:3])
 
 for x in (d, d2, d3, d4, d5):
     x.set_modified(False)
-print("ALLES OK")
+print("ALL OK")

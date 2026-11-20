@@ -1,9 +1,9 @@
-"""Eigen lijniconen voor de werkbalken: allemaal in dezelfde stijl en op hetzelfde raster van 24 x 24,
-getekend in één kleur (standaard de accentkleur van het thema). Zo zien de gereedschappen er gelijk uit,
-op een licht en een donker thema, en zijn ze niet afhankelijk van emoji uit het lettertype.
+"""Own line icons for the toolbars: all in the same style and on the same 24 x 24 grid,
+drawn in a single color (by default the accent color of the theme). This makes the tools look consistent,
+on a light and a dark theme, and they do not depend on emoji from the font.
 
-Elke tekenfunctie krijgt een QPainter die al geschaald is naar het raster van 24 en een pen in de
-iconkleur. 'fill' is dezelfde kleur, voor dichte vlakjes."""
+Each drawing function gets a QPainter that is already scaled to the 24 grid and a pen in the
+icon color. 'fill' is the same color, for filled shapes."""
 import math
 
 from PySide6.QtCore import QPointF, QRectF, Qt
@@ -15,10 +15,10 @@ SIZES = (16, 20, 24, 32, 48)
 
 
 def icon_color():
-    """Accentkleur van het thema (dezelfde als de pijlknop van een te volle werkbalk)."""
+    """Accent color of the theme (the same as the arrow button of an overfull toolbar)."""
     pal = QApplication.palette()
     c = QColor(pal.highlight().color())
-    # te donker of te licht ten opzichte van de achtergrond: wat bijstellen zodat het zichtbaar blijft
+    # too dark or too light relative to the background: adjust a little so it stays visible
     bg = pal.window().color()
     if abs(c.lightness() - bg.lightness()) < 70:
         c = c.lighter(150) if bg.lightness() < 128 else c.darker(150)
@@ -41,7 +41,7 @@ def _arrowhead(p, tip, angle_deg, size=3.5):
         p.drawLine(P(*tip), P(tip[0] + size * math.cos(b), tip[1] + size * math.sin(b)))
 
 
-# ---------------------------------------------------------------- gereedschappen
+# ---------------------------------------------------------------- tools
 def pan(p, fill):
     for x, top in ((8, 6), (11, 4), (14, 4.5), (17, 7)):
         p.drawLine(P(x, top), P(x, 12.5))
@@ -172,7 +172,7 @@ def lighten_darken(p, fill):
 
 
 def _lollipop(p, fill, solid):
-    # rond schijfje op een rechte steel (zoals de klassieke tegenhouden/doordrukken-iconen)
+    # round disc on a straight handle (like the classic dodge/burn icons)
     p.drawLine(P(12, 13.5), P(12, 21.5))
     if solid:
         p.setBrush(fill)
@@ -188,7 +188,7 @@ def burn(p, fill):
 
 
 def smudge(p, fill):
-    # vinger die schuin over het vlak veegt, met veegsporen erachter
+    # finger swiping diagonally across the surface, with smear marks behind it
     p.save()
     p.translate(14, 10)
     p.rotate(40)
@@ -316,7 +316,7 @@ def straighten(p, fill):
 
 
 def perspective(p, fill):
-    # schuine vierhoek met hoekgrepen en een hulplijn: rechttrekken van perspectief
+    # slanted quadrilateral with corner handles and a guide line: straightening perspective
     p.drawPath(_path((7, 5), (17, 5), (21, 19), (3, 19), close=True))
     p.drawLine(P(12, 5), P(12, 19))
     p.setBrush(fill)
@@ -326,7 +326,7 @@ def perspective(p, fill):
 
 
 def scratch_remover(p, fill):
-    # schuin kadertje over een kronkelige kras
+    # slanted frame over a wiggly scratch
     p.save()
     p.translate(12, 12)
     p.rotate(-35)
@@ -339,7 +339,7 @@ def scratch_remover(p, fill):
 
 
 def _stick(p, fill, length, width, tip, band=False):
-    """Schuin staand stiftje (krijt, pastel, kleurkrijt, potlood) met de punt linksonder."""
+    """Slanted stick (chalk, pastel, crayon, pencil) with the tip at the bottom left."""
     p.save()
     p.translate(13, 11)
     p.rotate(-45)
@@ -359,7 +359,7 @@ def _stick(p, fill, length, width, tip, band=False):
 
 
 def oil(p, fill):
-    # platte kwast met een klodder verf
+    # flat brush with a blob of paint
     p.save()
     p.translate(14, 10)
     p.rotate(-45)
@@ -407,7 +407,7 @@ def pencil(p, fill):
 
 
 def makeover(p, fill):
-    # lippenstift met een glinstering
+    # lipstick with a sparkle
     p.save()
     p.translate(11, 13)
     p.rotate(-30)
@@ -427,7 +427,7 @@ def makeover(p, fill):
 
 
 def object_remover(p, fill):
-    # gestippelde lijn om een vorm, met een bronkader ernaast
+    # dotted line around a shape, with a source frame next to it
     pen = p.pen()
     dashed = QPen(pen)
     dashed.setStyle(Qt.PenStyle.DashLine)
@@ -445,7 +445,7 @@ def object_remover(p, fill):
 
 
 def marker(p, fill):
-    # viltstift met schuine punt en een doorschijnende streep
+    # felt-tip marker with a slanted tip and a translucent stripe
     p.save()
     p.translate(13.5, 10.5)
     p.rotate(-45)
@@ -466,7 +466,7 @@ def marker(p, fill):
 
 
 def knife(p, fill):
-    # paletmes: handvat, geknikte steel en een plat, rond blad
+    # palette knife: handle, bent stem and a flat, round blade
     p.drawLine(P(20.5, 3.5), P(15.5, 8.5))
     p.save()
     p.translate(19, 5)
@@ -484,7 +484,7 @@ def knife(p, fill):
 
 
 def warp(p, fill):
-    # spiraal: pixels draaien en vervormen
+    # spiral: pixels twist and distort
     path = QPainterPath(P(12, 12))
     for k in range(1, 60):
         a = k * 0.3
@@ -494,7 +494,7 @@ def warp(p, fill):
 
 
 def mesh(p, fill):
-    # gebogen raster
+    # curved grid
     for k in (0, 1, 2):
         y = 5 + k * 7
         path = QPainterPath(P(3, y))
@@ -547,7 +547,7 @@ def text(p, fill):
     p.drawLine(P(8, 14), P(16, 14))
 
 
-# ---------------------------------------------------------------- standaardwerkbalk
+# ---------------------------------------------------------------- default toolbar
 def new_doc(p, fill):
     p.drawPath(_path((5, 3), (14, 3), (19, 8), (19, 21), (5, 21), close=True))
     p.drawPolyline(QPolygonF([P(14, 3), P(14, 8), P(19, 8)]))
@@ -608,7 +608,7 @@ def resize(p, fill):
 
 
 def fullscreen(p, fill):
-    """Bewerking op volledig scherm: vier hoeken van een scherm."""
+    """Full screen edit: four corners of a screen."""
     for x, y, dx, dy in ((3, 4, 1, 1), (21, 4, -1, 1), (21, 20, -1, -1), (3, 20, 1, -1)):
         p.drawPolyline(QPolygonF([P(x, y + 5 * dy), P(x, y), P(x + 6 * dx, y)]))
 
@@ -636,7 +636,7 @@ def rotate_ccw(p, fill):
 
 
 
-# ---------------------------------------------------------------- paletten
+# ---------------------------------------------------------------- palettes
 def layer_new(p, fill):
     for y in (6, 10.5, 15):
         p.drawLine(P(3, y), P(13, y))
@@ -656,7 +656,7 @@ def gear(p, fill):
     for k in range(2 * n):
         a = math.radians(k * 180 / n - 90)
         r = 9 if k % 2 == 0 else 6.8
-        # elke tand is een klein plateau: twee punten op dezelfde straal
+        # each tooth is a small plateau: two points on the same radius
         for da in (-7, 7):
             b = a + math.radians(da)
             pt = P(12 + r * math.cos(b), 12 + r * math.sin(b))
@@ -772,10 +772,10 @@ ICONS = {
     "👉": push, "◌": soften, "◉": sharpen, "▦": emboss, "🌈": saturation, "🎨": hue, "🎯": target,
     "🔁": replace, "🧽": scratch, "⎘": clone, "🪣": fill_tool, "🖍": crayon, "👁": eye, "📐": straighten, "⏢": perspective, "〰": scratch_remover, "oil": oil, "chalk": chalk, "pastel": pastel, "crayon_wax": crayon_wax, "pencil": pencil, "warp": warp, "mesh": mesh, "makeover": makeover, "object_remover": object_remover, "marker": marker, "knife": knife,
     "⛶": crop, "▭": rect, "⬭": ellipse, "✶": star, "💬": bubble, "✒": pen_tool, "A": text,
-    # standaardwerkbalk
+    # default toolbar
     "new": new_doc, "open": open_doc, "💾": save, "save_as": save_as, "🖨": printer, "↶": undo, "↷": redo,
     "⤢": resize, "↻": rotate_cw, "↺": rotate_ccw, "fullscreen": fullscreen, "zoom_in": zoom_in, "zoom_out": zoom_out,
-    # paletten
+    # palettes
     "layer_new": layer_new, "delete": delete, "gear": gear, "up": up, "down": down, "merge_down": merge_down,
     "opacity": opacity, "lock": lock, "eye": eye, "eye_off": eye_off, "folder": folder, "mask": mask,
     "adjust": lighten_darken, "chevron_right": chevron_right, "chevron_down": chevron_down,
@@ -784,7 +784,7 @@ ICONS = {
 
 
 def set_button(button, name, size=16, tooltip=None, color=None):
-    """Knop een getekend icoon geven in plaats van een teken (color: eigen kleur, anders de iconkleur)."""
+    """Give a button a drawn icon instead of a character (color: own color, otherwise the icon color)."""
     ic = icon(name, color=color)
     if ic is None:
         return
@@ -801,8 +801,8 @@ def label_pixmap(name, size=16, color=None):
 
 
 def text_color():
-    """Tekstkleur van het thema: voor iconen op een plek die zelf de accentkleur kan krijgen
-    (zoals een geselecteerde laag), zodat ze daar niet wegvallen."""
+    """Text color of the theme: for icons in a place that may itself get the accent color
+    (such as a selected layer), so that they do not disappear there."""
     return QApplication.palette().windowText().color()
 
 
@@ -814,7 +814,7 @@ def render(name, size, color, enabled=True):
     if not enabled:
         p.setOpacity(0.35)
     p.scale(size / 24, size / 24)
-    # iets dikkere lijnen bij kleine iconen, zodat ze even zwaar ogen
+    # slightly thicker lines for small icons, so they look equally heavy
     width = 1.7 if size >= 24 else 1.9 if size >= 20 else 2.1
     pen = QPen(color, width)
     pen.setCapStyle(Qt.PenCapStyle.RoundCap)
@@ -827,7 +827,7 @@ def render(name, size, color, enabled=True):
 
 
 def icon(name, enabled=True, color=None):
-    """QIcon van een getekend icoon, of None als er geen tekening voor die naam is."""
+    """QIcon of a drawn icon, or None if there is no drawing for that name."""
     if name not in ICONS:
         return None
     c = QColor(color) if color is not None else icon_color()

@@ -1,20 +1,19 @@
-"""PSP voorinstellingen (.PspScript) lezen zonder code uit te voeren, en koppelen aan PixelPickle.
+"""Compatible with .PspScript presets from Paint Shop Pro: the user's own presets
+are read at runtime (without executing code) and linked to PixelPickle. No
+presets are shipped.
 
-Een PSP voorinstelling heet  Preset_<Opdracht>_<Naam>.PspScript  en bevat een functie die een
-dictionary teruggeeft. Die lezen we met 'ast'; App.Constants.X.Y wordt de tekst "Y"."""
+A preset is named  Preset_<Command>_<Name>.PspScript  and contains a function that returns a
+dictionary. We read it with 'ast'; App.Constants.X.Y becomes the text "Y"."""
 import ast
 import glob
 import os
 import re
 
-PSP_DIRS = [
-    os.path.expanduser("~/.var/app/com.usebottles.bottles/data/bottles/bottles/pspxi/drive_c/Program Files/"
-                       "Corel/Corel Paint Shop Pro Photo XI/Voorinstellingen"),
-    os.path.expanduser("~/.var/app/com.usebottles.bottles/data/bottles/bottles/pspxi/drive_c/users/deck/"
-                       "Documents/Mijn PSP-bestanden/Voorinstellingen"),
-]
+_BOTTLE = os.path.expanduser("~/.var/app/com.usebottles.bottles/data/bottles/bottles/pspxi/drive_c")
+PSP_DIRS = [os.path.join(_BOTTLE, "Program Files", "Corel", "Corel Paint Shop Pro Photo XI", "Voorinstellingen")] + \
+    glob.glob(os.path.join(glob.escape(_BOTTLE), "users", "*", "Documents", "*PSP*", "Voorinstellingen"))
 
-# PSP opdrachtnaam -> PixelPickle ID (menu-opdracht of gereedschap)
+# command name in a preset -> PixelPickle ID (menu command or tool)
 KIND_TO_CID = {
     "AddNoise": 0x8089, "AgedNewspaper": 0x80c4, "Airbrush": 0xd092, "AutoSmallScratchRemoval": 0x806f,
     "BackgroundEraser": 0xd0c0, "Backlighting": 0x82b3, "BallsAndBubbles": 0x81f1, "BarrelCorrection": 0x818d,
@@ -61,7 +60,7 @@ PSP_BLEND = ["Normal", "Darken", "Lighten", "Hue", "HueLegacy", "Saturation", "S
              "HardLight", "SoftLight", "Difference", "Dodge", "Burn", "Exclusion", "PaintBehind"]
 PSP_MATCH = ["None", "RGBValue", "Color", "Brightness", "Perceptual", "Traditional", "AllOpaque", "Opacity"]
 
-# PSP naam -> PixelPickle optie voor gereedschappen (penselen e.d.)
+# name in a preset -> PixelPickle option for tools (brushes etc.)
 TOOL_KEYS = {"size": "size", "hardness": "hardness", "step": "step", "density": "density",
              "thickness": "thickness", "rotation": "rotation", "opacity": "opacity", "tolerance": "tolerance",
              "feather": "feather", "antialias": "antialias", "samplemerged": "sample_merged",
@@ -89,7 +88,7 @@ class _Eval(ast.NodeVisitor):
 
 
 def parse(path):
-    """Geeft (soort, naam, platte dict met genormaliseerde sleutels) of None."""
+    """Returns (kind, name, flat dict with normalized keys) or None."""
     m = re.match(r"Preset_([^_]+)_(.*)\.PspScript$", os.path.basename(path), re.I)
     if not m:
         return None
@@ -119,7 +118,7 @@ def parse(path):
 
 
 def scan(dirs=None):
-    """{cid: [(naam, platte dict), ...]} voor alle PSP voorinstellingen die bij PixelPickle horen."""
+    """{cid: [(name, flat dict), ...]} for all of the user's own presets that belong to PixelPickle."""
     out = {}
     for d in dirs or PSP_DIRS:
         for path in sorted(glob.glob(os.path.join(glob.escape(d), "Preset_*.PspScript"))):
@@ -158,7 +157,7 @@ def _numeric(v):
 
 
 def to_effect_params(eff, flat):
-    """Koppel PSP waarden aan effectparameters op naam. Geeft (params, aantal gekoppeld, aantal te koppelen)."""
+    """Map values from a preset to effect parameters by name. Returns (params, number mapped, number to map)."""
     flat = {k: v for k, v in flat.items() if k not in META}
     used, out, hits = set(), {}, 0
     params = [p for p in eff.params if p["type"] in ("int", "bool", "color", "choice")]
@@ -191,7 +190,7 @@ def to_effect_params(eff, flat):
             continue
         used.add(k)
         hits += 1
-    # één getal aan beide kanten: dan horen ze bij elkaar
+    # one number on both sides: then they belong together
     ints = [p for p in params if p["type"] == "int"]
     nums = [k for k, v in flat.items() if _numeric(v) and k not in used]
     if len(ints) == 1 and ints[0]["key"] not in out and len(nums) == 1:

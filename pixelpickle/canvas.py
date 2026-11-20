@@ -1,4 +1,4 @@
-"""Werkvlak: toont een document met zoom, schuiven, selectierand en gereedschap."""
+"""Canvas: shows a document with zoom, panning, selection frame and tool handling."""
 from PySide6.QtCore import QPointF, QRect, QRectF, QSize, Qt, QTimer, Signal
 from PySide6.QtGui import QBrush, QColor, QImage, QPainter, QPen, QPixmap, QTransform
 from PySide6.QtWidgets import QWidget
@@ -9,8 +9,8 @@ ZOOM_MIN, ZOOM_MAX = 0.01, 64.0
 
 
 class CanvasView(QWidget):
-    """Canvas met schuifbalken: ze verschijnen alleen als de afbeelding groter is dan het venster en lopen mee
-    met pannen en zoomen; slepen aan een schuifbalk verschuift het beeld."""
+    """Canvas with scroll bars: they appear only when the image is larger than the window and follow
+    panning and zooming; dragging a scroll bar moves the image."""
 
     def __init__(self, canvas):
         from PySide6.QtWidgets import QGridLayout, QScrollBar
@@ -32,7 +32,7 @@ class CanvasView(QWidget):
         canvas.viewChanged.connect(self.sync)
 
     def sync(self):
-        """Schuifbalken bijwerken naar de huidige zoom en plaats van het canvas."""
+        """Update the scroll bars to the current zoom and canvas position."""
         if self._busy:
             return
         cv = self.canvas
@@ -64,7 +64,7 @@ class CanvasView(QWidget):
 
 
 class Canvas(QWidget):
-    viewChanged = Signal()  # zoom of plaats veranderd (voor de schuifbalken)
+    viewChanged = Signal()  # zoom or position changed (for the scroll bars)
 
     def __init__(self, doc: Document, main):
         super().__init__()
@@ -72,7 +72,7 @@ class Canvas(QWidget):
         self.zoom = 1.0
         self.ox = self.oy = 0.0
         self.cache = None
-        self._auto = True  # passend en gecentreerd houden tot de gebruiker zelf zoomt of schuift
+        self._auto = True  # keep fitted and centered until the user zooms or scrolls
         self._pan = None
         self.space = False
         self.mouse_doc = None
@@ -85,7 +85,7 @@ class Canvas(QWidget):
         self.ants = QTimer(self)
         self.ants.setInterval(160)
         self.ants.timeout.connect(self._tick)
-        # automatisch scrollen bij de rand tijdens selecteren, slepen, bijsnijden...
+        # scroll automatically at the edge while selecting, dragging, cropping...
         self.autoscroll = QTimer(self)
         self.autoscroll.setInterval(30)
         self.autoscroll.timeout.connect(self._autoscroll_tick)
@@ -94,15 +94,15 @@ class Canvas(QWidget):
         doc.changed.connect(self._on_changed)
         doc.sizeChanged.connect(self._on_size)
         doc.selectionChanged.connect(self._on_selection)
-        # andere actieve laag (lagenpalet) of laagstructuur: meteen opnieuw tekenen, zodat bijvoorbeeld het
-        # kader van Selecteren direct om de nieuwe laag staat (het beeld zelf hoeft niet opnieuw samengesteld)
+        # another active layer (layers palette) or layer structure: redraw right away, so that for example the
+        # Select frame is placed around the new layer at once (the image itself does not need to be recomposed)
         doc.titleChanged.connect(self.update)
         doc.structureChanged.connect(self.update)
         self.recompose()
 
-    # ------------------------------------------------------------ beeld
+    # ------------------------------------------------------------ image
     def _mask_overlay(self, rect=None):
-        """Rode waas waar het actieve masker verbergt (Lagen > Overlay weergeven)."""
+        """Red haze where the active mask hides (Layers > Overlay weergeven, i.e. show overlay)."""
         d = self.doc
         l = d.layer()
         if not getattr(self.main, "mask_overlay", False) or (l.kind != "mask" and l.adjust is None):
@@ -157,7 +157,7 @@ class Canvas(QWidget):
         self.ant_offset = (self.ant_offset + 1) % 8
         self.update()
 
-    # ------------------------------------------------------------ coördinaten
+    # ------------------------------------------------------------ coordinates
     def to_doc(self, pos) -> QPointF:
         return QPointF((pos.x() - self.ox) / self.zoom, (pos.y() - self.oy) / self.zoom)
 
@@ -206,15 +206,15 @@ class Canvas(QWidget):
         if self._auto:
             self.fit()
         else:
-            # houd hetzelfde punt in het midden
+            # keep the same point in the center
             dx = (e.size().width() - e.oldSize().width()) / 2
             dy = (e.size().height() - e.oldSize().height()) / 2
             self.ox += dx
             self.oy += dy
 
-    # ------------------------------------------------------------ tekenen
+    # ------------------------------------------------------------ drawing
     def apply_view_settings(self):
-        """Ruitjespatroon en arcering volgens de voorkeuren."""
+        """Checkerboard pattern and hatching according to the preferences."""
         from .dialogs import checker_brush, view_settings
         vs = view_settings()
         self.view = vs
@@ -222,7 +222,7 @@ class Canvas(QWidget):
         self.update()
 
     def _ruby(self):
-        """Rode laag voor Selectie bewerken: hoe minder geselecteerd, hoe roder (half doorzichtig)."""
+        """Red layer for Edit Selection: the less is selected, the redder it gets (half transparent)."""
         lay = self.doc.seledit_layer() if hasattr(self.doc, "seledit_layer") else None
         if lay is None or not lay.visible:
             return None
@@ -253,7 +253,7 @@ class Canvas(QWidget):
             if getattr(self, "overlay_img", None) is not None:
                 p.drawImage(vis, self.overlay_img, src)
             ruby = self._ruby()
-            if ruby is not None:  # selectie bewerken: niet geselecteerde delen rood
+            if ruby is not None:  # edit selection: unselected parts in red
                 p.drawImage(vis, ruby, src)
         p.setPen(QPen(QColor(40, 40, 40), 1))
         p.drawRect(target.adjusted(-1, -1, 0, 0))
@@ -287,19 +287,19 @@ class Canvas(QWidget):
             self._view_key = key
             self.viewChanged.emit()
 
-    # ------------------------------------------------------------ invoer
+    # ------------------------------------------------------------ input
     def _panning_button(self, e):
         return (e.button() == Qt.MouseButton.MiddleButton
                 or (e.button() == Qt.MouseButton.LeftButton and (self.space or self.main.tool.is_pan)))
 
-    # ------------------------------------------------------------ linialen, hulplijnen en uitlijnen
-    RULER = 18  # breedte van de linialen in pixels
+    # ------------------------------------------------------------ rulers, guides and snapping
+    RULER = 18  # width of the rulers in pixels
 
     def rulers_on(self):
         return bool(self.main.view_opts.get("rulers"))
 
     def tool_point(self, pos):
-        """Documentpunt voor het gereedschap, uitgelijnd op raster of hulplijnen als dat aan staat."""
+        """Document point for the tool, snapped to the grid or guides when that is enabled."""
         pt = self.to_doc(pos)
         if getattr(self.main.tool, "snaps", False):
             from .viewaids import snap
@@ -307,7 +307,7 @@ class Canvas(QWidget):
         return pt
 
     def _guide_at(self, pos):
-        """Hulplijn waarvan de greep op de liniaal onder de muis ligt: ("h"|"v", index) of None."""
+        """Guide whose handle on the ruler is under the mouse: ("h"|"v", index) or None."""
         if not self.rulers_on():
             return None
         g = self.doc.guides
@@ -322,7 +322,7 @@ class Canvas(QWidget):
         return None
 
     def _ruler_press(self, e):
-        """Slepen vanuit een liniaal maakt een hulplijn; een bestaande greep versleept die hulplijn."""
+        """Dragging from a ruler creates a guide; an existing handle drags that guide."""
         if not self.rulers_on() or e.button() != Qt.MouseButton.LeftButton:
             return False
         pos = e.position()
@@ -335,7 +335,7 @@ class Canvas(QWidget):
                 self.doc.guides["v"].append((pos.x() - self.ox) / self.zoom)
                 hit = ("v", len(self.doc.guides["v"]) - 1)
             else:
-                return pos.x() < self.RULER and pos.y() < self.RULER  # hoekje: niets
+                return pos.x() < self.RULER and pos.y() < self.RULER  # corner: nothing
         self._guide_drag = hit
         self.main.view_opts["guides"] = True
         self.main.sync_view_checks()
@@ -359,7 +359,7 @@ class Canvas(QWidget):
         kind, i = drag
         self._guide_drag = None
         pos = e.position()
-        # terug in de liniaal (of buiten het beeld) gesleept: hulplijn weg
+        # dragged back into the ruler (or outside the image): remove the guide
         if (kind == "h" and (pos.y() < self.RULER or not 0 <= self.doc.guides["h"][i] <= self.doc.h)) or \
                 (kind == "v" and (pos.x() < self.RULER or not 0 <= self.doc.guides["v"][i] <= self.doc.w)):
             del self.doc.guides[kind][i]
@@ -375,7 +375,7 @@ class Canvas(QWidget):
             self.setCursor(Qt.CursorShape.ClosedHandCursor)
             return
         if e.button() == Qt.MouseButton.RightButton and self.main.tool.wants_context_menu(self):
-            # rechtsklik: eerst afwachten of er gesleept wordt (dan gewoon doorgeven aan het gereedschap)
+            # right click: first wait to see whether a drag follows (if so, just pass it on to the tool)
             self._rc = (e.position(), e.modifiers())
             self._rc_drag = False
             return
@@ -393,7 +393,7 @@ class Canvas(QWidget):
             return
         try:
             self.main.tool.press(self, self.tool_point(e.position()), e)
-        except Exception as ex:  # nooit het programma laten crashen
+        except Exception as ex:  # never let the program crash
             self.main.report_error(ex)
 
     def mouseMoveEvent(self, e):
@@ -410,7 +410,7 @@ class Canvas(QWidget):
             start, mods = rc
             if (e.position() - start).manhattanLength() < 5:
                 return
-            self._rc_drag = True  # het is slepen: alsnog de rechtsklik doorgeven aan het gereedschap
+            self._rc_drag = True  # it is a drag: pass the right click on to the tool after all
             from PySide6.QtGui import QMouseEvent
             from PySide6.QtCore import QEvent
             self._forward_press(QMouseEvent(QEvent.Type.MouseButtonPress, start, self.mapToGlobal(start),
@@ -428,7 +428,7 @@ class Canvas(QWidget):
                 self.autoscroll.start()
         try:
             self.main.tool.move(self, self.tool_point(e.position()), e)
-            if not e.buttons() and not self.space:  # muisaanwijzer laat zien wat slepen zal doen
+            if not e.buttons() and not self.space:  # the mouse pointer shows what dragging will do
                 c = self.main.tool.hover_cursor(self, pt)
                 self.setCursor(c if c is not None else self.main.tool.cursor)
         except Exception as ex:
@@ -437,22 +437,22 @@ class Canvas(QWidget):
         if self.main.tool.wants_cursor_overlay:
             self.update()
 
-    # ---------------------------------------------------------------- automatisch scrollen
-    EDGE = 40          # randzone in pixels waarin het scrollen begint
-    MAX_OUTSIDE = 200  # tot zo ver buiten het werkvlak blijft het werken
+    # ---------------------------------------------------------------- automatic scrolling
+    EDGE = 40          # edge zone in pixels in which scrolling starts
+    MAX_OUTSIDE = 200  # up to this far outside the canvas, working continues
 
     def _autoscroll_wanted(self):
-        """Alleen tijdens een bewerking: slepen met een muisknop, of een punt-tot-punt selectie in uitvoering."""
+        """Only during an operation: dragging with a mouse button, or a point-to-point selection in progress."""
         tool = self.main.tool
         if self._pan is not None or self.space or getattr(tool, "is_pan", False) or not getattr(tool, "autoscroll", True):
             return False
         if self._as_buttons & (Qt.MouseButton.LeftButton | Qt.MouseButton.RightButton):
             return True
-        return bool(getattr(tool, "pts", None))  # Selectie uit vrije hand (punt tot punt, slimme rand)
+        return bool(getattr(tool, "pts", None))  # freehand selection (point to point, smart edge)
 
     def _edge_velocity(self, pos):
-        """Scrollsnelheid per tik: nul midden in het venster, groter naarmate de muis verder
-        in de randzone en daarbuiten komt."""
+        """Scroll speed per tick: zero in the middle of the window, higher the further the mouse moves
+        into the edge zone and beyond."""
         def axis(v, size):
             if v < self.EDGE:
                 d = self.EDGE - v
@@ -473,7 +473,7 @@ class Canvas(QWidget):
             return
         pos = QPointF(self.mapFromGlobal(QCursor.pos()))
         vx, vy = self._edge_velocity(pos)
-        # niet verder scrollen dan nodig: de rand van de afbeelding mag tot iets voorbij het midden komen
+        # do not scroll further than needed: the edge of the image may reach slightly past the center
         w, h = self.doc.w * self.zoom, self.doc.h * self.zoom
         if vx > 0 and self.ox >= self.width() / 2:
             vx = 0
@@ -489,7 +489,7 @@ class Canvas(QWidget):
         self._auto = False
         self.ox += vx
         self.oy += vy
-        # het gereedschap volgt de muis, zodat selectielijn of kader meeloopt
+        # the tool follows the mouse, so the selection line or frame moves along
         pt = self.to_doc(pos)
         self.mouse_doc = pt
         ev = QMouseEvent(QEvent.Type.MouseMove, pos, QCursor.pos().toPointF(), Qt.MouseButton.NoButton,
@@ -510,7 +510,7 @@ class Canvas(QWidget):
             self._rc = None
             if not self._rc_drag:
                 if self.main.tool.right_click(self, self.to_doc(e.position())):
-                    return  # het gereedschap gebruikt de rechtsklik zelf (bijvoorbeeld selectie opheffen)
+                    return  # the tool uses the right click itself (for example to clear a selection)
                 self.main.show_canvas_menu(self, e.position())
                 return
         if self._pan is not None:
@@ -543,7 +543,7 @@ class Canvas(QWidget):
             self.zoom_step(dy > 0, e.position())
 
     def contextMenuEvent(self, e):
-        # Menu-toets of Shift+F10: altijd het menu, ook bij gereedschappen die rechts zelf gebruiken
+        # Menu key or Shift+F10: always the menu, also for tools that use the right button themselves
         if e.reason() == e.Reason.Keyboard:
             pos = self.mapFromGlobal(self.cursor().pos())
             if not self.rect().contains(pos):
@@ -551,7 +551,7 @@ class Canvas(QWidget):
             self.main.show_canvas_menu(self, QPointF(pos))
 
     def _refresh_cursor(self):
-        """Cursor opnieuw bepalen (bijvoorbeeld een pipet zolang Ctrl is ingedrukt)."""
+        """Determine the cursor again (for example an eyedropper while Ctrl is held down)."""
         if self.space or self._pan is not None or self.mouse_doc is None:
             return
         c = self.main.tool.hover_cursor(self, self.mouse_doc)
@@ -574,12 +574,12 @@ class Canvas(QWidget):
 
     @staticmethod
     def nudge_speed(repeats):
-        """Stapgrootte na zoveel herhalingen: eerst rustig per pixel, daarna steeds sneller (tot 8x)."""
+        """Step size after this many repeats: slow per pixel at first, then faster and faster (up to 8x)."""
         return 1 if repeats < 8 else min(8, 1 + (repeats - 8) // 6)
 
     def _nudge_key(self, e):
-        """Pijltoetsen: geselecteerde pixels 1 pixel verschuiven (Shift: 10), Ctrl: alleen het selectiekader.
-        Met Verplaatsen en zonder selectie schuift de hele laag. Een reeks duwtjes is één stap ongedaan maken."""
+        """Arrow keys: move the selected pixels 1 pixel (Shift: 10), Ctrl: only the selection frame.
+        With Move and no selection the whole layer moves. A series of nudges is one undo step."""
         step = self.ARROWS.get(e.key())
         if step is None:
             return False
@@ -593,13 +593,13 @@ class Canvas(QWidget):
             what = "layer" if d.sel is None else ("marquee" if e.modifiers() & Qt.KeyboardModifier.ControlModifier else "pixels")
         else:
             return False
-        if what == "pixels" and not self.main.ensure_raster():  # een hele tekst- of vectorlaag blijft wat hij is
+        if what == "pixels" and not self.main.ensure_raster():  # a whole text or vector layer stays what it is
             return True
-        # versnelling: hoe langer de toets ingedrukt blijft, hoe grotere stappen
+        # acceleration: the longer the key is held down, the larger the steps
         self._nudge_repeat = getattr(self, "_nudge_repeat", 0) + 1 if e.isAutoRepeat() else 0
         n = (10 if e.modifiers() & Qt.KeyboardModifier.ShiftModifier else 1) * self.nudge_speed(self._nudge_repeat)
         nz = getattr(self, "_nudge", None)
-        # dezelfde reeks zolang er tussendoor niets anders met de afbeelding is gebeurd
+        # same series as long as nothing else has happened to the image in between
         if nz is None or nz["what"] != what or nz["layer"] is not d.layer() or nz["undo"] != len(d.undo_stack) \
                 or nz["sel"] is not d.sel:
             nz = {"mover": LayerMover(self, QPointF(0, 0), what), "what": what, "layer": d.layer(), "dx": 0, "dy": 0}
@@ -616,7 +616,7 @@ class Canvas(QWidget):
 
     def keyReleaseEvent(self, e):
         if e.key() == Qt.Key.Key_Control:
-            QTimer.singleShot(0, self._refresh_cursor)  # na het loslaten: de gewone cursor terug
+            QTimer.singleShot(0, self._refresh_cursor)  # after release: restore the normal cursor
         if e.key() == Qt.Key.Key_Space and not e.isAutoRepeat():
             self.space = False
             self.apply_cursor()

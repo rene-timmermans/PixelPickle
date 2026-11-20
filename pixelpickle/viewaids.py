@@ -1,6 +1,6 @@
-"""Hulpmiddelen in beeld: raster, linialen, hulplijnen en uitlijnen (snappen) op raster of hulplijnen.
-De instellingen staan in main.view_opts (bewaard in de programma-instellingen); de hulplijnen horen bij
-de afbeelding (doc.guides)."""
+"""View aids: grid, rulers, guides and snapping to the grid or guides.
+Settings are in main.view_opts (stored in the program settings); the guides belong to
+the image (doc.guides)."""
 from PySide6.QtCore import QPointF, QRectF, Qt
 from PySide6.QtGui import QColor, QFont, QPen
 
@@ -9,8 +9,8 @@ DEFAULTS = {"grid": False, "rulers": False, "guides": True, "snap_grid": False, 
 
 
 def snap(cv, pt):
-    """Punt naar het dichtstbijzijnde rasterpunt of de dichtstbijzijnde hulplijn trekken, als die binnen de
-    uitlijnafstand (in schermpixels) ligt."""
+    """Pull a point to the nearest grid point or the nearest guide, if it is within the
+    snap distance (in screen pixels)."""
     o = cv.main.view_opts
     tol = o["snap_dist"] / max(cv.zoom, 1e-6)
     x, y = pt.x(), pt.y()
@@ -73,7 +73,7 @@ def paint_guides(cv, p, vis):
 
 
 def _step(zoom):
-    """Afstand (in afbeeldingspixels) tussen de genummerde streepjes, zodat ze niet te dicht op elkaar staan."""
+    """Distance (in image pixels) between the numbered ticks, so they do not sit too close together."""
     for s in (1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 5000):
         if s * zoom >= 50:
             return s
@@ -96,7 +96,7 @@ def paint_rulers(cv, p):
     z = cv.zoom
     step = _step(z)
     minor = step / 5 if step >= 5 else step
-    # boven
+    # top
     first = int(max(0, (R - cv.ox) / z) // minor) * minor
     v = first
     while cv.ox + v * z <= cv.width() and v <= cv.doc.w:
@@ -107,7 +107,7 @@ def paint_rulers(cv, p):
             if big:
                 p.drawText(QPointF(x + 2, 9), str(int(v)))
         v += minor
-    # links
+    # left
     first = int(max(0, (R - cv.oy) / z) // minor) * minor
     v = first
     while cv.oy + v * z <= cv.height() and v <= cv.doc.h:
@@ -124,7 +124,7 @@ def paint_rulers(cv, p):
         v += minor
     p.drawLine(QPointF(0, R), QPointF(cv.width(), R))
     p.drawLine(QPointF(R, 0), QPointF(R, cv.height()))
-    # grepen van de hulplijnen en de muispositie
+    # handles of the guides and the mouse position
     gc = QColor(cv.main.view_opts["guide_color"])
     p.setPen(QPen(gc, 0))
     p.setBrush(gc)

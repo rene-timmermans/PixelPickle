@@ -1,5 +1,5 @@
-"""Controleert elk geregistreerd effect: .venv/bin/python -I tests/test_effects.py [module ...]
-Test vorm/type, randgevallen van parameters, transparantie en snelheid (2 MP)."""
+"""Checks every registered effect: .venv/bin/python -I tests/test_effects.py [module ...]
+Tests shape/type, edge cases of parameters, transparency and speed (2 MP)."""
 import os, sys, time, traceback
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np
@@ -37,9 +37,9 @@ for cid, eff in sorted(reg.items()):
                 for sc in (1.0, 0.25):
                     src = img.copy()
                     out = eff.fn(img, Ctx(fg=(0, 0, 0), bg=(255, 255, 255), scale=sc), **prm)
-                    assert np.array_equal(src, img), "invoer is gewijzigd"
+                    assert np.array_equal(src, img), "input was modified"
                     assert isinstance(out, np.ndarray) and out.dtype == np.uint8 and out.shape == img.shape, \
-                        f"uitvoer {getattr(out, 'dtype', None)} {getattr(out, 'shape', None)}"
+                        f"output {getattr(out, 'dtype', None)} {getattr(out, 'shape', None)}"
         t = time.time()
         eff.fn(big, ctx, **defaults(eff, ctx))
         dt = time.time() - t
@@ -48,7 +48,7 @@ for cid, eff in sorted(reg.items()):
     except Exception as e:
         fails.append((hex(cid), eff.name, repr(e)))
         traceback.print_exc()
-print(f"getest: {len(reg) if not only else 'selectie'}; fouten: {len(fails)}; traag (>4 s op 2 MP): {slow}")
+print(f"tested: {len(reg) if not only else 'selection'}; errors: {len(fails)}; slow (>4 s on 2 MP): {slow}")
 for f in fails:
-    print("FOUT", *f)
+    print("FAIL", *f)
 sys.exit(1 if fails else 0)

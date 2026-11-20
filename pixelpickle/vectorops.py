@@ -1,7 +1,7 @@
-"""Bewerkingen op hele vectorobjecten (menu Objecten en het snelmenu van vectorobjecten): uitlijnen,
-verdelen, even groot maken, schikken en groeperen. Objecten zijn de dicts uit vectorlayer.py; een selectie
-is een lijst indexen in layer.vector, in de volgorde waarin ze gekozen zijn (de eerste is de maatstaf bij
-Even groot maken)."""
+"""Operations on whole vector objects (Objects menu and the vector objects context menu): align,
+distribute, make same size, arrange and group. Objects are the dicts from vectorlayer.py; a selection
+is a list of indexes into layer.vector, in the order in which they were chosen (the first is the reference
+for Make same size)."""
 from PySide6.QtCore import QRectF
 from PySide6.QtGui import QTransform
 
@@ -25,7 +25,7 @@ def _move(obj, dx, dy):
 
 
 def expand_groups(objs, sel):
-    """Een gekozen object uit een groep neemt de hele groep mee (volgorde blijft)."""
+    """A chosen object from a group takes the whole group along (order is kept)."""
     out = list(sel)
     groups = {objs[i].get("group") for i in sel if objs[i].get("group")}
     for i, o in enumerate(objs):
@@ -34,13 +34,13 @@ def expand_groups(objs, sel):
     return out
 
 
-# ---------------------------------------------------------------- uitlijnen
+# ---------------------------------------------------------------- align
 ALIGN = ("top", "bottom", "left", "right", "vcenter", "hcenter", "canvas", "canvas_h", "canvas_v")
 
 
 def align(objs, sel, how, canvas: QRectF):
-    """Uitlijnen op de gezamenlijke omhullende (of op het doek). 'vcenter' = verticaal centreren
-    (de middens op één horizontale lijn), 'hcenter' = horizontaal centreren (op één verticale lijn)."""
+    """Align to the common bounding box (or to the canvas). 'vcenter' = center vertically
+    (centers on one horizontal line), 'hcenter' = center horizontally (on one vertical line)."""
     if not sel:
         return
     ref = sel_bounds(objs, sel)
@@ -60,7 +60,7 @@ def align(objs, sel, how, canvas: QRectF):
         elif how == "hcenter":
             dx = ref.center().x() - b.center().x()
         elif how in ("canvas", "canvas_h", "canvas_v"):
-            # op het doek: de selectie als geheel centreren (onderlinge plaats blijft)
+            # on the canvas: center the selection as a whole (relative positions are kept)
             if how in ("canvas", "canvas_h"):
                 dx = canvas.center().x() - ref.center().x()
             if how in ("canvas", "canvas_v"):
@@ -68,12 +68,12 @@ def align(objs, sel, how, canvas: QRectF):
         _move(objs[i], dx, dy)
 
 
-# ---------------------------------------------------------------- verdelen
+# ---------------------------------------------------------------- distribute
 DISTRIBUTE = ("v_top", "v_center", "v_bottom", "h_left", "h_center", "h_right", "h_space", "v_space")
 
 
 def distribute(objs, sel, how):
-    """Gelijke afstanden tussen de objecten; de buitenste twee blijven staan (minstens drie objecten)."""
+    """Equal spacing between the objects; the outer two stay in place (at least three objects)."""
     if len(sel) < 3:
         return False
     horizontal = how.startswith("h_")
@@ -101,9 +101,9 @@ def distribute(objs, sel, how):
     return True
 
 
-# ---------------------------------------------------------------- even groot
+# ---------------------------------------------------------------- make same size
 def same_size(objs, sel, how):
-    """Even groot als het eerst gekozen object: 'h' breedte, 'v' hoogte, 'both' beide (rond het eigen midden)."""
+    """Same size as the first chosen object: 'h' width, 'v' height, 'both' both (around its own center)."""
     if len(sel) < 2:
         return False
     ref = obj_bounds(objs[sel[0]])
@@ -115,14 +115,14 @@ def same_size(objs, sel, how):
         t = QTransform.fromTranslate(-c.x(), -c.y()) * QTransform.fromScale(sx, sy) * QTransform.fromTranslate(c.x(), c.y())
         w = objs[i]["width"]
         V.transform([objs[i]], t)
-        objs[i]["width"] = w  # de lijn blijft even dik
+        objs[i]["width"] = w  # the line stays equally thick
     return True
 
 
-# ---------------------------------------------------------------- schikken
+# ---------------------------------------------------------------- arrange
 def arrange(objs, sel, how):
-    """Volgorde (stapeling) wijzigen: 'top' vooraan, 'up' één omhoog, 'down' één omlaag, 'bottom' achteraan.
-    Geeft (nieuwe lijst, nieuwe selectie) terug."""
+    """Change the order (stacking): 'top' to front, 'up' one up, 'down' one down, 'bottom' to back.
+    Returns (new list, new selection)."""
     chosen = [objs[i] for i in sorted(sel)]
     rest = [o for i, o in enumerate(objs) if i not in set(sel)]
     if how == "top":
@@ -140,7 +140,7 @@ def arrange(objs, sel, how):
     return new, [k for k, o in enumerate(new) if id(o) in ids]
 
 
-# ---------------------------------------------------------------- groeperen
+# ---------------------------------------------------------------- group
 def group(objs, sel):
     if len(sel) < 2:
         return False

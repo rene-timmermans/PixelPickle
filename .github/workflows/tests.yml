@@ -1,6 +1,6 @@
-# Draait de volledige verzameling tests uit tests/ (zonder scherm) op Arch en Fedora:
-# bij elke push naar main, bij pull requests, met de hand, en vanuit de releaseworkflow
-# (de pakketten worden pas bij een release gezet als alle tests geslaagd zijn).
+# Runs the full test suite from tests/ (without a screen) on Arch and Fedora:
+# on every push to main, on pull requests, by hand, and from the release workflow
+# (the packages are only attached to a release once all tests have passed).
 name: Tests
 
 on:
