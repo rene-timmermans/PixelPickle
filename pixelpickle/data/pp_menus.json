@@ -81,31 +81,6 @@
      ],
      "items": []
     },
-    {
-     "text": "&E-mail",
-     "id": 0,
-     "keys": [],
-     "items": [
-      {
-       "text": "&Actieve afbeelding...",
-       "id": 33536,
-       "keys": [],
-       "items": []
-      },
-      {
-       "text": "Alle ge&opende afbeeldingen...",
-       "id": 33533,
-       "keys": [],
-       "items": []
-      },
-      {
-       "text": "Alle &geselecteerde items...",
-       "id": 33532,
-       "keys": [],
-       "items": []
-      }
-     ]
-    },
     null,
     {
      "text": "Af&drukken...",
@@ -153,32 +128,6 @@
        "id": 33283,
        "keys": [],
        "items": []
-      },
-      {
-       "text": "&Van scanner of camera...",
-       "id": 33257,
-       "keys": [],
-       "items": []
-      },
-      null,
-      {
-       "text": "&Ophalen van TWAIN...",
-       "id": 32983,
-       "keys": [],
-       "items": []
-      },
-      {
-       "text": "TWAIN-&bron...",
-       "id": 32984,
-       "keys": [],
-       "items": []
-      },
-      null,
-      {
-       "text": "&Insteekfilters",
-       "id": 33241,
-       "keys": [],
-       "items": []
       }
      ]
     },
@@ -187,13 +136,6 @@
      "id": 0,
      "keys": [],
      "items": [
-      {
-       "text": "&FotoUitwisseling",
-       "id": 25032,
-       "keys": [],
-       "items": []
-      },
-      null,
       {
        "text": "&JPEG-optimalisatie...",
        "id": 33099,
@@ -219,22 +161,10 @@
        "keys": [],
        "items": []
       },
-      {
-       "text": "&Segmentering...",
-       "id": 33139,
-       "keys": [],
-       "items": []
-      },
       null,
       {
        "text": "&Aangepast penseel...",
        "id": 33281,
-       "keys": [],
-       "items": []
-      },
-      {
-       "text": "&Plaatjespenseel...",
-       "id": 33060,
        "keys": [],
        "items": []
       },
@@ -249,88 +179,9 @@
        "id": 33116,
        "keys": [],
        "items": []
-      },
-      null,
-      {
-       "text": "&Insteekfilters",
-       "id": 33242,
-       "keys": [],
-       "items": []
       }
      ]
     },
-    null,
-    {
-     "text": "&Script",
-     "id": 0,
-     "keys": [],
-     "items": [
-      {
-       "text": "Uit&voeren...",
-       "id": 32783,
-       "keys": [],
-       "items": []
-      },
-      {
-       "text": "Be&werken...",
-       "id": 32785,
-       "keys": [],
-       "items": []
-      },
-      {
-       "text": "&Stoppen...",
-       "id": 33280,
-       "keys": [],
-       "items": []
-      },
-      {
-       "text": "&Uitvoervenster wissen",
-       "id": 33342,
-       "keys": [],
-       "items": []
-      },
-      null,
-      {
-       "text": "Opname s&tarten",
-       "id": 32806,
-       "keys": [],
-       "items": []
-      },
-      {
-       "text": "Opname &pauzeren",
-       "id": 32805,
-       "keys": [],
-       "items": []
-      },
-      {
-       "text": "Opname &annuleren",
-       "id": 32796,
-       "keys": [],
-       "items": []
-      },
-      {
-       "text": "&Opname opslaan...",
-       "id": 32804,
-       "keys": [],
-       "items": []
-      },
-      null,
-      {
-       "text": "Ee&n stap",
-       "id": 33468,
-       "keys": [],
-       "items": []
-      },
-      null,
-      {
-       "text": "Recent script",
-       "id": 33303,
-       "keys": [],
-       "items": []
-      }
-     ]
-    },
-    null,
     null,
     {
      "text": "&Batchverwerking...",
@@ -341,12 +192,6 @@
     {
      "text": "Na&men in batch wijzigen...",
      "id": 33197,
-     "keys": [],
-     "items": []
-    },
-    {
-     "text": "Lexar actief geheugensysteem...",
-     "id": 33530,
      "keys": [],
      "items": []
     },
@@ -369,12 +214,6 @@
        "items": []
       },
       {
-       "text": "Koppelingen met &bestandsindelingen...",
-       "id": 33019,
-       "keys": [],
-       "items": []
-      },
-      {
        "text": "B&estandslocaties...",
        "id": 33106,
        "keys": [],
@@ -389,69 +228,6 @@
       {
        "text": "Voorkeuren &herstellen...",
        "id": 33284,
-       "keys": [],
-       "items": []
-      }
-     ]
-    },
-    {
-     "text": "&Werkvlak",
-     "id": 0,
-     "keys": [],
-     "items": [
-      {
-       "text": "&Laden...",
-       "id": 33102,
-       "keys": [
-        "Alt+Shift+L"
-       ],
-       "items": []
-      },
-      {
-       "text": "&Opslaan...",
-       "id": 33103,
-       "keys": [
-        "Alt+Shift+S"
-       ],
-       "items": []
-      },
-      {
-       "text": "&Verwijderen...",
-       "id": 33104,
-       "keys": [
-        "Alt+Shift+D"
-       ],
-       "items": []
-      },
-      null,
-      {
-       "text": "Recent werkvlak",
-       "id": 33274,
-       "keys": [],
-       "items": []
-      }
-     ]
-    },
-    {
-     "text": "Kleurbe&heer",
-     "id": 0,
-     "keys": [],
-     "items": [
-      {
-       "text": "&Kleurbeheer...",
-       "id": 33063,
-       "keys": [],
-       "items": []
-      },
-      {
-       "text": "Kleuren&werkvlak...",
-       "id": 33506,
-       "keys": [],
-       "items": []
-      },
-      {
-       "text": "&Monitorkalibratie...",
-       "id": 33524,
        "keys": [],
        "items": []
       }
@@ -638,12 +414,6 @@
      ],
      "items": []
     },
-    {
-     "text": "V&oorbeeld in webbrowser...",
-     "id": 33111,
-     "keys": [],
-     "items": []
-    },
     null,
     {
      "text": "&Linialen",
@@ -708,12 +478,6 @@
        "items": []
       },
       {
-       "text": "&Script",
-       "id": 32807,
-       "keys": [],
-       "items": []
-      },
-      {
        "text": "S&tandaard",
        "id": 59392,
        "keys": [],
@@ -728,18 +492,6 @@
       {
        "text": "&Gereedschappen",
        "id": 33273,
-       "keys": [],
-       "items": []
-      },
-      {
-       "text": "&Web",
-       "id": 33307,
-       "keys": [],
-       "items": []
-      },
-      {
-       "text": "<Custom Toolbars>",
-       "id": 32774,
        "keys": [],
        "items": []
       }
@@ -783,14 +535,6 @@
        "items": []
       },
       {
-       "text": "&Studiecentrum",
-       "id": 32809,
-       "keys": [
-        "F10"
-       ],
-       "items": []
-      },
-      {
        "text": "&Materialen",
        "id": 33157,
        "keys": [
@@ -799,42 +543,10 @@
        "items": []
       },
       {
-       "text": "Me&nger",
-       "id": 33484,
-       "keys": [
-        "Shift+F6"
-       ],
-       "items": []
-      },
-      {
        "text": "O&verzicht",
        "id": 33113,
        "keys": [
         "F9"
-       ],
-       "items": []
-      },
-      {
-       "text": "O&rdenen",
-       "id": 15050,
-       "keys": [
-        "Ctrl+B"
-       ],
-       "items": []
-      },
-      {
-       "text": "&Fotolade",
-       "id": 15052,
-       "keys": [
-        "Ctrl+W"
-       ],
-       "items": []
-      },
-      {
-       "text": "S&criptuitvoer",
-       "id": 32778,
-       "keys": [
-        "Shift+F3"
        ],
        "items": []
       },
@@ -848,25 +560,6 @@
       }
      ]
     },
-    {
-     "text": "Modus Ordenen",
-     "id": 0,
-     "keys": [],
-     "items": [
-      {
-       "text": "&Documentmodus",
-       "id": 25211,
-       "keys": [],
-       "items": []
-      },
-      {
-       "text": "&Paletmodus",
-       "id": 25212,
-       "keys": [],
-       "items": []
-      }
-     ]
-    },
     null,
     {
      "text": "&Vergrootglas",
@@ -874,19 +567,6 @@
      "keys": [
       "Ctrl+Alt+M"
      ],
-     "items": []
-    },
-    null,
-    {
-     "text": "&Dokopties...",
-     "id": 33296,
-     "keys": [],
-     "items": []
-    },
-    {
-     "text": "&Aanpassen...",
-     "id": 32772,
-     "keys": [],
      "items": []
     }
    ]
@@ -979,51 +659,6 @@
     },
     null,
     {
-     "text": "&Palet",
-     "id": 0,
-     "keys": [],
-     "items": [
-      {
-       "text": "&Palet bewerken...",
-       "id": 32846,
-       "keys": [
-        "Shift+P"
-       ],
-       "items": []
-      },
-      {
-       "text": "Palet &laden...",
-       "id": 32847,
-       "keys": [
-        "Shift+O"
-       ],
-       "items": []
-      },
-      {
-       "text": "Palet &opslaan...",
-       "id": 32848,
-       "keys": [],
-       "items": []
-      },
-      {
-       "text": "Transparantie &van palet instellen...",
-       "id": 33065,
-       "keys": [
-        "Ctrl+Shift+V"
-       ],
-       "items": []
-      },
-      {
-       "text": "&Transparantie van palet weergeven",
-       "id": 33066,
-       "keys": [
-        "Shift+V"
-       ],
-       "items": []
-      }
-     ]
-    },
-    {
      "text": "Kleur&diepte verminderen",
      "id": 0,
      "keys": [],
@@ -1068,12 +703,6 @@
        ],
        "items": []
       },
-      {
-       "text": "&RGB - 8 bits/kanaal",
-       "id": 37100,
-       "keys": [],
-       "items": []
-      },
       null,
       {
        "text": "&X kleuren (4/8 bits)...",
@@ -1081,43 +710,6 @@
        "keys": [
         "Ctrl+Shift+6"
        ],
-       "items": []
-      }
-     ]
-    },
-    {
-     "text": "Kleurdiepte uitbreide&n",
-     "id": 0,
-     "keys": [],
-     "items": [
-      {
-       "text": "&16-kleurenpalet",
-       "id": 32862,
-       "keys": [
-        "Ctrl+Shift+8"
-       ],
-       "items": []
-      },
-      {
-       "text": "2&56-kleurenpalet",
-       "id": 32887,
-       "keys": [
-        "Ctrl+Shift+9"
-       ],
-       "items": []
-      },
-      {
-       "text": "RGB - &8 bits/kanaal",
-       "id": 32888,
-       "keys": [
-        "Ctrl+Shift+0"
-       ],
-       "items": []
-      },
-      {
-       "text": "RGB - 1&6 bits/kanaal",
-       "id": 37099,
-       "keys": [],
        "items": []
       }
      ]
@@ -1203,26 +795,6 @@
      "id": 33010,
      "keys": [],
      "items": []
-    },
-    null,
-    {
-     "text": "&Watermerken",
-     "id": 0,
-     "keys": [],
-     "items": [
-      {
-       "text": "&Watermerk insluiten...",
-       "id": 33086,
-       "keys": [],
-       "items": []
-      },
-      {
-       "text": "Watermerk &lezen...",
-       "id": 33087,
-       "keys": [],
-       "items": []
-      }
-     ]
     }
    ]
   },
@@ -1641,8 +1213,7 @@
      "id": 33164,
      "keys": [],
      "items": []
-    },
-    null
+    }
    ]
   },
   {
@@ -2257,18 +1828,6 @@
      "id": 32892,
      "keys": [],
      "items": []
-    },
-    {
-     "text": "&Insteekfilters",
-     "id": 33240,
-     "keys": [],
-     "items": []
-    },
-    {
-     "text": "&Laatst gebruikt insteekfilter",
-     "id": 33272,
-     "keys": [],
-     "items": []
     }
    ]
   },
@@ -2286,12 +1845,6 @@
     {
      "text": "Nieuwe &vectorlaag...",
      "id": 33089,
-     "keys": [],
-     "items": []
-    },
-    {
-     "text": "Nieuwe &tekenmateriaallaag...",
-     "id": 33417,
      "keys": [],
      "items": []
     },
@@ -2605,19 +2158,6 @@
     {
      "text": "Laag ma&ken van achtergrondlaag",
      "id": 33117,
-     "keys": [],
-     "items": []
-    },
-    null,
-    {
-     "text": "Laag m&et droog tekenmateriaal",
-     "id": 33489,
-     "keys": [],
-     "items": []
-    },
-    {
-     "text": "Laag &met nat tekenmateriaal",
-     "id": 33492,
      "keys": [],
      "items": []
     },
@@ -3381,44 +2921,12 @@
     },
     null,
     {
-     "text": "&Studiecentrum",
-     "id": 32809,
-     "keys": [
-      "F10"
-     ],
-     "items": []
-    },
-    {
      "text": "&Toetsenbordlayout...",
      "id": 32808,
      "keys": [],
      "items": []
     },
     null,
-    {
-     "text": "Contactin&formatie...",
-     "id": 33477,
-     "keys": [],
-     "items": []
-    },
-    {
-     "text": "&On line ondersteuning en bronnen...",
-     "id": 33058,
-     "keys": [],
-     "items": []
-    },
-    {
-     "text": "&Gratis inhoud downloaden...",
-     "id": 33528,
-     "keys": [],
-     "items": []
-    },
-    {
-     "text": "Berichtinstellingen...",
-     "id": 33567,
-     "keys": [],
-     "items": []
-    },
     {
      "text": "Op updates &controleren...",
      "id": 33061,
@@ -3472,14 +2980,8 @@
   "0xd110": [
    "V"
   ],
-  "0xd0e0": [
-   "I"
-  ],
   "0xd101": [
    "P"
-  ],
-  "0xd053": [
-   "D"
   ],
   "0xd102": [
    "G"
@@ -3492,9 +2994,6 @@
   ],
   "0xd0f0": [
    "T"
-  ],
-  "0xd054": [
-   "O"
   ],
   "0xd002": [
    "Z"

@@ -8,5 +8,5 @@ Icon=pixelpickle
 Terminal=false
 Categories=Graphics;2DGraphics;RasterGraphics;Photography;
 MimeType=image/png;image/jpeg;image/bmp;image/tiff;image/webp;image/gif;image/x-tga;image/openraster;
-Keywords=foto;afbeelding;bewerken;lagen;psp;
+Keywords=foto;afbeelding;bewerken;lagen;fotobewerker;tekenen;
 StartupWMClass=pixelpickle
